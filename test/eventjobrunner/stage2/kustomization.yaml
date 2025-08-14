@@ -1,0 +1,12 @@
+resources:
+  - ../../../../bases/event-job-runner/stage2
+  - ../../resources/amqp-credentials
+
+# make sure common things get a namespace applied
+namespace: eventjobrunner
+
+generators:
+  - docker-secret.yaml
+
+transformers:
+  - image-rewriter.yaml

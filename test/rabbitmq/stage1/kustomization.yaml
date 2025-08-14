@@ -1,0 +1,20 @@
+resources:
+  - ../../resources/amqp-credentials/
+  - ../../resources/ssl-secrets/
+  - cluster/
+  - monitoring/
+  - resources/
+
+# ensure generated/generic resources get a namespace added
+namespace: rabbitmq
+
+patches:
+  # Since we do not apply the same namespace to everything, we need to patch it
+  # to the generated ssl secret.
+  - target:
+      name: fcaus-wildcard
+      kind: Secret
+    patch: |-
+      - op: add
+        path: /metadata/namespace
+        value: rabbitmq

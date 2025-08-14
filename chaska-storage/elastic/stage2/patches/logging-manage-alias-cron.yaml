@@ -1,0 +1,15 @@
+- op: add
+  path: /spec/jobTemplate/spec/template/spec/containers/0/env
+  value:
+    - name: ELASTICSEARCH_HOST
+      value: "logging-es.fcaus-f-storage.autodata.tech"
+    - name: KB_USER
+      valueFrom:
+        secretKeyRef:
+          name: photon-elastic-user
+          key: username
+    - name: KB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: photon-elastic-user
+          key: password

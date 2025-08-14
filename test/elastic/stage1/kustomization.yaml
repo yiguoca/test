@@ -1,0 +1,44 @@
+resources:
+  - ../../../../bases/elastic/stage1/
+  - resources/
+  - logging-elastic.yaml
+  - monitoring-elastic.yaml
+  - secrets/
+
+commonLabels:
+  stage: one
+
+generators:
+  - generators/cert-manager.yaml
+  - generators/eckmon.yaml
+  - generators/logging.yaml
+  #- generators/observability.yaml
+
+configMapGenerator:
+  - name: logging-master-jvm-options
+    namespace: logging
+    files:
+      - config/logging.master.heap.jvm.options
+  - name: logging-data-jvm-options
+    namespace: logging
+    files:
+      - config/logging.data.heap.jvm.options
+  # Used for eckmon production state but test doesn't have enough resources.
+  - name: eckmon-master-jvm-options
+    namespace: eckmon
+    files:
+      - config/eckmon.master.heap.jvm.options
+  - name: eckmon-data-jvm-options
+    namespace: eckmon
+    files:
+      - config/eckmon.data.heap.jvm.options
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+patches:
+  - target:
+      group: batch
+      kind: Job
+      name: elastic-cluster-ssl
+    path: patches/elastic-cluster-ssl-job.yaml

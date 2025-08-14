@@ -1,0 +1,3 @@
+# Cluster global amqp creds
+generators:
+  - generators/secret.yaml

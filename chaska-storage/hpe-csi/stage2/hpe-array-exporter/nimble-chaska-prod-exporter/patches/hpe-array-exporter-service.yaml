@@ -1,0 +1,14 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: hpe-array-exporter
+  namespace: hpe-storage
+  labels:
+    app.kubernetes.io/name: hpe-array-exporter
+    array: nimble-chaska-prod
+spec:
+  selector:
+    app.kubernetes.io/name: hpe-array-exporter
+    array: nimble-chaska-prod
+    photon/tier: infrastructure

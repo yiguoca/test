@@ -1,0 +1,7 @@
+---
+apiVersion: fca.autodata.net/v1
+kind: ThycoticSSLSecretGenerator
+metadata:
+  name: catalog-es-http-certs-public-hillsboro
+  namespace: catalog
+secret: 7655

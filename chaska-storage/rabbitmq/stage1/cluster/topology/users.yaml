@@ -1,0 +1,78 @@
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: User
+metadata:
+  name: rabbitmq-readonly-credentials
+spec:
+  tags:
+    - monitoring
+  rabbitmqClusterReference:
+    name: rabbitmq
+  importCredentialsSecret:
+    name: rabbitmq-readonly-credentials
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Permission
+metadata:
+  name: rabbitmq-readonly-credentials-ozownssl-permission
+spec:
+  vhost: "ozownssl"
+  user: "readonly"
+  permissions:
+    read: ".*"
+  rabbitmqClusterReference:
+    name: rabbitmq
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: User
+metadata:
+  name: rabbitmq-credentials
+spec:
+  tags:
+    - administrator
+
+  rabbitmqClusterReference:
+    name: rabbitmq
+  importCredentialsSecret:
+    name: rabbitmq-credentials
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Permission
+metadata:
+  name: rabbitmq-credentials-ozownssl-permission
+spec:
+  vhost: "ozownssl"
+  user: "ozownssl"
+  permissions:
+    read: ".*"
+    write: ".*"
+    configure: ".*"
+  rabbitmqClusterReference:
+    name: rabbitmq
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: User
+metadata:
+  name: rabbitmq-testing-credentials
+spec:
+  tags:
+    - management
+
+  rabbitmqClusterReference:
+    name: rabbitmq
+  importCredentialsSecret:
+    name: rabbitmq-testing-credentials
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Permission
+metadata:
+  name: rabbitmq-testing-credentials-root-permission
+spec:
+  vhost: "/"
+  user: "testing"
+  permissions:
+    read: ".*"
+    write: ".*"
+    configure: ".*"
+  rabbitmqClusterReference:
+    name: rabbitmq

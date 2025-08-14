@@ -1,0 +1,23 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    app.kubernetes.io/component: rabbitmq
+    app.kubernetes.io/name: rabbitmq
+  name: rabbitmq-management-ui
+spec:
+  rules:
+    - host: rabbitmq.fcaus-f-storage.autodata.tech
+      http:
+        paths:
+          - backend:
+              service:
+                name: rabbitmq
+                port:
+                  name: management
+            pathType: ImplementationSpecific
+  tls:
+    - hosts:
+        - rabbitmq.fcaus-f-storage.autodata.tech
+      secretName: fcaus-wildcard

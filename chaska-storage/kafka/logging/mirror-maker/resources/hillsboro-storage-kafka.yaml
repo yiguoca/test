@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: hillsboro-storage-kafka
+subsets:
+  - addresses:
+      - ip: 10.100.32.84
+      - ip: 10.100.32.85
+      - ip: 10.100.32.86
+      - ip: 10.100.32.32
+      - ip: 10.100.32.33
+    ports:
+      - port: 30030
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hillsboro-storage-kafka
+spec:
+  ports:
+    - protocol: TCP
+      port: 30030
+      targetPort: 30030
+
+
+

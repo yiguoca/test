@@ -1,0 +1,20 @@
+apiVersion: beat.k8s.elastic.co/v1beta1
+kind: Beat
+metadata:
+  name: inventory-beats
+spec:
+  type: metricbeat
+  version: 7.13.2
+  elasticsearchRef:
+    name: inventory
+  config:
+    heartbeat.monitors:
+    - type: tcp
+      schedule: '@every 5s'
+      hosts: ["inventory-es-http.default.svc:9200"]
+  deployment:
+    podTemplate:
+      spec:
+        dnsPolicy: ClusterFirstWithHostNet
+        securityContext:
+          runAsUser: 0

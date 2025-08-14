@@ -1,0 +1,23 @@
+resources:
+  - ../../../bases/beats/kafka/
+  - secret/logging-kafka.yaml
+
+# Namespace is expected to already exist
+namespace: logging
+
+patches:
+- target:
+    group: beat.k8s.elastic.co
+    version: v1beta1
+    kind: Beat
+    name: filebeat-application-logs
+  path: patches/filebeat-application-logs.yaml
+- patch: |
+    apiVersion: beat.k8s.elastic.co/v1beta1
+    kind: Beat
+    metadata:
+      name: filebeat-access-logs
+    $patch: delete
+  target:
+    kind: Beat
+    name: filebeat-access-logs

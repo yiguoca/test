@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespaced/blue/
+  - namespaced/hpe-storage/
+  - namespaced/incentives/
+  - namespaced/itp/
+  - namespaced/kafka/
+  - namespaced/preview2/

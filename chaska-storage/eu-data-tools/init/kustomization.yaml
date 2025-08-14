@@ -1,0 +1,9 @@
+resources:
+  - namespace.yaml
+  - secrets/
+
+labels:
+- includeSelectors: true
+  pairs:
+    photon/tier: infrastructure
+    stage: init

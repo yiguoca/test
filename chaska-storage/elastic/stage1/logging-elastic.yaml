@@ -1,0 +1,286 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: logging
+---
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: logging
+  namespace: logging
+spec:
+  version: 7.16.3
+  auth:
+    roles:
+    - secretName: logging-logwriter-role
+    fileRealm:
+    - secretName: logging-elastic-users
+  monitoring:
+    metrics:
+      elasticsearchRefs:
+      - name: eckmon
+        namespace: eckmon
+    logs:
+      elasticsearchRefs:
+      - name: eckmon
+        namespace: eckmon
+  http:
+    tls:
+      certificate:
+        secretName: logging-es-cert
+    service:
+      spec:
+        type: NodePort
+        ports:
+          - name: https
+            nodePort: 30092
+            port: 9200
+            protocol: TCP
+            targetPort: 9200
+        selector:
+          elasticsearch.k8s.elastic.co/cluster-name: "logging"
+          elasticsearch.k8s.elastic.co/node-master: "false"
+  nodeSets:
+  - name: logging-master
+    count: 2
+    config:
+      cluster.routing.allocation.disk.watermark.low: "50gb"
+      cluster.routing.allocation.disk.watermark.high: "30gb"
+      cluster.routing.allocation.disk.watermark.flood_stage: "10gb"
+      cluster.info.update.interval: "1m"
+      xpack:
+        security:
+          enabled: true
+          authc.realms.file.file1.order: 0
+      http:
+        compression: true
+        compression_level: 8
+      transport:
+        compress: true
+      node.roles: ["master"]
+    volumeClaimTemplates:
+      - metadata:
+          name: elasticsearch-data
+        spec:
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: 64Mi
+          storageClassName: hpe-nimble-chaska-prod-retain
+    podTemplate:
+      metadata:
+        labels:
+          photon/tier: infrastructure
+          app.kubernetes.io/instance: logging-master
+          app.kubernetes.io/name: elasticsearch
+          app.kubernetes.io/part-of: logging
+      spec:
+        initContainers:
+        - name: sysctl
+          securityContext:
+            privileged: true
+            runAsUser: 0
+          command: ['sh', '-c', 'sysctl -w vm.max_map_count=262144']
+        - name: install-plugins
+          command:
+          - sh
+          - -c
+          - |
+            bin/elasticsearch-plugin remove --purge repository-s3 prometheus-exporter
+            bin/elasticsearch-plugin install -b repository-s3 https://github.com/vvanholl/elasticsearch-prometheus-exporter/releases/download/7.16.3.0/prometheus-exporter-7.16.3.0.zip
+        containers:
+        - name: elasticsearch
+          resources:
+            requests:
+              memory: 2Gi
+              cpu: "250m"
+            limits:
+              memory: 2Gi
+              cpu: 2
+          volumeMounts:
+          - name: heap-jvm-options
+            mountPath: /usr/share/elasticsearch/config/jvm.options.d/heap.jvm.options
+            subPath: heap.jvm.options
+        volumes:
+        - name: heap-jvm-options
+          configMap:
+            name: logging-master-jvm-options
+            items:
+            - key: logging.master.heap.jvm.options
+              path: heap.jvm.options
+  - name: logging-data
+    count: 3
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 2000Gi
+        storageClassName: hpe-nimble-chaska-prod-retain
+    config:
+      cluster.routing.allocation.disk.watermark.low: "50gb"
+      cluster.routing.allocation.disk.watermark.high: "30gb"
+      cluster.routing.allocation.disk.watermark.flood_stage: "10gb"
+      cluster.info.update.interval: "1m"
+      http:
+        compression: true
+        compression_level: 9
+      transport:
+        compress: true
+      node.roles: ["data", "ingest", "transform"]
+    podTemplate:
+      metadata:
+        labels:
+          photon/tier: infrastructure
+          app.kubernetes.io/instance: logging-data
+          app.kubernetes.io/name: elasticsearch
+          app.kubernetes.io/part-of: logging
+      spec:
+        initContainers:
+        - name: sysctl
+          securityContext:
+            privileged: true
+            runAsUser: 0
+          command: ['sh', '-c', 'sysctl -w vm.max_map_count=262144']
+        - name: install-plugins
+          command:
+          - sh
+          - -c
+          - |
+            bin/elasticsearch-plugin remove --purge repository-s3 prometheus-exporter
+            bin/elasticsearch-plugin install -b repository-s3 https://github.com/vvanholl/elasticsearch-prometheus-exporter/releases/download/7.16.3.0/prometheus-exporter-7.16.3.0.zip
+        containers:
+        - name: elasticsearch
+          resources:
+            requests:
+              memory: 12Gi
+              cpu: "250m"
+            limits:
+              memory: 12Gi
+              cpu: 3
+          volumeMounts:
+          - name: heap-jvm-options
+            mountPath: /usr/share/elasticsearch/config/jvm.options.d/heap.jvm.options
+            subPath: heap.jvm.options
+        volumes:
+        - name: heap-jvm-options
+          configMap:
+            name: logging-data-jvm-options
+            items:
+            - key: logging.data.heap.jvm.options
+              path: heap.jvm.options
+---
+apiVersion: kibana.k8s.elastic.co/v1
+kind: Kibana
+metadata:
+  name: logging
+  namespace: logging
+spec:
+  version: 7.16.3
+  count: 1
+  podTemplate:
+    metadata:
+      labels:
+        photon/tier: infrastructure
+        app.kubernetes.io/instance: kibana
+        app.kubernetes.io/name: kibana
+        app.kubernetes.io/part-of: logging
+    spec:
+      containers:
+      - name: kibana
+        env:
+          - name: NODE_OPTIONS
+            value: "--max-old-space-size=4608"
+        resources:
+          requests:
+            memory: 1.5Gi
+            cpu: 1
+          limits:
+            memory: 5Gi
+            cpu: 3
+  config:
+    #override default so kib loads more info on options
+    #kibana.autocompleteTerminateAfter: "2000000"
+    data.autocomplete.valueSuggestions.terminateAfter: "2000000"
+    server.publicBaseUrl: "https://logging.fcaus-f-storage.autodata.tech"
+  elasticsearchRef:
+    name: logging
+    namespace: logging
+  monitoring:
+    metrics:
+      elasticsearchRefs:
+      - name: eckmon
+        namespace: eckmon
+    logs:
+      elasticsearchRefs:
+      - name: eckmon
+        namespace: eckmon
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kibana
+  namespace: logging
+  labels:
+    photon/tier: infrastructure
+    app.kubernetes.io/instance: kibana-ingress
+    app.kubernetes.io/name: kibana
+    app.kubernetes.io/part-of: logging
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/server-snippet: |
+      proxy_ssl_verify off;
+spec:
+  rules:
+    - host: logging.fcaus-f-storage.autodata.tech
+      http:
+        paths:
+          - pathType: ImplementationSpecific
+            backend:
+              service:
+                name: logging-kb-http
+                port:
+                  number: 5601
+  tls:
+    - secretName: fcaus-wildcard
+      hosts:
+        - logging.fcaus-f-storage.autodata.tech
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: elasticsearch
+  namespace: logging
+  labels:
+    app: elasticsearch
+    photon/tier: infrastructure
+    app.kubernetes.io/instance: elasticsearch-ingress
+    app.kubernetes.io/name: elasticsearch
+    app.kubernetes.io/part-of: logging
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/server-snippet: |
+      proxy_ssl_verify off;
+spec:
+  rules:
+    - host: logging-es.fcaus-f-storage.autodata.tech
+      http:
+        paths:
+          - pathType: ImplementationSpecific
+            backend:
+              service:
+                name: logging-es-http
+                port:
+                  number: 9200
+  tls:
+    - secretName: fcaus-wildcard
+      hosts:
+        - logging-es.fcaus-f-storage.autodata.tech

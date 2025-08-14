@@ -1,0 +1,30 @@
+namespace: eu-data-tools
+
+resources:
+  # can't use the base as it forces you to define the namespace. If you ever wanted
+  # to undeploy this akhq you would wipeout the eu-data-tools namespace
+  #- ../../../../bases/akhq
+  - resources/akhq-deploy.yaml
+  - resources/akhq-svc.yaml
+  - resources/ingress.yml
+
+configMapGenerator:
+- name: akhq
+  files:
+    - akhq-application.yml
+  options:
+    labels:
+      app.kubernetes.io/name: akhq
+      app.kubernetes.io/instance: akhq
+
+generatorOptions:
+  disableNameSuffixHash: true
+  labels:
+    app.kubernetes.io/part-of: kafka-akhq
+
+labels:
+- includeSelectors: true
+  pairs:
+    app.kubernetes.io/part-of: kafka-akhq
+    photon/tier: infrastructure
+    stage: akhq

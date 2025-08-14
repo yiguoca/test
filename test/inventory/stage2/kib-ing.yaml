@@ -1,0 +1,28 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kibana
+  namespace: inventory-search
+  labels:
+    app: kibana
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/server-snippet: |
+      proxy_ssl_verify off;
+spec:
+  rules:
+    - host: kib-inv.fcaus-te.autodata.tech
+      http:
+        paths:
+          - pathType: ImplementationSpecific
+            backend:
+              service:
+                name: inventory-kib-kb-http
+                port:
+                  number: 5601
+  tls:
+    - secretName: fcaus-wildcard
+      hosts:
+        - kib-inv.fcaus-te.autodata.tech

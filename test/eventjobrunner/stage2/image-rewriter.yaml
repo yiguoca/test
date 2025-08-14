@@ -1,0 +1,8 @@
+---
+apiVersion: fca.autodata.net/v1
+kind: ImageRewriter
+metadata:
+  name: docker-fcaus-ct-storage
+placeHolder: fcaus/
+registry: docker.fcaus-ct-storage.autodata.tech/fcaus/
+#manifestFile: transformers/image-rewriter-list.txt

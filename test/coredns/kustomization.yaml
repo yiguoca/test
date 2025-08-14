@@ -1,0 +1,8 @@
+namespace: kube-system
+
+configMapGenerator:
+  - name: coredns
+    files:
+      - Corefile
+generatorOptions:
+  disableNameSuffixHash: true

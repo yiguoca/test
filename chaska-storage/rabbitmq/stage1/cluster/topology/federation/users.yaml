@@ -1,0 +1,27 @@
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: User
+metadata:
+  name: rabbitmq-federation-credentials
+spec:
+  tags:
+    - administrator
+  rabbitmqClusterReference:
+    name: rabbitmq
+  importCredentialsSecret:
+    name: rabbitmq-federation-credentials
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Permission
+metadata:
+  name: rabbitmq-federation-credentials-ozownssl-permission
+spec:
+  vhost: "ozownssl"
+  user: "federator"
+  permissions:
+    read: ".*"
+    write: ".*"
+    configure: ".*"
+  rabbitmqClusterReference:
+    name: rabbitmq
+---

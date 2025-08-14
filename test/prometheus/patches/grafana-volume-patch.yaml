@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: monitoring
+spec:
+  template:
+    spec:
+      containers:
+        - name: grafana
+          volumeMounts:
+            - mountPath: /grafana-dashboard-definitions/0/cluster-dashboards
+              name: cluster-dashboards
+            - mountPath: /etc/grafana
+              name: grafana-config
+            - mountPath: /etc/grafana/provisioning/datasources
+              name: grafana-datasources
+
+      volumes:
+        - name: grafana-datasources
+          secret:
+            secretName: grafana-datasources
+        - name: grafana-config
+          secret:
+            secretName: grafana-config
+        - name: cluster-dashboards
+          configMap:
+            name: cluster-dashboards

@@ -1,0 +1,46 @@
+---
+apiVersion: v1
+data:
+  turbo-autoreload.config: |-
+    {
+      "logging": {
+        "level": 2
+      },
+      "nodePoolSize": {
+        "min": 1,
+        "max": 1000
+      },
+      "systemWorkloadDetectors": {
+        "namespacePatterns": ["kube-.*","openshift-.*","cattle.*"]
+      },
+      "exclusionDetectors": {
+        "operatorControlledWorkloadsPatterns": [],
+        "operatorControlledNamespacePatterns": []
+      },
+      "daemonPodDetectors": {
+        "namespaces": [],
+        "podNamePatterns": []
+      }
+    }
+  turbo.config: |-
+    {
+      "communicationConfig": {
+        "serverMeta": {
+          "version": "8.7.6",
+          "turboServer": "https://ccoc-prif-trb1.autodatacorp.org"
+        },
+        "sdkProtocolConfig": {
+           "registrationTimeoutSec": 300,
+           "restartOnRegistrationTimeout": true
+        }
+      },
+      "HANodeConfig": {
+        "nodeRoles": ["master", "worker"]
+      },
+      "targetConfig": {
+        "targetName": "kubernetes-fcaus-te"
+      }
+    }
+kind: ConfigMap
+metadata:
+  name: turbo-config-kubeturbo

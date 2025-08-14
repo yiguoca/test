@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: monitoring
+configMapGenerator:
+  - name: cluster-dashboards
+    files:
+      - dashboards/dashboard.json
+      - dashboards/incentives-sink.json
+      - dashboards/longhorn.json
+      - dashboards/strimzi-kafka.json
+  - name: rabbitmq-dashboard
+    files:
+      - 10991/rabbitmq-overview_rev11.json

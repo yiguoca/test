@@ -1,0 +1,7 @@
+---
+apiVersion: fca.autodata.net/v1
+kind: ImageRewriter
+metadata:
+  name: docker-fcaus-f-storage
+placeHolder: fcaus/
+registry: docker.fcaus-f-storage.autodata.tech/fcaus/

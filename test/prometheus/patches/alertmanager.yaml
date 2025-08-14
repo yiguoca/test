@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Alertmanager
+metadata:
+  name: main
+  namespace: monitoring
+spec:
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: alertmanager
+                  operator: In
+                  values:
+                    - main
+            namespaces:
+              - monitoring
+            topologyKey: kubernetes.io/hostname
+          weight: 100
+  externalUrl: https://alertmanager.fcaus-te.autodata.tech

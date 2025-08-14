@@ -1,0 +1,6 @@
+resources:
+  - ../../../../bases/kafka-strimzi/stage1/
+  - resources/kafka-cluster.yaml
+
+namespace: kafka
+

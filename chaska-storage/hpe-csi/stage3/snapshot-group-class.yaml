@@ -1,0 +1,21 @@
+# A snapshot group class that will be cleaned up whenever attached volume is cleaned up.
+apiVersion: storage.hpe.com/v1
+kind: SnapshotGroupClass
+metadata:
+  name: hpe-nimble-chaska-prod-snapshot-group-default
+snapshotter: csi.hpe.com
+deletionPolicy: Delete
+parameters:
+  csi.hpe.com/snapshot-group-snapshotter-secret-name: nimble-chaska-prod
+  csi.hpe.com/snapshot-group-snapshotter-secret-namespace: hpe-storage
+# A snapshot group class that we want to retain separately from the volume lifecycle.
+---
+apiVersion: storage.hpe.com/v1
+kind: SnapshotGroupClass
+metadata:
+  name: hpe-nimble-chaska-prod-snapshot-group-retain
+snapshotter: csi.hpe.com
+deletionPolicy: Retain
+parameters:
+  csi.hpe.com/snapshot-group-snapshotter-secret-name: nimble-chaska-prod
+  csi.hpe.com/snapshot-group-snapshotter-secret-namespace: hpe-storage

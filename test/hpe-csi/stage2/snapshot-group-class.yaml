@@ -1,0 +1,23 @@
+# TODO: This file is not referenced by kustomization and intentionally left here for reference only. If we want to setup snapshots in a cluster we have a few components that need to be created.
+# Documentation in the system-architecture-docs references the cases we need the different types of classes. These comments and files will remain to support the documentation.
+# A snapshot group class that will be cleaned up whenever attached volume is cleaned up.
+apiVersion: storage.hpe.com/v1
+kind: SnapshotGroupClass
+metadata:
+  name: hpe-nimble-snapshot-group-local
+snapshotter: csi.hpe.com
+deletionPolicy: Delete
+parameters:
+  csi.hpe.com/snapshot-group-snapshotter-secret-name: nimble
+  csi.hpe.com/snapshot-group-snapshotter-secret-namespace: hpe-storage
+# A snapshot group class that we want to retain separately from the volume lifecycle.
+---
+apiVersion: storage.hpe.com/v1
+kind: SnapshotGroupClass
+metadata:
+  name: hpe-nimble-snapshot-group-retain
+snapshotter: csi.hpe.com
+deletionPolicy: Retain
+parameters:
+  csi.hpe.com/snapshot-group-snapshotter-secret-name: nimble
+  csi.hpe.com/snapshot-group-snapshotter-secret-namespace: hpe-storage

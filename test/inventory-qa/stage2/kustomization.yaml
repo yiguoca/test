@@ -1,0 +1,20 @@
+resources:
+  - namespace.yaml
+  - elastic_inventory.yaml
+  - kib-ing.yaml
+  # deploy in this namespace the fcaus-wildcard ssl
+  #- ../../resources/ssl-secrets/
+
+commonLabels:
+  stage: two
+
+#patches:
+  # Since we do not apply the same namespace to everything, we need to patch it
+  # to the generated ssl secret.
+#  - target:
+#      name: fcaus-wildcard
+#      kind: Secret
+#    patch: |-
+#      - op: add
+#        path: /metadata/namespace
+#        value: inventory-search

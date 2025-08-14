@@ -1,0 +1,52 @@
+# A test to check each of the access modes
+#
+# https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app.kubernetes.io/name: test-accessmode-readwriteonce
+  name: test-accessmode-readwriteonce
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 5M
+  storageClassName: "vsphere-london-non-prod-delete"
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app.kubernetes.io/name: test-accessmode-readwritemany
+  name: test-accessmode-readwritemany
+spec:
+  accessModes:
+    - ReadWriteMany
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 5M
+  storageClassName: "vsphere-london-non-prod-delete"
+
+# ---
+# # As documented in the table in https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes
+# # vsphere volumes do not support ReadOnlyMany access mode.
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   labels:
+#     app.kubernetes.io/name: test-readonlymany-pvc
+#   name: test-readonlymany-pvc
+# spec:
+#   accessModes:
+#     - ReadOnlyMany
+#   volumeMode: Filesystem
+#   resources:
+#     requests:
+#       storage: 5M
+#   storageClassName: "vsphere-london-non-prod-delete"

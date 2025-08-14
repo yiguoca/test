@@ -1,0 +1,51 @@
+## Beware: Use Delete deletionPolicy otherwise volumeGroups don't get cleaned up on Nimble
+## Beware: Dynamic id is generated on nimble per VolumeGroupClass so fewer needed is better.
+---
+apiVersion: storage.hpe.com/v1
+kind: VolumeGroupClass
+metadata:
+  name: hpe-nimble-chaska-prod-volume-group-default
+provisioner: csi.hpe.com
+deletionPolicy: Delete
+parameters:
+  #https://scod.hpedev.io/container_storage_provider/hpe_alletra_6000/index.html#volumegroupclass_parameters
+  #protectionTemplate: Daily-Snapshot|Retain-30Daily|Retain-48Hourly-30Daily-52Weekly|Retain-90Daily
+  protectionTemplate: Retain-30Daily
+  description: "HPE CSI Driver for Kubernetes Volume Group"
+  csi.hpe.com/volume-group-provisioner-secret-name: nimble-chaska-prod
+  csi.hpe.com/volume-group-provisioner-secret-namespace: hpe-storage
+# A volume group whose snapsthos will remain on nimble after being detached.
+---
+apiVersion: storage.hpe.com/v1
+kind: VolumeGroupClass
+metadata:
+  name: hpe-nimble-chaska-prod-volume-group-retain
+provisioner: csi.hpe.com
+deletionPolicy: Retain
+parameters:
+  #https://scod.hpedev.io/container_storage_provider/hpe_alletra_6000/index.html#volumegroupclass_parameters
+  #protectionTemplate: Daily-Snapshot|Retain-30Daily|Retain-48Hourly-30Daily-52Weekly|Retain-90Daily
+  #                    as of ticket ASCC02815-463 we have included the following custom templates:
+  #                    Retain-24Hourly-24x4Hourly
+  #                    Retain-48Hourly-7Daily
+  protectionTemplate: Retain-30Daily
+  description: "HPE CSI Driver for Kubernetes Volume Group (Retain)"
+  csi.hpe.com/volume-group-provisioner-secret-name: nimble-chaska-prod
+  csi.hpe.com/volume-group-provisioner-secret-namespace: hpe-storage
+---
+apiVersion: storage.hpe.com/v1
+kind: VolumeGroupClass
+metadata:
+  name: hpe-nimble-chaska-prod-volume-group-artifacts
+provisioner: csi.hpe.com
+deletionPolicy: Retain
+parameters:
+  #https://scod.hpedev.io/container_storage_provider/hpe_alletra_6000/index.html#volumegroupclass_parameters
+  #protectionTemplate: Daily-Snapshot|Retain-30Daily|Retain-48Hourly-30Daily-52Weekly|Retain-90Daily
+  #                    as of ticket ASCC02815-463 we have included the following custom templates:
+  #                    Retain-24Hourly-24x4Hour
+  #                    Retain-48Hourly-7Daily
+  protectionTemplate: Retain-24Hourly-24x4Hour
+  description: "HPE CSI Driver for Artifact/Container Kubernetes Volume Group"
+  csi.hpe.com/volume-group-provisioner-secret-name: nimble-chaska-prod
+  csi.hpe.com/volume-group-provisioner-secret-namespace: hpe-storage

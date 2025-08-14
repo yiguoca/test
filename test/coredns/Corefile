@@ -1,0 +1,19 @@
+.:53 {
+    errors
+    health
+    rewrite {
+        name regex (.*)\.cluster\.local {1}.rancher-fcaus-test.autodata.org
+        answer name (.*)\.rancher-fcaus-test\.autodata\.org {1}.cluster.local
+    }
+    kubernetes rancher-fcaus-test.autodata.org in-addr.arpa ip6.arpa {
+        pods insecure
+        upstream
+        fallthrough in-addr.arpa ip6.arpa
+        ttl 30
+    }
+    prometheus :9153
+    forward . "/etc/resolv.conf"
+    loop
+    reload
+    loadbalance
+}

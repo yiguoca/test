@@ -1,0 +1,33 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../../../bases/rke2-ingress-nginx-controller/
+patches:
+  # datacenter
+  - patch: |-
+      - op: replace
+        path: /data/X-Datacenter
+        value: test
+    target:
+      kind: ConfigMap
+      name: custom-headers
+  - patch: |-
+      - op: add
+        path: /data/global-rate-limit-status-code
+        value: "429"
+      - op: add
+        path: /data/global-rate-limit-memcached-host
+        value: memcached.memcached.svc.rancher-fcaus-test.autodata.org
+      - op: add
+        path: /data/global-rate-limit-memcached-port
+        value: "11211"
+      - op: add
+        path: /data/global-rate-limit-memcached-pool-size
+        # Make sure your memcached server can handle
+        # global-rate-limit-memcached-pool-size * worker-processes * <number of
+        # ingress-nginx replicas> simultaneous connections.
+        value: "1024"
+    target:
+      kind: ConfigMap
+      name: rke2-ingress-nginx-controller
+

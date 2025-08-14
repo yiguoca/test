@@ -1,0 +1,38 @@
+namespace: csi-driver-nfs-pvc-test
+
+resources:
+  - ../../../../bases/csi-driver-nfs-pvc/stage2-pvc/
+
+patches:
+  - target:
+      kind: PersistentVolume
+      name: nfs-rwx-pvcname
+    patch: |-
+      - op: replace
+        path: "/spec/csi/volumeHandle"
+        value: nfs-server-nfstest.csi-driver-nfs-pvc-test.svc.rancher-fcaus-test.autodata.org##share
+      - op: replace
+        path: "/spec/csi/volumeAttributes/server"
+        value: nfs-server-nfstest.csi-driver-nfs-pvc-test.svc.rancher-fcaus-test.autodata.org
+      - op: replace
+        path: "/spec/capacity/storage"
+        value: 1Mi
+      - op: replace
+        path: "/spec/persistentVolumeReclaimPolicy"
+        value: Retain
+      - op: replace
+        path: "/metadata/name"
+        value: nfs-rwx-csi-driver-nfs-pvc-test-nfstest
+  - target:
+      kind: PersistentVolumeClaim
+      name: nfs-rwx-pvcname
+    patch: |-
+      - op: replace
+        path: "/spec/volumeName"
+        value: nfs-rwx-csi-driver-nfs-pvc-test-nfstest
+      - op: replace
+        path: "/spec/resources/requests/storage"
+        value: 1Mi
+      - op: replace
+        path: "/metadata/name"
+        value: nfs-rwx-nfstest

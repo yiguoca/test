@@ -1,0 +1,54 @@
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+  name: hpe-nimble-london-non-prod-delete
+provisioner: csi.hpe.com
+parameters:
+  #https://scod.hpedev.io/container_storage_provider/hpe_alletra_6000/index.html#common_parameters_for_provisioning_and_cloning
+  csi.storage.k8s.io/fstype: ext4
+  csi.storage.k8s.io/controller-expand-secret-name: nimble-london-non-prod
+  csi.storage.k8s.io/controller-expand-secret-namespace: hpe-storage
+  csi.storage.k8s.io/controller-publish-secret-name: nimble-london-non-prod
+  csi.storage.k8s.io/controller-publish-secret-namespace: hpe-storage
+  csi.storage.k8s.io/node-publish-secret-name: nimble-london-non-prod
+  csi.storage.k8s.io/node-publish-secret-namespace: hpe-storage
+  csi.storage.k8s.io/node-stage-secret-name: nimble-london-non-prod
+  csi.storage.k8s.io/node-stage-secret-namespace: hpe-storage
+  csi.storage.k8s.io/provisioner-secret-name: nimble-london-non-prod
+  csi.storage.k8s.io/provisioner-secret-namespace: hpe-storage
+  description: "Test Infrastructure Cluster - Delete"
+  destroyOnDelete: "true"
+  allowOverrides: description,destroyOnDelete,forceImport,importVolAsClone,importVolumeName,snapshot,takeover
+  #Below spelling error is intentional to match the provided folder on the storage array
+  folder: "stellantis-us-london"
+
+reclaimPolicy: Delete
+allowVolumeExpansion: true
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: hpe-nimble-london-non-prod-retain
+provisioner: csi.hpe.com
+parameters:
+  #https://scod.hpedev.io/container_storage_provider/hpe_alletra_6000/index.html#common_parameters_for_provisioning_and_cloning
+  csi.storage.k8s.io/fstype: ext4
+  csi.storage.k8s.io/controller-expand-secret-name: nimble-london-non-prod
+  csi.storage.k8s.io/controller-expand-secret-namespace: hpe-storage
+  csi.storage.k8s.io/controller-publish-secret-name: nimble-london-non-prod
+  csi.storage.k8s.io/controller-publish-secret-namespace: hpe-storage
+  csi.storage.k8s.io/node-publish-secret-name: nimble-london-non-prod
+  csi.storage.k8s.io/node-publish-secret-namespace: hpe-storage
+  csi.storage.k8s.io/node-stage-secret-name: nimble-london-non-prod
+  csi.storage.k8s.io/node-stage-secret-namespace: hpe-storage
+  csi.storage.k8s.io/provisioner-secret-name: nimble-london-non-prod
+  csi.storage.k8s.io/provisioner-secret-namespace: hpe-storage
+  description: "Test Infrastructure Cluster - Retain"
+  allowOverrides: description,destroyOnDelete,forceImport,importVolAsClone,importVolumeName,snapshot,takeover
+  #Below spelling error is intentional to match the provided folder on the storage array
+  folder: "stellantis-us-london"
+reclaimPolicy: Retain
+allowVolumeExpansion: true

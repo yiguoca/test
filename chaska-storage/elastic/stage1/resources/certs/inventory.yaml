@@ -1,0 +1,31 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: inventory-es-cert
+  namespace: inventory
+spec:
+  isCA: true
+  dnsNames:
+    - inventory.fcaus-f-storage.autodata.tech
+    - inventory-search.fcaus-f-storage.autodata.tech
+    - inventory-es-http
+    - inventory-es-http.inventory.svc
+    - inventory-es-http.inventory.svc.rancher-fcaus-f-storage.autodata.org
+    - fchu-prif-xknp1
+    - fchu-prif-xknp2
+    - fchu-prif-xknp3
+    - fchu-prif-xknp1.autodata.org
+    - fchu-prif-xknp2.autodata.org
+    - fchu-prif-xknp3.autodata.org
+  secretName: inventory-es-cert
+  # 87600h = 3650 days * 24 hours
+  duration: 87600h
+  # 720h = 30 days * 24 hours
+  renewBefore: 720h
+  issuerRef:
+    name: elastic-root-ca-issuer
+    kind: ClusterIssuer
+  subject:
+    organizations:
+      - inventory

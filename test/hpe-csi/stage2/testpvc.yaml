@@ -1,0 +1,38 @@
+# TODO: This file is not referenced by kustomization and intentionally left here for reference only. If we want to setup a pvc based on our storage classes then here is a simple example.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: testpvc
+  namespace: hpe-storage
+spec:
+  storageClassName: hpe-nimble-london-non-prod-delete
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: testpv
+  labels:
+    app.kubernetes.io/name: testpv
+    app.kubernetes.io/instance: testpv
+    app.kubernetes.io/part-of: testpv
+    app.kubernetes.io/component: testpv
+    app.kubernetes.io/managed-by: testpv
+    app.kubernetes.io/version: testpv
+  annotations:
+    volume.beta.kubernetes.io/storage-class: hpe-nimble-london-non-prod-delete
+  namespace: hpe-storage
+spec:
+  storageClassName: hpe-nimble-london-non-prod-delete
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  capacity:
+    storage: 1Gi
+  claimRef:
+    name: testpvc
+    namespace: hpe-storage

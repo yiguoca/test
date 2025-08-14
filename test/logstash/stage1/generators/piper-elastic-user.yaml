@@ -1,0 +1,8 @@
+apiVersion: fca.autodata.net/v1
+kind: ThycoticSecretGenerator
+metadata:
+  name: piper-elastic-user
+  namespace: logging
+secret: 7564
+username_key: username
+password_key: password

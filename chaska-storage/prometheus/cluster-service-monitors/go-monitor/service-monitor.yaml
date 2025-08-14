@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    metrics.type: go-prometheus
+  name: go-monitor
+spec:
+  endpoints:
+    - honorLabels: true
+      interval: 30s
+      port: http
+      scheme: http
+  selector:
+    matchLabels:
+      metrics.type: go-prometheus
+---

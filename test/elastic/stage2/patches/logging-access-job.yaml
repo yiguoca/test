@@ -1,0 +1,79 @@
+- op: add
+  path: /spec/template/spec/initContainers/0/env
+  value:
+    - name: ELASTICSEARCH_HOST
+      value: "logging-es.fcaus-te.autodata.tech"
+    - name: KB_USER
+      valueFrom:
+        secretKeyRef:
+          name: photon-elastic-user
+          key: username
+    - name: KB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: photon-elastic-user
+          key: password
+
+- op: add
+  path: /spec/template/spec/initContainers/1/env
+  value:
+    - name: KB_HOST
+      value: "logging.fcaus-te.autodata.tech"
+    - name: KB_USER
+      valueFrom:
+        secretKeyRef:
+          name: photon-elastic-user
+          key: username
+    - name: KB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: photon-elastic-user
+          key: password
+
+- op: add
+  path: /spec/template/spec/initContainers/2/env
+  value:
+    - name: KB_HOST
+      value: "logging.fcaus-te.autodata.tech"
+    - name: KB_USER
+      valueFrom:
+        secretKeyRef:
+          name: photon-elastic-user
+          key: username
+    - name: KB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: photon-elastic-user
+          key: password
+
+- op: add
+  path: /spec/template/spec/initContainers/3/env
+  value:
+    - name: KB_HOST
+      value: "logging.fcaus-te.autodata.tech"
+    - name: KB_USER
+      valueFrom:
+        secretKeyRef:
+          name: photon-elastic-user
+          key: username
+    - name: KB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: photon-elastic-user
+          key: password
+
+- op: add
+  path: /spec/template/spec/initContainers/4/env
+  value:
+    - name: KB_HOST
+      value: "logging.fcaus-te.autodata.tech"
+    - name: KB_USER
+      valueFrom:
+        secretKeyRef:
+          name: photon-elastic-user
+          key: username
+    - name: KB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: photon-elastic-user
+          key: password

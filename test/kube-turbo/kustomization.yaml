@@ -1,0 +1,6 @@
+---
+resources:
+  - ../../../bases/kube-turbo
+
+patches:
+  - path: patches/turbo-config-kube-turbo.yaml

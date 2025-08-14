@@ -1,0 +1,13 @@
+resources:
+  - resources/mirror-maker.yaml
+
+namespace: kafka
+
+configMapGenerator:
+  - name: mirror-maker-2-metrics
+    files:
+      - config/metrics-config.yml
+generatorOptions:
+  disableNameSuffixHash: true
+  labels:
+    app: strimzi

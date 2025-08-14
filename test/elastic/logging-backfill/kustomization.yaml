@@ -1,0 +1,15 @@
+resources:
+  - resources/logging-backfill-data-job.yaml
+
+#Replace the default fields definition for nginx filebeat module
+configMapGenerator:
+
+  - name: scripts-es-dump
+    namespace: logging
+    files:
+      - config/elasticdump-reindex.sh
+      - config/test-prep.sh
+      - config/test-assertion.sh
+
+generatorOptions:
+  disableNameSuffixHash: true

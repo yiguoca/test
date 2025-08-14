@@ -1,0 +1,28 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: logging-es-cert
+  namespace: logging
+spec:
+  isCA: true
+  dnsNames:
+    - logging.fcaus-te.autodata.tech
+    - logging-es-http
+    - logging-es-http.logging.svc
+    - lchu-teif-xkm01.autodatacorp.org
+    - lchu-teif-xkm02.autodatacorp.org
+    - lchu-teif-xkm03.autodatacorp.org
+    - lchu-teif-xkn01.autodatacorp.org
+    - lchu-teif-xkn02.autodatacorp.org
+    - lchu-teif-xkn03.autodatacorp.org
+    - logging.fcaus-te
+    - logging.fcaus-te.svc
+    - logging.fcaus-te.svc.local
+  secretName: logging-es-cert
+  issuerRef:
+    name: elastic-root-ca-issuer
+    kind: ClusterIssuer
+  subject:
+    organizations:
+      - logging

@@ -1,0 +1,4 @@
+resources:
+  - resources/job.yaml
+  - resources/namespace.yaml
+  - resources/pvc.yaml

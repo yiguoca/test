@@ -1,0 +1,54 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kibana
+  labels:
+    app: kibana
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/server-snippet: |
+      proxy_ssl_verify off;
+spec:
+  rules:
+    - host: incentives.fcaus-f-storage.autodata.tech
+      http:
+        paths:
+          - pathType: ImplementationSpecific
+            backend:
+              service:
+                name: incentives-kb-http
+                port:
+                  number: 5601
+  tls:
+    - secretName: fcaus-wildcard
+      hosts:
+        - incentives.fcaus-f-storage.autodata.tech
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: elasticsearch
+  labels:
+    app: elasticsearch
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/server-snippet: |
+      proxy_ssl_verify off;
+spec:
+  rules:
+    - host: incentives-search.fcaus-f-storage.autodata.tech
+      http:
+        paths:
+          - pathType: ImplementationSpecific
+            backend:
+              service:
+                name: incentives-es-http
+                port:
+                  number: 9200
+  tls:
+    - secretName: incentives-es-cert
+      hosts:
+        - incentives-search.fcaus-f-storage.autodata.tech

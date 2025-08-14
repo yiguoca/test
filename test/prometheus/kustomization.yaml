@@ -1,0 +1,55 @@
+# What's different here from a Production setup?
+# - we do not need "whereami"
+# - there are no "test" cluster pre-defined dashboards to include
+# - we could back Prometheus with PVs since we have the tech in Test - not implemented yet
+# - The "datasources.yaml" file has been converted to actually contain YAML and specifies a datasource
+#   for the ECK Elastic instance
+resources:
+  - ../../../bases/prometheus/
+  - ../resources/ssl-secrets/
+  - cluster-dashboards/
+  - cluster-service-monitors/
+  - resources/ingress-alertmanager.yaml
+  - resources/ingress-grafana.yaml
+  - resources/ingress-prometheus.yaml
+  - resources/prometheusRules/
+
+patchesStrategicMerge:
+  - patches/alertmanager.yaml
+  - patches/grafana-volume-patch.yaml
+  - patches/prometheus-patch.yaml
+  - patches/node-exporter-patch.yaml
+  - patches/grafana-config.yaml
+  - patches/grafana-datasources.yaml
+
+transformers:
+  - transformers/secrets.yaml
+
+secretGenerator:
+  - name: basic-auth
+    namespace: monitoring
+    literals:
+      - auth=guest:password
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+patches:
+  - target:
+      name: prometheus-adapter
+      namespace: monitoring
+      kind: Deployment
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/args/4
+        value: --prometheus-url=http://prometheus-test.monitoring.svc:9090/
+
+  # Since we do not apply the same namespace to everything, we need to patch it
+  # to the generated ssl secret.
+  - target:
+      name: fcaus-wildcard
+      kind: Secret
+    patch: |-
+      - op: add
+        path: /metadata/namespace
+        value: monitoring

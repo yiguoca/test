@@ -1,0 +1,178 @@
+---
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: eu-data
+  labels:
+    app.kubernetes.io/name: eu-data
+spec:
+  version: 8.13.4
+  auth:
+    fileRealm:
+    - secretName: eu-data-es-user
+    - secretName: eu-data-kb-user
+  http:
+    tls:
+      certificate:
+        secretName: eu-data-es-cert
+    service:
+      spec:
+        type: NodePort
+        ports:
+          - name: https
+            nodePort: 31090
+            port: 9200
+            protocol: TCP
+            targetPort: 9200
+        selector:
+          elasticsearch.k8s.elastic.co/cluster-name: "eu-data"
+          elasticsearch.k8s.elastic.co/node-master: "false"
+  secureSettings:
+  - secretName: azure-credentials
+    entries:
+    - key: blobstore-accountname
+      path: azure.client.default.account
+    - key: blobstore-key
+      path: azure.client.default.key
+  nodeSets:
+  - name: eu-data-master
+    count: 2
+    config:
+      http:
+        compression: true
+        compression_level: 8
+      transport:
+        compress: true
+      node.roles: ["master"]
+    volumeClaimTemplates:
+      - metadata:
+          name: elasticsearch-data
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 64Mi
+          storageClassName: hpe-nimble-chaska-prod-retain
+    podTemplate:
+      spec:
+        initContainers:
+        - name: sysctl
+          securityContext:
+            privileged: true
+            runAsUser: 0
+          command: ['sh', '-c', 'sysctl -w vm.max_map_count=262144']
+        - name: install-plugins
+        #  As of this version of elastic:
+        #   [repository-s3] is no longer a plugin but instead a module packaged with this distribution of Elasticsearch
+          command:
+          - sh
+          - -c
+          - |
+            bin/elasticsearch-plugin remove --purge prometheus-exporter
+            bin/elasticsearch-plugin install -b https://github.com/mindw/elasticsearch-prometheus-exporter/releases/download/8.13.4.0/prometheus-exporter-8.13.4.0.zip
+        containers:
+        - name: elasticsearch
+          resources:
+            requests:
+              memory: 1Gi
+              cpu: 0.75
+            limits:
+              memory: 1Gi
+              cpu: 2
+          volumeMounts:
+          - name: heap-jvm-options
+            mountPath: /usr/share/elasticsearch/config/jvm.options.d/heap.jvm.options
+            subPath: heap.jvm.options
+        volumes:
+        - name: heap-jvm-options
+          configMap:
+            name: master-jvm-options
+            items:
+            - key: master.heap.jvm.options
+              path: heap.jvm.options
+  - name: eu-data
+    count: 3
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 8Gi
+        storageClassName: hpe-nimble-chaska-prod-retain
+    config:
+      http:
+        compression: true
+        compression_level: 9
+      transport:
+        compress: true
+      node.roles: ["data", "ingest", "transform"]
+    podTemplate:
+      spec:
+        initContainers:
+        - name: sysctl
+          securityContext:
+            privileged: true
+            runAsUser: 0
+          command: ['sh', '-c', 'sysctl -w vm.max_map_count=262144']
+        - name: install-plugins
+        #  As of this version of elastic:
+        #   [repository-s3] is no longer a plugin but instead a module packaged with this distribution of Elasticsearch
+          command:
+          - sh
+          - -c
+          - |
+            bin/elasticsearch-plugin remove --purge prometheus-exporter
+            bin/elasticsearch-plugin install -b https://github.com/mindw/elasticsearch-prometheus-exporter/releases/download/8.13.4.0/prometheus-exporter-8.13.4.0.zip
+        containers:
+        - name: elasticsearch
+          env:
+          resources:
+            requests:
+              memory: 4Gi
+              cpu: 1
+            limits:
+              memory: 4Gi
+              cpu: 2
+          volumeMounts:
+          - name: heap-jvm-options
+            mountPath: /usr/share/elasticsearch/config/jvm.options.d/heap.jvm.options
+            subPath: heap.jvm.options
+        volumes:
+        - name: heap-jvm-options
+          configMap:
+            name: data-jvm-options
+            items:
+            - key: data.heap.jvm.options
+              path: heap.jvm.options
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: elasticsearch
+  labels:
+    app: elasticsearch
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/server-snippet: |
+      proxy_ssl_verify off;
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: eu-data-es.fcaus-f-storage.autodata.tech
+      http:
+        paths:
+          - pathType: ImplementationSpecific
+            backend:
+              service:
+                name: eu-data-es-http
+                port:
+                  number: 9200
+  tls:
+    - secretName: fcaus-wildcard
+      hosts:
+        - eu-data-es.fcaus-f-storage.autodata.tech

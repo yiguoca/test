@@ -1,0 +1,7 @@
+---
+apiVersion: fca.autodata.net/v1
+kind: ThycoticSSLSecretGenerator
+metadata:
+  name: inventory-es-http-certs-public-hillsboro
+  namespace: inventory
+secret: 7655

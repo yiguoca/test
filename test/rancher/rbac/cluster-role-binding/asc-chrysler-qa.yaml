@@ -1,0 +1,16 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    cattle.io/creator: kustom-infrastructure
+  name: crb-asc-chrysler-qa-cluster-owner
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-owner
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: >-
+      activedirectory_group://CN=ASC - Chrysler QA,OU=Security
+      Groups,OU=London,DC=autodatacorp,DC=org

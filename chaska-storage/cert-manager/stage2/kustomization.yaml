@@ -1,0 +1,2 @@
+resources:
+  - selfsigned-clusterissuer.yaml

@@ -1,0 +1,31 @@
+- op: add
+  path: /spec/template/spec/initContainers/0/env
+  value:
+  - name: KB_HOST
+    value: "eu-data.fcaus-f-storage.autodata.tech"
+  - name: KB_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: eu-data-kb-user
+        key: username
+  - name: KB_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: eu-data-kb-user
+        key: password
+
+- op: add
+  path: /spec/template/spec/containers/0/env
+  value:
+  - name: KB_HOST
+    value: "eu-data.fcaus-f-storage.autodata.tech"
+  - name: KB_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: eu-data-kb-user
+        key: username
+  - name: KB_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: eu-data-kb-user
+        key: password

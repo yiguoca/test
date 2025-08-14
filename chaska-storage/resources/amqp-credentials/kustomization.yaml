@@ -1,0 +1,4 @@
+# Cluster global amqp creds
+generators:
+  - generators/secret.yaml
+  - generators/rabbitmq-readonly-credentials.yaml
