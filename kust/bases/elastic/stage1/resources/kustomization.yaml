@@ -1,0 +1,3 @@
+resources:
+  - issuer/elastic-cert-issuer.yaml
+  - secrets/logging-logwriter-role.yaml

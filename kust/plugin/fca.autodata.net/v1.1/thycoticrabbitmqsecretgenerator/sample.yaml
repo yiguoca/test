@@ -1,0 +1,5 @@
+apiVersion: fca.autodata.net/v1.1
+kind: ThycoticRabbitMQSecretGenerator
+metadata:
+  name: testing-rabbitmq-credentials
+secret: 7327

@@ -1,0 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- resources/data-streams-setup-job.yaml
+
+configMapGenerator:
+- files:
+  - configs/add-timestamp-injest-pipeline.json
+  name: es-injest-pipeline-configs
+  options:
+    labels:
+      app.kubernetes.io/name: es-injest-pipeline-configs
+- files:
+  - configs/eu-data-ilm.json
+  - configs/eu-data-component-template-settings.json
+  - configs/eu-data-component-template-default-mapping.json
+  - configs/pre-published-data-stream-index-template.json
+  - configs/published-data-stream-index-template.json
+  name: es-data-stream-configs
+  options:
+    labels:
+      app.kubernetes.io/name: es-data-stream-configs
+
+generatorOptions:
+  disableNameSuffixHash: true
+  labels:
+    app.kubernetes.io/part-of: elastic

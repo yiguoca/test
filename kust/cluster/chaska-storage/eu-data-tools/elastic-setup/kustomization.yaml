@@ -1,0 +1,34 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: eu-data-tools
+resources:
+- ../../../../bases/elastic-eu-data-tools/es-data-streams
+- ../../../../bases/elastic-eu-data-tools/es-redundancy
+- ../../../../bases/elastic-eu-data-tools/kb-data-views
+
+patches:
+- path: patches/data-streams-setup-job.yaml
+  target:
+    group: batch
+    kind: Job
+    name: es-data-streams-setup-job
+    version: v1
+- path: patches/data-views-setup-job.yaml
+  target:
+    group: batch
+    kind: Job
+    name: kb-data-views-setup-job
+    version: v1
+- path: patches/redundancy-setup-job.yaml
+  target:
+    group: batch
+    kind: Job
+    name: es-redundancy-setup-job
+    version: v1
+
+labels:
+- includeSelectors: true
+  pairs:
+    app.kubernetes.io/part-of: elastic
+    photon/tier: infrastructure
+    stage: elastic-setup

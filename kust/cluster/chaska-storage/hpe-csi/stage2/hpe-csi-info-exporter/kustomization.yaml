@@ -1,0 +1,5 @@
+resources:
+- ../../../../../bases/hpe-csi/stage2/hpe-csi-info-exporter
+
+patches:
+  - path: patches/hpe-csi-info-exporter-service.yaml

@@ -1,0 +1,14 @@
+resources:
+  - ../../../../bases/kafka-strimzi/system/
+
+patches:
+  - target:
+      kind: Deployment
+      name: strimzi-cluster-operator
+      namespace: kafka-system
+    patch: |-
+      - op: replace
+        path: "/spec/template/spec/containers/0/resources/limits"
+        value: 
+          cpu: "1"
+          memory: 1Gi

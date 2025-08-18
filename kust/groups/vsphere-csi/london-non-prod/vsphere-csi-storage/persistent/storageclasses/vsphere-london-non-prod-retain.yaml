@@ -1,0 +1,14 @@
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: vsphere-london-non-prod-retain
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "false"
+provisioner: csi.vsphere.vmware.com
+parameters:
+  csi.storage.k8s.io/fstype: ext4
+  storagepolicyname: Stellantis_Pri_NonProd_Kube_Storage
+  # datastoreurl:
+reclaimPolicy: Retain
+allowVolumeExpansion: true

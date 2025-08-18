@@ -1,0 +1,4 @@
+resources:
+- cluster-role-binding/asc-chrysler-dev.yaml
+- cluster-role-binding/asc-chrysler-devqa.yaml
+- cluster-role-binding/asc-chrysler-qa.yaml

@@ -1,0 +1,22 @@
+namespace: eu-data-tools
+resources:
+  - ../../../../bases/rabbitmq/
+  - resources/ingress.yaml
+  #- resources/rabbitmq-nodeport.yaml
+  #- resources/rabbitmq.yaml
+  # This implementation is stateful, but not backed by a PV as ctkube doesn't have HPE yet.
+
+generators:
+  - generators/secret.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true
+  labels:
+    app.kubernetes.io/part-of: amqp
+
+labels:
+- includeSelectors: true
+  pairs:
+    app.kubernetes.io/part-of: amqp
+    photon/tier: infrastructure
+    stage: amqp

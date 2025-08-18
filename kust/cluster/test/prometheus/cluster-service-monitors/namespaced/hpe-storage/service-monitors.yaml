@@ -1,0 +1,130 @@
+---
+kind: ServiceMonitor
+apiVersion: monitoring.coreos.com/v1
+metadata:
+  name: hpe-csi-info-metrics
+  namespace: monitoring
+  labels:
+    # A selector for this label is used by a Prometheus Operator
+    # installed via OLM
+    k8s-app: prometheus
+    # A "release" label selector is used by the Helm Kube Prometheus Stack,
+    # with the value as the release specified on chart installation
+    release: prometheus
+spec:
+  # Match the namespace of the target CSI Info Metrics service,
+  # or omit the namespaceSelector
+  namespaceSelector:
+    matchNames:
+      - hpe-storage
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: hpe-csi-info-metrics
+      photon/tier: infrastructure
+  endpoints:
+    - port: http-metrics
+      scheme: http
+      interval: 1m
+  # Corresponding labels on the CSI Info Metrics service are added to
+  # the scraped metrics
+  targetLabels:
+    - cluster
+
+# A Service Monitor can enable a Prometheus Operator within the cluster
+# to discover the HPE Storage Array Exporter for Prometheus as a scrape
+# target.
+#
+# Modify this sample file to:
+# - Match the namespace of the hpe-array-exporter-service
+# - Match the selector used by the Prometheus Operator installation
+# - Customize the scrape configuration, including desired target labels
+
+---
+kind: ServiceMonitor
+apiVersion: monitoring.coreos.com/v1
+metadata:
+  name: hpe-array-exporter
+  namespace: monitoring
+  labels:
+    # A selector for this label is used by a Prometheus Operator
+    # installed via OLM
+    k8s-app: prometheus
+    # A "release" label selector is used by the Helm Kube Prometheus Stack,
+    # with the value as the release specified on chart installation
+    release: prometheus
+spec:
+  # Match the namespace of the target Array Exporter service,
+  # or omit the namespaceSelector
+  namespaceSelector:
+    matchNames:
+      - hpe-storage
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: hpe-array-exporter
+      array: nimble-london-non-prod
+  endpoints:
+    - port: http-metrics
+      scheme: http
+      interval: 1m
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          action: labelmap
+          regex: "cpg|pool"
+          replacement: "storagepool"
+        - sourceLabels: [__name__]
+          regex: "^hpe(primera|nimble|3par|alletra6000|alletra9000)_(.*)"
+          targetLabel: "__name__"
+          replacement: "hpe_$2"
+        - sourceLabels: [__name__]
+          regex: "^hpe_(pool|cpg)_(.*)"
+          targetLabel: "__name__"
+          replacement: "hpe_storagepool_$2"
+  # Corresponding labels on the Array Exporter service are added to
+  # the scraped metrics
+  targetLabels:
+    - array
+---
+kind: ServiceMonitor
+apiVersion: monitoring.coreos.com/v1
+metadata:
+  name: hpe-array-exporter-prod
+  namespace: monitoring
+  labels:
+    # A selector for this label is used by a Prometheus Operator
+    # installed via OLM
+    k8s-app: prometheus
+    # A "release" label selector is used by the Helm Kube Prometheus Stack,
+    # with the value as the release specified on chart installation
+    release: prometheus
+spec:
+  # Match the namespace of the target Array Exporter service,
+  # or omit the namespaceSelector
+  namespaceSelector:
+    matchNames:
+      - hpe-storage
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: hpe-array-exporter
+      array: nimble-london-prod
+  endpoints:
+    - port: http-metrics
+      scheme: http
+      interval: 1m
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          action: labelmap
+          regex: "cpg|pool"
+          replacement: "storagepool"
+        - sourceLabels: [__name__]
+          regex: "^hpe(primera|nimble|3par|alletra6000|alletra9000)_(.*)"
+          targetLabel: "__name__"
+          replacement: "hpe_$2"
+        - sourceLabels: [__name__]
+          regex: "^hpe_(pool|cpg)_(.*)"
+          targetLabel: "__name__"
+          replacement: "hpe_storagepool_$2"
+  # Corresponding labels on the Array Exporter service are added to
+  # the scraped metrics
+  targetLabels:
+    - array
+  

@@ -1,0 +1,7 @@
+{
+  "type": "azure",
+  "settings": {
+    "container": "eu-data"
+  },
+  "verify": "true"
+}

@@ -1,0 +1,117 @@
+hillsboro-storage-logging-es-backfill:
+  environment:
+    name: elastic/logging/backfill/hillsboro-storage
+    url: https://logging.fcaus-p-storage.autodata.tech/
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - ./build-with-plugins.sh cluster/hillsboro-storage/elastic/logging-backfill/ | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+undeploy:hillsboro-storage-logging-es-backfill:
+  environment:
+    name: elastic/logging/backfill/hillsboro-storage
+    url: https://logging.fcaus-p-storage.autodata.tech/
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - ./build-with-plugins.sh cluster/hillsboro-storage/elastic/logging-backfill/ | kubectl delete -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+#-------------------------------------------------------------------------------
+
+chaska-storage-logging-es-backfill:
+  environment:
+    name: elastic/logging/backfill/chaska-storage
+    url: https://logging.fcaus-f-storage.autodata.tech/
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - ./build-with-plugins.sh cluster/chaska-storage/elastic/logging-backfill/ | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+undeploy:chaska-storage-logging-es-backfill:
+  environment:
+    name: elastic/logging/backfill/chaska-storage
+    url: https://logging.fcaus-f-storage.autodata.tech/
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - ./build-with-plugins.sh cluster/chaska-storage/elastic/logging-backfill/ | kubectl delete -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+#-------------------------------------------------------------------------------
+
+test-infrastructure-logging-es-backfill:
+  environment:
+    name: elastic/logging/backfill/test-infrastructure
+    url: https://logging.fcaus-te.autodata.tech/
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:test-infrastructure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_TEST_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - ./build-with-plugins.sh cluster/test/elastic/logging-backfill/ | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+undeploy:test-infrastructure-logging-es-backfill:
+  environment:
+    name: elastic/logging/backfill/test-infrastructure
+    url: https://logging.fcaus-te.autodata.tech/
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:test-infrastructure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_TEST_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - ./build-with-plugins.sh cluster/test/elastic/logging-backfill/ | kubectl delete -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"

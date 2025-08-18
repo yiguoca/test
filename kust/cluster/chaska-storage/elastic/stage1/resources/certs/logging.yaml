@@ -1,0 +1,31 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: logging-es-cert
+  namespace: logging
+spec:
+  isCA: true
+  dnsNames:
+    - logging.fcaus-f-storage.autodata.tech
+    - logging-es.fcaus-f-storage.autodata.tech
+    - logging-es-http
+    - logging-es-http.logging.svc
+    - logging.fcaus-f-storage
+    - logging.fcaus-f-storage.svc
+    - logging.fcaus-f-storage.svc.local
+    - fchu-prif-xkmp1.autodatacorp.org
+    - fchu-prif-xkmp2.autodatacorp.org
+    - fchu-prif-xkmp3.autodatacorp.org
+    - fchu-prif-xknp1.autodatacorp.org
+    - fchu-prif-xknp2.autodatacorp.org
+    - fchu-prif-xknp3.autodatacorp.org
+    - fchu-prif-xknp4.autodatacorp.org
+    - fchu-prif-xknp5.autodatacorp.org
+  secretName: logging-es-cert
+  issuerRef:
+    name: elastic-root-ca-issuer
+    kind: ClusterIssuer
+  subject:
+    organizations:
+      - logging

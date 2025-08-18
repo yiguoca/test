@@ -1,0 +1,597 @@
+
+
+#---- fcaus-p-storage cluster ----#
+deploy:hillsboro-storage-nfs-system:
+  environment:
+    name: storage/csi-driver-nfs/hillsboro-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/hillsboro-storage/csi-driver-nfs/stage1-driver | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+deploy:hillsboro-storage-nfs-pvc-test:
+  environment:
+    name: storage/csi-driver-nfs-pvc-test/hillsboro-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/hillsboro-storage/csi-driver-nfs-pvc-test/stage1-namespace | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/hillsboro-storage/csi-driver-nfs-pvc-test/stage2-nfs-server | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/hillsboro-storage/csi-driver-nfs-pvc-test/stage3-rwx-pvc | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/hillsboro-storage/csi-driver-nfs-pvc-test/stage4-testapp | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+undeploy:hillsboro-storage-nfs-system:
+  environment:
+    name: storage/csi-driver-nfs/hillsboro-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/hillsboro-storage/csi-driver-nfs/stage1-driver/ | kubectl delete -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+
+undeploy:hillsboro-storage-nfs-pvc-test:
+  environment:
+    name: storage/csi-driver-nfs-pvc-test/hillsboro-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/hillsboro-storage/csi-driver-nfs-pvc-test/stage4-testapp | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/hillsboro-storage/csi-driver-nfs-pvc-test/stage3-rwx-pvc | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/hillsboro-storage/csi-driver-nfs-pvc-test/stage2-nfs-server | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/hillsboro-storage/csi-driver-nfs-pvc-test/stage1-namespace | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - echo "if any of the RWX NFS pv's in this deployment appear in STATE='Terminating...' below, refer to the base deployment for steps to manually delete the pv's from the environment."
+    - echo "Following pv's stuck in terminating. Ignore if output is empty. PV's below can be ignored if they're bound to pvc's in other namespaces.\)"
+    - kubectl get pv | grep nfs
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+#---- fcaus-f-storage cluster ----#
+deploy:chaska-storage-nfs-system:
+  environment:
+    name: storage/csi-driver-nfs/chaska-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/chaska-storage/csi-driver-nfs/stage1-driver | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+deploy:chaska-storage-nfs-pvc-test:
+  environment:
+    name: storage/csi-driver-nfs-pvc-test/chaska-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/chaska-storage/csi-driver-nfs-pvc-test/stage1-namespace | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/chaska-storage/csi-driver-nfs-pvc-test/stage2-nfs-server | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/chaska-storage/csi-driver-nfs-pvc-test/stage3-rwx-pvc | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/chaska-storage/csi-driver-nfs-pvc-test/stage4-testapp | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+undeploy:chaska-storage-nfs-system:
+  environment:
+    name: storage/csi-driver-nfs/chaska-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/chaska-storage/csi-driver-nfs/stage1-driver/ | kubectl delete -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+
+undeploy:chaska-storage-nfs-pvc-test:
+  environment:
+    name: storage/csi-driver-nfs-pvc-test/chaska-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/chaska-storage/csi-driver-nfs-pvc-test/stage4-testapp | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/chaska-storage/csi-driver-nfs-pvc-test/stage3-rwx-pvc | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/chaska-storage/csi-driver-nfs-pvc-test/stage2-nfs-server | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/chaska-storage/csi-driver-nfs-pvc-test/stage1-namespace | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - echo "if any of the RWX NFS pv's in this deployment appear in STATE='Terminating...' below, refer to the base deployment for steps to manually delete the pv's from the environment."
+    - echo "Following pv's stuck in terminating. Ignore if output is empty. PV's below can be ignored if they're bound to pvc's in other namespaces.\)"
+    - kubectl get pv | grep nfs
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+#---- fcaus-p cluster ----#
+deploy:hillsboro-nfs-system:
+  environment:
+    name: storage/csi-driver-nfs/hillsboro
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:hillsboro
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/hillsboro/csi-driver-nfs/stage1-driver | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+deploy:hillsboro-nfs-pvc-test:
+  environment:
+    name: storage/csi-driver-nfs-pvc-test/hillsboro
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:hillsboro
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/hillsboro/csi-driver-nfs-pvc-test/stage1-namespace | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/hillsboro/csi-driver-nfs-pvc-test/stage2-nfs-server | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/hillsboro/csi-driver-nfs-pvc-test/stage3-rwx-pvc | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/hillsboro/csi-driver-nfs-pvc-test/stage4-testapp | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+undeploy:hillsboro-nfs-system:
+  environment:
+    name: storage/csi-driver-nfs/hillsboro
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:hillsboro
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/hillsboro/csi-driver-nfs/stage1-driver/ | kubectl delete -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+
+undeploy:hillsboro-nfs-pvc-test:
+  environment:
+    name: storage/csi-driver-nfs-pvc-test/hillsboro
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:hillsboro
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/hillsboro/csi-driver-nfs-pvc-test/stage4-testapp | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/hillsboro/csi-driver-nfs-pvc-test/stage3-rwx-pvc | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/hillsboro/csi-driver-nfs-pvc-test/stage2-nfs-server | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/hillsboro/csi-driver-nfs-pvc-test/stage1-namespace | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - echo "if any of the RWX NFS pv's in this deployment appear in STATE='Terminating...' below, refer to the base deployment for steps to manually delete the pv's from the environment."
+    - echo "Following pv's stuck in terminating. Ignore if output is empty. PV's below can be ignored if they're bound to pvc's in other namespaces.\)"
+    - kubectl get pv | grep nfs
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+      
+#---- fcaus-f cluster ----#
+deploy:chaska-nfs-system:
+  environment:
+    name: storage/csi-driver-nfs/chaska
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:chaska
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_CHASKA_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/chaska/csi-driver-nfs/stage1-driver | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+deploy:chaska-nfs-pvc-test:
+  environment:
+    name: storage/csi-driver-nfs-pvc-test/chaska
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:chaska
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_CHASKA_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/chaska/csi-driver-nfs-pvc-test/stage1-namespace | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/chaska/csi-driver-nfs-pvc-test/stage2-nfs-server | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/chaska/csi-driver-nfs-pvc-test/stage3-rwx-pvc | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/chaska/csi-driver-nfs-pvc-test/stage4-testapp | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+undeploy:chaska-nfs-system:
+  environment:
+    name: storage/csi-driver-nfs/chaska
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:chaska
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_CHASKA_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/chaska/csi-driver-nfs/stage1-driver/ | kubectl delete -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+
+undeploy:chaska-nfs-pvc-test:
+  environment:
+    name: storage/csi-driver-nfs-pvc-test/chaska
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:chaska
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_CHASKA_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/chaska/csi-driver-nfs-pvc-test/stage4-testapp | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/chaska/csi-driver-nfs-pvc-test/stage3-rwx-pvc | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/chaska/csi-driver-nfs-pvc-test/stage2-nfs-server | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/chaska/csi-driver-nfs-pvc-test/stage1-namespace | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - echo "if any of the RWX NFS pv's in this deployment appear in STATE='Terminating...' below, refer to the base deployment for steps to manually delete the pv's from the environment."
+    - echo "Following pv's stuck in terminating. Ignore if output is empty. PV's below can be ignored if they're bound to pvc's in other namespaces.\)"
+    - kubectl get pv | grep nfs
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+
+#---- fcaus-ct-storage cluster ----#
+deploy:ct-storage-nfs-system:
+  environment:
+    name: storage/csi-driver-nfs/ct-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:continuous-testing-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CT_STORAGE_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/ct-storage/csi-driver-nfs/stage1-driver | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+deploy:ct-storage-nfs-pvc-test:
+  environment:
+    name: storage/csi-driver-nfs-pvc-test/ct-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:continuous-testing-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CT_STORAGE_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/ct-storage/csi-driver-nfs-pvc-test/stage1-namespace | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/ct-storage/csi-driver-nfs-pvc-test/stage2-nfs-server | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/ct-storage/csi-driver-nfs-pvc-test/stage3-rwx-pvc | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/ct-storage/csi-driver-nfs-pvc-test/stage4-testapp | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+undeploy:ct-storage-nfs-system:
+  environment:
+    name: storage/csi-driver-nfs/ct-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:continuous-testing-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CT_STORAGE_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/ct-storage/csi-driver-nfs/stage1-driver/ | kubectl delete -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+
+undeploy:ct-storage-nfs-pvc-test:
+  environment:
+    name: storage/csi-driver-nfs-pvc-test/ct-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:continuous-testing-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CT_STORAGE_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/ct-storage/csi-driver-nfs-pvc-test/stage4-testapp | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/ct-storage/csi-driver-nfs-pvc-test/stage3-rwx-pvc | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/ct-storage/csi-driver-nfs-pvc-test/stage2-nfs-server | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/ct-storage/csi-driver-nfs-pvc-test/stage1-namespace | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - echo "if any of the RWX NFS pv's in this deployment appear in STATE='Terminating...' below, refer to the base deployment for steps to manually delete the pv's from the environment."
+    - echo "Following pv's stuck in terminating. Ignore if output is empty. PV's below can be ignored if they're bound to pvc's in other namespaces.\)"
+    - kubectl get pv | grep nfs
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+#---- fcaus-ct cluster ----#
+deploy:ctkube-nfs-system:
+  environment:
+    name: storage/csi-driver-nfs/ctkube
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:continuous-testing
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_CT_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/ctkube/csi-driver-nfs/stage1-driver | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+deploy:ctkube-nfs-pvc-test:
+  environment:
+    name: storage/csi-driver-nfs-pvc-test/ctkube
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:continuous-testing
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_CT_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/ctkube/csi-driver-nfs-pvc-test/stage1-namespace | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/ctkube/csi-driver-nfs-pvc-test/stage2-nfs-server | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/ctkube/csi-driver-nfs-pvc-test/stage3-rwx-pvc | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/ctkube/csi-driver-nfs-pvc-test/stage4-testapp | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+undeploy:ctkube-nfs-system:
+  environment:
+    name: storage/csi-driver-nfs/ctkube
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:continuous-testing
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_CT_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/ctkube/csi-driver-nfs/stage1-driver/ | kubectl delete -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+
+undeploy:ctkube-nfs-pvc-test:
+  environment:
+    name: storage/csi-driver-nfs-pvc-test/ctkube
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:continuous-testing
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_CT_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/ctkube/csi-driver-nfs-pvc-test/stage4-testapp | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/ctkube/csi-driver-nfs-pvc-test/stage3-rwx-pvc | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/ctkube/csi-driver-nfs-pvc-test/stage2-nfs-server | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/ctkube/csi-driver-nfs-pvc-test/stage1-namespace | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - echo "if any of the RWX NFS pv's in this deployment appear in STATE='Terminating...' below, refer to the base deployment for steps to manually delete the pv's from the environment."
+    - echo "Following pv's stuck in terminating. Ignore if output is empty. PV's below can be ignored if they're bound to pvc's in other namespaces.\)"
+    - kubectl get pv | grep nfs
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+#---- fcaus-te cluster ----#
+deploy:test-infrastructure-nfs-system:
+  environment:
+    name: test/storage/csi-driver-nfs/test-infrastructure
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:test-infrastructure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_TEST_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/test/csi-driver-nfs/stage1-driver | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+deploy:test-infrastructure-nfs-pvc-test:
+  environment:
+    name: test/storage/csi-driver-nfs-pvc-test/test-infrastructure
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:test-infrastructure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_TEST_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/test/csi-driver-nfs-pvc-test/stage1-namespace | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/test/csi-driver-nfs-pvc-test/stage2-nfs-server | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/test/csi-driver-nfs-pvc-test/stage3-rwx-pvc | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/test/csi-driver-nfs-pvc-test/stage4-testapp | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+undeploy:test-infrastructure-nfs-system:
+  environment:
+    name: test/storage/csi-driver-nfs/test-infrastructure
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:test-infrastructure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_TEST_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/test/csi-driver-nfs/stage1-driver/ | kubectl delete -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+undeploy:test-infrastructure-nfs-pvc-test:
+  environment:
+    name: test/storage/csi-driver-nfs-pvc-test/test-infrastructure
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:test-infrastructure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_TEST_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/test/csi-driver-nfs-pvc-test/stage4-testapp | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/test/csi-driver-nfs-pvc-test/stage3-rwx-pvc | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/test/csi-driver-nfs-pvc-test/stage2-nfs-server | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/test/csi-driver-nfs-pvc-test/stage1-namespace | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - echo "if any of the RWX NFS pv's in this deployment appear in STATE='Terminating...' below, refer to the base deployment for steps to manually delete the pv's from the environment."
+    - echo "Following pv's stuck in terminating. Ignore if output is empty. PV's below can be ignored if they're bound to pvc's in other namespaces.\)"
+    - kubectl get pv | grep nfs
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+

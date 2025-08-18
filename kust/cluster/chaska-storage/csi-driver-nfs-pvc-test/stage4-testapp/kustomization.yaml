@@ -1,0 +1,5 @@
+namespace: csi-driver-nfs-pvc-test
+
+resources:
+  - rwx-statefulset.yaml
+

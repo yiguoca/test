@@ -1,0 +1,170 @@
+
+---
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: inventory
+  namespace: inventory-search
+spec:
+  version: 7.13.3
+  # volumeClaimDeletePolicy: DeleteOnScaledownOnly
+  http:
+    service:
+      spec:
+        selector:
+          elasticsearch.k8s.elastic.co/cluster-name: "inventory"
+          elasticsearch.k8s.elastic.co/node-master: "false"
+  nodeSets:
+  - name: inventory-master
+    count: 1
+    config:
+      http:
+        compression: true
+        compression_level: 8
+      transport:
+        compress: true
+      node.roles: ["master"]
+    volumeClaimTemplates:
+      - metadata:
+          name: elasticsearch-data
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 64Mi
+          storageClassName: longhorn
+    podTemplate:
+      spec:
+        initContainers:
+        - name: sysctl
+          securityContext:
+            privileged: true
+            runAsUser: 0
+          command: ['sh', '-c', 'sysctl -w vm.max_map_count=262144']
+        - name: install-plugins
+          command:
+          - sh
+          - -c
+          - |
+            bin/elasticsearch-plugin remove --purge repository-s3 prometheus-exporter
+            bin/elasticsearch-plugin install -b repository-s3 https://github.com/vvanholl/elasticsearch-prometheus-exporter/releases/download/7.13.3.0/prometheus-exporter-7.13.3.0.zip
+        volumes:
+          - name: elasticsearch-data
+            emptyDir: {}
+        containers:
+        - name: elasticsearch
+          env:
+          - name: ES_JAVA_OPTS
+            value: -Xms500m -Xmx500m
+          resources:
+            requests:
+              memory: 1Gi
+              cpu: 0.75
+            limits:
+              memory: 1Gi
+              cpu: 2
+  - name: inventory-data
+    count: 1
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 2Gi
+        storageClassName: longhorn
+    config:
+      http:
+        compression: true
+        compression_level: 9
+      transport:
+        compress: true
+      node.roles: ["data", "ingest", "transform"]
+    podTemplate:
+      spec:
+        initContainers:
+        - name: sysctl
+          securityContext:
+            privileged: true
+            runAsUser: 0
+          command: ['sh', '-c', 'sysctl -w vm.max_map_count=262144']
+        - name: install-plugins
+          command:
+          - sh
+          - -c
+          - |
+            bin/elasticsearch-plugin remove --purge repository-s3 prometheus-exporter
+            bin/elasticsearch-plugin install -b repository-s3 https://github.com/vvanholl/elasticsearch-prometheus-exporter/releases/download/7.13.3.0/prometheus-exporter-7.13.3.0.zip
+        # - name: detach
+        #   command:
+        #   - sh
+        #   - -c
+        #   - |
+        #     printf "y\n" | bin/elasticsearch-node detach-cluster      
+        # volumes:
+        #   - name: elasticsearch-data
+        #     emptyDir: {}
+        containers:
+        - name: elasticsearch
+          env:
+          - name: ES_JAVA_OPTS
+            value: -Xms2000m -Xmx2000m
+          resources:
+            requests:
+              memory: 4Gi
+              cpu: 1
+            limits:
+              memory: 4Gi
+              cpu: 2
+  # - name: inventory-coordinator
+  #   count: 2
+  #   config:
+  #     http:
+  #       compression: true
+  #       compression_level: 9
+  #     transport:
+  #       compress: true
+  #     node.roles: []
+  #     # node.store.allow_mmap: false
+  #   podTemplate:
+  #     spec:
+  #       initContainers:
+  #       - name: sysctl
+  #         securityContext:
+  #           privileged: true
+  #         command: ['sh', '-c', 'sysctl -w vm.max_map_count=262144']
+  #       volumes:
+  #         - name: elasticsearch-coordinator
+  #           emptyDir: {}
+  #       containers:
+  #       - name: elasticsearch
+  #         env:
+  #         - name: cluster.initial_master_nodes
+  #           value: "inventory-es-inventory-master-0"
+  #         - name: ES_JAVA_OPTS
+  #           value: -Xms4000m -Xmx4000m
+  #         resources:
+  #           requests:
+  #             memory: 8Gi
+  #             cpu: 1
+  #           limits:
+  #             memory: 8Gi
+  #             cpu: 3
+---
+apiVersion: kibana.k8s.elastic.co/v1
+kind: Kibana
+metadata:
+  name: inventory-kib
+  namespace: inventory-search
+spec:
+  version: 7.13.3
+  count: 1
+  config:
+    #override default so kib loads more info on options
+    #kibana.autocompleteTerminateAfter: "2000000"
+    data.autocomplete.valueSuggestions.terminateAfter: "2000000"
+  elasticsearchRef:
+    name: inventory

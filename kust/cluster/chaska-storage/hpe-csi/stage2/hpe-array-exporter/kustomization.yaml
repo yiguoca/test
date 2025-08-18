@@ -1,0 +1,7 @@
+resources:
+  - nimble-chaska-non-prod-exporter/
+  - nimble-chaska-prod-exporter/
+  - nimble-hillsboro-non-prod-exporter/
+  - nimble-hillsboro-prod-exporter/
+  - nimble-london-non-prod-exporter/
+  - nimble-london-prod-exporter/

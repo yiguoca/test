@@ -1,0 +1,32 @@
+resources:
+  - resources/namespace.yaml
+
+  # Code: https://github.com/kubernetes-sigs/vsphere-csi-driver
+  # Compliance chart:
+  #   https://techdocs.broadcom.com/us/en/vmware-cis/vsphere/container-storage-plugin/3-0/getting-started-with-vmware-vsphere-container-storage-plug-in-3-0/vsphere-container-storage-plug-in-concepts/compatibility-matrix-for-vsphere-container-storage-plug-in.html#GUID-D4AAD99E-9128-40CE-B89C-AD451DA8379D-en
+  # Releases:
+  #   https://github.com/kubernetes-sigs/vsphere-csi-driver/releases
+  - https://raw.githubusercontent.com/kubernetes-sigs/vsphere-csi-driver/v3.4.0/manifests/vanilla/vsphere-csi-driver.yaml
+
+patches:
+  # we need to fix our selectors and tolerations
+  - path: patches/vsphere-csi-controller-patch.yaml
+
+  # because we also want to manage based on labels to quickly find nodes these 
+  # can run on, we are going we need to remove the nodeSelector from the DaemonSet
+  # and patch in the node affinity
+  - target:
+      kind: DaemonSet
+      namespace: vmware-system-csi
+    patch: |-
+      - op: remove
+        path: /spec/template/spec/nodeSelector
+  
+  - path: patches/vsphere-csi-node-patch.yaml
+  - path: patches/vsphere-csi-node-windows-patch.yaml
+
+labels:
+- includeTemplates: true
+  includeSelectors: false
+  pairs:
+    app.kubernetes.io/part-of: vsphere-csi

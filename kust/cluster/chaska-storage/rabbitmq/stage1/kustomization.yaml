@@ -1,0 +1,9 @@
+resources:
+  - ../../resources/amqp-credentials/
+  - ../../resources/ssl-secrets/
+  - cluster/
+  - monitoring/
+  - resources/
+
+# ensure generated/generic resources get a namespace added
+namespace: rabbitmq

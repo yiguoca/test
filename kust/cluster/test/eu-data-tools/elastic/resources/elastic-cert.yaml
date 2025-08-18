@@ -1,0 +1,23 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: eu-data-es-cert
+spec:
+  isCA: true
+  dnsNames:
+    - eu-data-es-http
+    - eu-data-es-http.eu-data-tools.svc
+    - lchu-teif-xkm01.autodatacorp.org
+    - lchu-teif-xkm02.autodatacorp.org
+    - lchu-teif-xkm03.autodatacorp.org
+    - lchu-teif-xkn01.autodatacorp.org
+    - lchu-teif-xkn02.autodatacorp.org
+    - lchu-teif-xkn03.autodatacorp.org
+  secretName: eu-data-es-cert
+  issuerRef:
+    name: elastic-root-ca-issuer
+    kind: ClusterIssuer
+  subject:
+    organizations:
+      - eu-data-tools

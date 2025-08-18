@@ -1,0 +1,16 @@
+resources:
+  - ../../../../bases/kafka-strimzi/stage2/
+  - resources/topic-access-logs.yaml
+  - resources/topic-access-errors.yaml
+  - resources/topic-application-logs.yaml
+  - resources/topic-application-errors.yaml
+
+namespace: logging
+
+patchesJson6902:
+- target:
+    group: rbac.authorization.k8s.io
+    version: v1
+    kind: ClusterRole
+    name: prometheus
+  path: patches/set-cluster-role.yaml

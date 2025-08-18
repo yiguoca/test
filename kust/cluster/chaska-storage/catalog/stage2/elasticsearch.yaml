@@ -1,0 +1,149 @@
+---
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: catalog
+spec:
+  version: 8.4.2
+  auth:
+    fileRealm:
+    - secretName: catalog-elastic-users
+  http:
+    tls:
+      certificate:
+        secretName: catalog-es-cert
+    service:
+      spec:
+        type: NodePort
+        ports:
+          - name: https
+            nodePort: 30095
+            port: 9200
+            protocol: TCP
+            targetPort: 9200
+        selector:
+          elasticsearch.k8s.elastic.co/cluster-name: "catalog"
+          elasticsearch.k8s.elastic.co/node-master: "false"
+  secureSettings:
+  - secretName: azure-credentials
+    entries:
+    - key: blobstore-accountname
+      path: azure.client.default.account
+    - key: blobstore-key
+      path: azure.client.default.key
+  nodeSets:
+  - name: catalog-master
+    count: 3
+    config:
+      xpack:
+        security:
+          enabled: true
+          authc.realms.file.file1.order: 0
+      http:
+        compression: true
+        compression_level: 8
+      transport:
+        compress: true
+      node.roles: ["master"]
+      reindex.remote.whitelist: "catalog.fcaus-p-storage.autodata.tech:30095"
+      reindex.ssl.certificate_authorities: "/usr/share/elasticsearch/config/certificates-source/tls.crt"
+    volumeClaimTemplates:
+      - metadata:
+          name: elasticsearch-data
+        spec:
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: 64Mi
+          storageClassName: hpe-nimble-chaska-prod-retain
+    podTemplate:
+      spec:
+        initContainers:
+        - name: sysctl
+          securityContext:
+            privileged: true
+            runAsUser: 0
+          command: ['sh', '-c', 'sysctl -w vm.max_map_count=262144']
+        - name: install-plugins
+          command:
+          - sh
+          - -c
+          - |
+            bin/elasticsearch-plugin remove --purge repository-s3 prometheus-exporter
+            bin/elasticsearch-plugin install -b repository-s3 https://github.com/mindw/elasticsearch-prometheus-exporter/releases/download/8.4.2.0/prometheus-exporter-8.4.2.0.zip
+        containers:
+        - name: elasticsearch
+          env:
+          - name: ES_JAVA_OPTS
+            # elastic will always put in the -XX:+ version of this, but apparently the last one on the command line wins
+            value: -Xms500m -Xmx500m -XX:-HeapDumpOnOutOfMemoryError
+          resources:
+            requests:
+              memory: 1Gi
+              cpu: 0.75
+            limits:
+              memory: 1Gi
+              cpu: 2
+          volumeMounts:
+            - name: elastic-cert-hillsboro
+              mountPath: /usr/share/elasticsearch/config/certificates-source
+        volumes:
+        - name: elastic-cert-hillsboro
+          secret:
+            secretName: catalog-es-http-certs-public-hillsboro
+  - name: catalog-data
+    count: 3
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 50Gi
+        storageClassName: hpe-nimble-chaska-prod-retain
+    config:
+      http:
+        compression: true
+        compression_level: 9
+      transport:
+        compress: true
+      node.roles: ["data", "ingest", "transform"]
+      reindex.remote.whitelist: "catalog.fcaus-p-storage.autodata.tech:30095"
+      reindex.ssl.certificate_authorities: "/usr/share/elasticsearch/config/certificates-source/tls.crt"
+    podTemplate:
+      spec:
+        initContainers:
+        - name: sysctl
+          securityContext:
+            privileged: true
+            runAsUser: 0
+          command: ['sh', '-c', 'sysctl -w vm.max_map_count=262144']
+        - name: install-plugins
+          command:
+          - sh
+          - -c
+          - |
+            bin/elasticsearch-plugin remove --purge repository-s3 prometheus-exporter
+            bin/elasticsearch-plugin install -b repository-s3 https://github.com/mindw/elasticsearch-prometheus-exporter/releases/download/8.4.2.0/prometheus-exporter-8.4.2.0.zip
+        containers:
+        - name: elasticsearch
+          env:
+          - name: ES_JAVA_OPTS
+            value: -Xms2000m -Xmx2000m -XX:-HeapDumpOnOutOfMemoryError
+          resources:
+            requests:
+              memory: 4Gi
+              cpu: 1
+            limits:
+              memory: 4Gi
+              cpu: 2
+          volumeMounts:
+            - name: elastic-cert-hillsboro
+              mountPath: /usr/share/elasticsearch/config/certificates-source
+        volumes:
+          - name: elastic-cert-hillsboro
+            secret:
+              secretName: catalog-es-http-certs-public-hillsboro

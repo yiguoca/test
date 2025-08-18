@@ -1,0 +1,59 @@
+# note - cannot transform namespace here as there are resources in the Prometheus base that are unique by name+namespace
+# e.g.  name=foo, namespace=abc
+#       name=foo, namespace=def
+# apply namespace transformer and they are no longer unique.
+
+resources:
+  - ../../../bases/prometheus/
+  - ../resources/ssl-secrets/
+  - cluster-dashboards/
+  - cluster-service-monitors/
+  - resources/ingress-alertmanager.yaml
+  - resources/ingress-grafana.yaml
+  - resources/ingress-prometheus.yaml
+  - resources/prometheusRules/
+  - ../../../bases/prometheus-pushgateway
+
+transformers:
+  - transformers/secrets.yaml
+
+patchesStrategicMerge:
+  - patches/grafana-volume-patch.yaml
+  - patches/alertmanager.yaml
+  - patches/prometheus.yaml
+  - patches/grafana-config.yaml
+  - patches/grafana-datasources.yaml
+
+patches:
+  - target:
+      name: prometheus-adapter
+      namespace: monitoring
+      kind: Deployment
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/args/4
+        value: --prometheus-url=http://prometheus-chaska-storage.monitoring.svc:9090/
+
+  # Since we do not apply the same namespace to everything, we need to patch it
+  # to the generated ssl secret.
+  - target:
+      name: fcaus-wildcard
+      kind: Secret
+    patch: |-
+      - op: add
+        path: /metadata/namespace
+        value: monitoring
+
+secretGenerator:
+  - name: basic-auth
+    namespace: monitoring
+    literals:
+      - auth=guest:password
+  - name: alertmanager-main
+    namespace: monitoring
+    behavior: replace
+    files:
+      - configs/alertmanager.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true

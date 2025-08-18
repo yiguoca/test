@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prom2teams
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prom2teams
+      env: nonprod
+  template:
+    metadata:
+      labels:
+        app: prom2teams
+        env: nonprod
+    spec:
+      containers:
+        - args:
+            - -url
+            - https://jdpower.webhook.office.com/webhookb2/d5cc1317-0c8a-4e29-8ac7-48075936c679@b5c527f5-9e88-4b32-bfbb-8d442596165a/IncomingWebhook/7b7df5f8d2e24eada71fa9a3f6ca63a9/e3b1921d-50e4-4c9a-bbd2-d6f84f7adc28
+            - -log
+            - "3"
+            - -metrics
+            - "9100"
+            - -env_prefix
+            - PROM2TEAMS_K8S
+          command:
+            - /prom2teams
+          image: git.autodatacorp.org:5555/fcaus/support/go-prom2teams:v0.0.1
+          name: prom2teams
+          ports:
+            - containerPort: 8080
+              name: web
+            - containerPort: 9100
+              name: metrics
+      imagePullSecrets:
+        - name: prom2teams
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prom2teams-prod
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prom2teams
+      env: prod
+  template:
+    metadata:
+      labels:
+        app: prom2teams
+        env: prod
+    spec:
+      containers:
+        - args:
+            - -url
+            - https://jdpower.webhook.office.com/webhookb2/d5cc1317-0c8a-4e29-8ac7-48075936c679@b5c527f5-9e88-4b32-bfbb-8d442596165a/IncomingWebhook/078ed8c5e61c439daf94215121f88789/507ff18d-2591-448d-8435-a5f2bbbe525c
+            - -log
+            - "3"
+            - -metrics
+            - "9100"
+            - -env_prefix
+            - PROM2TEAMS_K8S
+          command:
+            - /prom2teams
+          image: git.autodatacorp.org:5555/fcaus/support/go-prom2teams:v0.0.1
+          name: prom2teams-prod
+          ports:
+            - containerPort: 8080
+              name: web
+            - containerPort: 9100
+              name: metrics
+      imagePullSecrets:
+        - name: prom2teams

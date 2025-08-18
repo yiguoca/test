@@ -1,0 +1,38 @@
+- op: add
+  path: /spec/config/filebeat.autodiscover.providers/0/templates
+  value:
+    - condition.or:
+      - equals:
+          kubernetes.namespace_labels.photon/tier: app
+      - equals:
+          kubernetes.namespace_labels.photon/tier: node
+      - equals:
+          kubernetes.namespace_labels.photon/tier: infrastructure
+      config:
+      - paths: ["/var/log/containers/*${data.kubernetes.container.id}.log"]
+        type: container
+- op: add
+  path: /spec/config/processors/-
+  value:
+    add_fields: 
+      target: photon
+      fields:
+        node: ${NODE_NAME}
+        cluster: "teif"
+        datacenter: ${DATA_CENTER}
+- op: add
+  path: /spec/daemonSet/podTemplate/spec/containers/0/env
+  value: 
+    - name: NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+    - name: DATA_CENTER
+      value: London
+    - name: REGION
+      value: teif
+    - name: KAFKA_HOST
+      valueFrom:
+        secretKeyRef:
+          name: logging-kafka
+          key: host

@@ -1,0 +1,39 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: rabbitmq
+  labels:
+      app.kubernetes.io/name: rabbitmq
+      app.kubernetes.io/component: messaging
+spec:
+  ports:
+  - name: amqp
+    protocol: TCP
+    port: 5672
+    targetPort: amqp
+  - name: management
+    protocol: TCP
+    port: 15672
+    targetPort: management
+  type: ClusterIP
+---
+kind: Endpoints
+apiVersion: v1
+metadata:
+  name: rabbitmq
+  labels:
+      app.kubernetes.io/name: rabbitmq
+      app.kubernetes.io/component: messaging
+subsets:
+  - addresses:
+      - ip: 172.16.132.94
+      - ip: 172.16.132.95
+      - ip: 172.16.132.96
+      - ip: 172.16.132.89
+      - ip: 172.16.132.90
+    ports:
+      - name: amqp
+        port: 31572
+      - name: management
+        port: 32572
+---

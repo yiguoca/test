@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kb-data-views-setup-job
+  labels:
+    app.kubernetes.io/instance: kb-data-views-setup-job
+    app.kubernetes.io/name: kb-data-views-setup
+    app.kubernetes.io/component: kibana
+spec:
+  template:
+    spec:
+      initContainers:
+      - name: prerequisite
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          echo "validate kibana can be reached"
+          curl --location --request GET "https://$KB_HOST/api/status" --header 'kbn-xsrf: true' -u $KB_USERNAME:$KB_PASSWORD --header 'Accept: application/json'
+        # what happens if we get a 503? do we do a pause, how complicated to we want to make this
+        image: curlimages/curl:7.72.0
+
+      containers:
+      - name: setup
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          curl --location --request POST https://$KB_HOST/api/data_views/data_view --header 'kbn-xsrf: true' -u $KB_USERNAME:$KB_PASSWORD --header 'Content-Type: application/json' --data-raw '{"data_view":{"name":"pre-published","timeFieldName":"@timestamp","title":"pre-published-data-stream*"},"override":true}'
+          curl --location --request POST https://$KB_HOST/api/data_views/data_view --header 'kbn-xsrf: true' -u $KB_USERNAME:$KB_PASSWORD --header 'Content-Type: application/json' --data-raw '{"data_view":{"name":"pre-published-meta","timeFieldName":"@timestamp","title":"pre-published-meta-data-stream*"},"override":true}'
+          curl --location --request POST https://$KB_HOST/api/data_views/data_view --header 'kbn-xsrf: true' -u $KB_USERNAME:$KB_PASSWORD --header 'Content-Type: application/json' --data-raw '{"data_view":{"name":"pre-published-segment","timeFieldName":"@timestamp","title":"pre-published-segment-data-stream*"},"override":true}'
+          curl --location --request POST https://$KB_HOST/api/data_views/data_view --header 'kbn-xsrf: true' -u $KB_USERNAME:$KB_PASSWORD --header 'Content-Type: application/json' --data-raw '{"data_view":{"name":"pre-published-segment-meta","timeFieldName":"@timestamp","title":"pre-published-segment-meta-data-stream*"},"override":true}'
+          curl --location --request POST https://$KB_HOST/api/data_views/data_view --header 'kbn-xsrf: true' -u $KB_USERNAME:$KB_PASSWORD --header 'Content-Type: application/json' --data-raw '{"data_view":{"name":"published","timeFieldName":"@timestamp","title":"published-data-stream*"},"override":true}'
+          curl --location --request POST https://$KB_HOST/api/data_views/data_view --header 'kbn-xsrf: true' -u $KB_USERNAME:$KB_PASSWORD --header 'Content-Type: application/json' --data-raw '{"data_view":{"name":"published-meta","timeFieldName":"@timestamp","title":"published-meta-data-stream*"},"override":true}'
+        image: curlimages/curl:7.72.0
+
+      restartPolicy: Never
+  backoffLimit: 0

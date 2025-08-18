@@ -1,0 +1,620 @@
+---
+#
+# We define stages since importing them do not extend arrays but overwrite them
+# completely.
+#
+stages:
+  #
+  # The following stages may not all be used at this time, but future additions
+  # to the pipeline in this project will result in most uses.
+  #
+  # For a description of what each stage is used for see:
+  #   https://git.autodatacorp.org/pipelines/start-here-docs/-/tree/master#stages
+  #
+  - prereq:before
+  - prereq
+  - prereq:after
+  - bake:before
+  - bake
+  - bake:after
+  - containerize:before
+  - containerize
+  - containerize:after
+  - test:before
+  - test
+  - test:after
+  - test-deploy:before
+  - test-deploy
+  - test-deploy:after
+  - test-undeploy:before
+  - test-undeploy
+  - test-undeploy:after
+  - deploy:before
+  - deploy
+  - deploy:test-infrastructure
+  - deploy:continuous-testing
+  - deploy:continuous-testing-storage
+  - deploy:chaska-storage
+  - deploy:hillsboro-storage
+  - deploy:chaska
+  - deploy:hillsboro
+  - deploy:azure
+  - deploy:after
+  - undeploy:before
+  - undeploy
+  - undeploy:test-infrastructure
+  - undeploy:continuous-testing
+  - undeploy:continuous-testing-storage
+  - undeploy:chaska-storage
+  - undeploy:hillsboro-storage
+  - undeploy:chaska
+  - undeploy:hillsboro
+  - undeploy:azure
+  - undeploy:after
+  - cleanup:before
+  - cleanup
+  - cleanup:after
+
+include:
+  # Bring in all templates that this project will be using. We have isolated this
+  # into a seperate include to make it easier to review and read the gitlab-ci
+  # file.
+  - project: 'fcaus/pipelines/common'
+    ref: 'main'
+    file:
+      - 'Settings.gitlab-ci.yml'
+      - 'Basic.Templates.gitlab-ci.yml'
+  - local: '.gitlab-ci.rancher.yml'
+  - local: '.gitlab-ci.storage.yml'
+  - local: '.gitlab-ci.storage.nfs.yml'
+  - local: '.gitlab-ci.elastic.system.yml'
+  - local: '.gitlab-ci.elastic.incentives.yml'
+  - local: '.gitlab-ci.elastic.yml'
+  - local: '.gitlab-ci.kafka.ephemeral.yml'
+  - local: '.gitlab-ci.kafka.system.yml'
+  - local: '.gitlab-ci.kube-turbo.yml'
+  - local: '.gitlab-ci.logging-copy-indices.yml'
+  - local: '.gitlab-ci.logging.yml'
+  - local: '.gitlab-ci.rabbitmq.yml'
+  - local: '.gitlab-ci.monitoring.yml'
+  - local: '.gitlab-ci.eu-data-tools.yml'
+  - local: '.gitlab-ci.storage.vsphere.yml'
+
+variables:
+  KUBECONFIG: .kube/config
+  KUSTOM_DOCKER_VERSION: 0.4.4
+
+# This type of job generally is provided by language/packaging specific templates
+# such as for maven or groovy; or for language specific templates such as
+# building golang artifacts.
+#
+# This job is meant to be a generic job for generating the version.txt which is
+# used by some template jobs (such as changelog and sonarqube scanning).
+generate:version:
+  image: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/busybox:latest
+  stage: bake:before
+  script:
+    - touch version.txt
+    - >
+      if ! [[ -z $CI_COMMIT_TAG ]]; then
+        echo "$CI_COMMIT_TAG" >> version.txt
+      else
+        echo "$CI_COMMIT_BRANCH" >> version.txt
+      fi
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - "version.txt"
+  rules:
+    - if: $TRIGGER_ACTION
+      when: never
+    - when: on_success
+
+test-plugins:
+  image: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/golang:1.14
+  stage: test
+  needs: []
+  script:
+    - apt-get update
+    - apt-get install gettext -y
+    - export BASEDIR=$(pwd)
+    - export STUB_THYCOTIC=1
+    - for i in $(find plugin/ -name *_test.go); do pushd $(dirname $i); /usr/local/go/bin/go test; popd; done
+  allow_failure: true
+  tags:
+    - "du:stellantis"
+
+setup-test-prometheus:
+  artifacts:
+    paths:
+      - manifests/prometheus/testing-ctkube.yaml
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: test:before
+  script:
+    - export STUB_THYCOTIC=1
+    - ./build-prometheus.sh ctkube
+    - mv manifests/prometheus/ctkube.yaml manifests/prometheus/testing-ctkube.yaml
+  allow_failure: true
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+test-prometheus:
+  allow_failure: true
+  dependencies:
+    - setup-test-prometheus
+  image: $CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX/golang:1.15
+  needs:
+    - job: setup-test-prometheus
+  stage: test
+  script:
+    - export PROMETHEUS_MANIFEST="$CI_PROJECT_DIR/manifests/prometheus/testing-ctkube.yaml"
+    - /usr/local/go/bin/go test ./tests/prometheus_test.go
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+validate-syntax:
+  allow_failure: true
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: test
+  script:
+    - export STUB_THYCOTIC=1
+    - OUT=$(./build-with-plugins.sh cluster/azure/ingress-nginx 2>&1) ; head <<<$OUT
+  tags:
+    - "du:stellantis"
+
+azure-ingress:
+  environment:
+    name: azure-ingress
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:azure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_AZURE_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/azure/memcached | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - ./build-with-plugins.sh cluster/azure/ingress-nginx/ | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+ctkube-ingress:
+  environment:
+    name: ctkube-ingress
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:continuous-testing
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_CT_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - bin/purge-rke2-ingress-nginx-resources.sh
+    - ./build-with-plugins.sh cluster/ctkube/kube-system/rke2-ingress-nginx-controller | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+ct-storage-ingress:
+  environment:
+    name: ct-storage-ingress
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:continuous-testing-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CT_STORAGE_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - bin/purge-rke2-ingress-nginx-resources.sh
+    - ./build-with-plugins.sh cluster/ct-storage/kube-system/rke2-ingress-nginx-controller | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+test-infrastructure-ingress:
+  environment:
+    name: test-ingress
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:test-infrastructure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_TEST_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - bin/purge-rke2-ingress-nginx-resources.sh
+    - ./build-with-plugins.sh cluster/test/memcached | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - ./build-with-plugins.sh cluster/test/kube-system/rke2-ingress-nginx-controller | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+test-infrastructure-eventrunner:
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  stage: deploy:test-infrastructure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_TEST_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/test/metacontroller/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/test/metacontroller/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/test/eventjobrunner/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/test/eventjobrunner/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+ctkube-eventrunner:
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  stage: deploy:continuous-testing
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_CT_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/ctkube/metacontroller/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/ctkube/metacontroller/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/ctkube/eventjobrunner/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/ctkube/eventjobrunner/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+ct-storage-eventrunner:
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  stage: deploy:continuous-testing-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CT_STORAGE_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/ct-storage/metacontroller/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/ct-storage/metacontroller/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/ct-storage/eventjobrunner/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/ct-storage/eventjobrunner/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+chaska-ingress:
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  stage: deploy:chaska
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_CHASKA_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl config set-context --namespace=ingress-nginx --current
+    - kubectl auth can-i get pods
+    - bin/purge-rke2-ingress-nginx-resources.sh
+    - ./build-with-plugins.sh cluster/chaska/memcached | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - ./build-with-plugins.sh cluster/chaska/kube-system/rke2-ingress-nginx-controller | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+hillsboro-ingress:
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  stage: deploy:hillsboro
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_HILLSBORO_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl config set-context --namespace=ingress-nginx --current
+    - kubectl auth can-i get pods
+    - bin/purge-rke2-ingress-nginx-resources.sh
+    - ./build-with-plugins.sh cluster/hillsboro/memcached | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - ./build-with-plugins.sh cluster/hillsboro/kube-system/rke2-ingress-nginx-controller/ | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+chaska-storage-ingress:
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  stage: deploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl config set-context --namespace=ingress-nginx --current
+    - kubectl auth can-i get pods
+    - bin/purge-rke2-ingress-nginx-resources.sh
+    - ./build-with-plugins.sh cluster/chaska-storage/kube-system/rke2-ingress-nginx-controller | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+hillsboro-storage-ingress:
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  stage: deploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl config set-context --namespace=ingress-nginx --current
+    - kubectl auth can-i get pods
+    - bin/purge-rke2-ingress-nginx-resources.sh
+    - ./build-with-plugins.sh cluster/hillsboro-storage/kube-system/rke2-ingress-nginx-controller/ | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+azure-cert-manager:
+  environment:
+    name: azure-cert-manager
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:azure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_AZURE_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/azure/cert-manager/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    # Will error if cert-manager does not exist
+    - kubectl wait --for=condition=established --timeout=60s crd certificaterequests.cert-manager.io certificates.cert-manager.io challenges.acme.cert-manager.io clusterissuers.cert-manager.io issuers.cert-manager.io orders.acme.cert-manager.io
+    - kubectl -n cert-manager wait pod --for=condition=ready -l app.kubernetes.io/component=webhook,app.kubernetes.io/instance=cert-manager --timeout=60s
+    - ./build-with-plugins.sh cluster/azure/cert-manager/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+test-infrastructure-cert-manager:
+  environment:
+    name: test-cert-manager
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:test-infrastructure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_TEST_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/test/cert-manager/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 10
+    - ./build-with-plugins.sh cluster/test/cert-manager/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+chaska-storage-cert-manager:
+  environment:
+    name: chaska-storage-cert-manager
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/chaska-storage/cert-manager/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 10
+    - ./build-with-plugins.sh cluster/chaska-storage/cert-manager/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+ctkube-cert-manager:
+  environment:
+    name: ctkube-cert-manager
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:continuous-testing
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_CT_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/ctkube/cert-manager/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - ./build-with-plugins.sh cluster/ctkube/cert-manager/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+ct-storage-cert-manager:
+  environment:
+    name: ct-storage-cert-manager
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:continuous-testing-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CT_STORAGE_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-prometheus.sh ct-storage
+    - ./build-with-plugins.sh cluster/ct-storage/cert-manager/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - ./build-with-plugins.sh cluster/ct-storage/cert-manager/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+hillsboro-storage-cert-manager:
+  environment:
+    name: hillsboro-storage-cert-manager
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-prometheus.sh hillsboro-storage
+    - ./build-with-plugins.sh cluster/hillsboro-storage/cert-manager/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - ./build-with-plugins.sh cluster/hillsboro-storage/cert-manager/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+ct-storage-akhq:
+  environment:
+    name: ct-storage-akhq
+    url: https://akhq.fcaus-ct-storage.autodata.tech
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:continuous-testing-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CT_STORAGE_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/ct-storage/akhq | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis-us"
+    - "cluster:storage"
+
+chaska-storage-catalog:
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n elastic-system pod elastic-operator-0
+    - ./build-with-plugins.sh cluster/chaska-storage/catalog/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/chaska-storage/catalog/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+chaska-storage-nimble-csi:
+  environment:
+    name: chaska-storage-nimble-csi
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/chaska-storage/hpe-csi/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/chaska-storage/hpe-csi/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis-us"
+
+chaska-storage-catalog-mirror-maker:
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/chaska-storage/catalog/mirror-maker | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+hillsboro-storage-catalog:
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n elastic-system pod elastic-operator-0
+    - ./build-with-plugins.sh cluster/hillsboro-storage/catalog/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/hillsboro-storage/catalog/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+hillsboro-storage-catalog-mirror-maker:
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/hillsboro-storage/catalog/mirror-maker | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+ct-storage-catalog:
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:continuous-testing-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CT_STORAGE_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n elastic-system pod elastic-operator-0
+    - ./build-with-plugins.sh cluster/ct-storage/catalog/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/ct-storage/catalog/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"

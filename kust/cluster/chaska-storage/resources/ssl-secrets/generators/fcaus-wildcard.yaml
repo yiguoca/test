@@ -1,0 +1,6 @@
+---
+apiVersion: fca.autodata.net/v1.1
+kind: ThycoticSSLSecretGenerator
+metadata:
+  name: fcaus-wildcard
+secret: 5890

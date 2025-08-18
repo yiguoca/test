@@ -1,0 +1,7 @@
+resources:
+  - storageclass.yaml
+  - hpe-array-exporter/
+  - hpe-csi-info-exporter/
+
+commonLabels:
+  stage: two

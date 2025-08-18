@@ -1,0 +1,8 @@
+resources:
+  - ssl-certificate-update/update-ssl-cert.yaml
+
+configMapGenerator:
+  - name: thycotic-ssl-certificate-update
+    namespace: cert-manager
+    files:
+      - thycotic-ssl-certificate-update.sh=ssl-certificate-update/thycotic-ssl-certificate-update.sh

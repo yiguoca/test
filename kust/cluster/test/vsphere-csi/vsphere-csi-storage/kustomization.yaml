@@ -1,0 +1,3 @@
+resources:
+  - ../../../../groups/vsphere-csi/london-non-prod/vsphere-csi-storage/ephemeral/
+  - ../../../../groups/vsphere-csi/london-non-prod/vsphere-csi-storage/persistent/

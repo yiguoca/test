@@ -1,0 +1,9 @@
+kind: Vhost
+apiVersion: rabbitmq.com/v1beta1
+metadata:
+  name: vhosts
+spec:
+  name: ozownssl
+  rabbitmqClusterReference:
+    name: rabbitmq
+---

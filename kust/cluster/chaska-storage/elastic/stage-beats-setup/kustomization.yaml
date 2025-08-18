@@ -1,0 +1,43 @@
+resources:
+  - ../../../../bases/elastic/stage-beats-setup/
+
+# Namespace is expected to already exist see stage1
+namespace: logging
+
+generators:
+  - generators/logging.yaml
+
+patches:
+- target:
+    group: batch
+    version: v1
+    kind: Job
+    name: access-filebeats-setup
+  path: patches/logging-setup-job.yaml
+- target:
+    group: batch
+    version: v1
+    kind: Job
+    name: application-filebeats-setup
+  path: patches/logging-setup-job.yaml
+- target:
+    group: batch
+    version: v1
+    kind: Job
+    name: errors-filebeats-setup
+  path: patches/logging-setup-job.yaml
+- target:
+    group: batch
+    version: v1
+    kind: Job
+    name: dead-letter-filebeats-setup
+  path: patches/logging-setup-job.yaml
+- target:
+    group: batch
+    version: v1
+    kind: Job
+    name: logging-index-pattern-job
+  path: patches/logging-index-pattern-job.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true

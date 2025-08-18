@@ -1,0 +1,14 @@
+resources:
+  - ../../../../bases/vsphere-csi/vsphere-csi-driver
+  
+generators:
+  - generators/vsphere-config-secret.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+labels:
+- includeTemplates: true
+  includeSelectors: false
+  pairs:
+    app.kubernetes.io/part-of: vsphere-csi

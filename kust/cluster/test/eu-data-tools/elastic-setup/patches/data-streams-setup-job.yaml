@@ -1,0 +1,43 @@
+- op: add
+  path: /spec/template/spec/initContainers/0/env/-
+  value:
+    name: ELASTICSEARCH_HOST
+    value: "eu-data-es-http.eu-data-tools.svc:9200"
+- op: add
+  path: /spec/template/spec/initContainers/0/env/-
+  value:
+    name: ELASTICSEARCH_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: eu-data-es-user
+        key: password
+- op: add
+  path: /spec/template/spec/initContainers/0/env/-
+  value:
+    name: ELASTICSEARCH_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: eu-data-es-user
+        key: password
+
+- op: add
+  path: /spec/template/spec/containers/0/env/-
+  value:
+    name: ELASTICSEARCH_HOST
+    value: "eu-data-es-http.eu-data-tools.svc:9200"
+- op: add
+  path: /spec/template/spec/containers/0/env/-
+  value:
+    name: ELASTICSEARCH_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: eu-data-es-user
+        key: password
+- op: add
+  path: /spec/template/spec/containers/0/env/-
+  value:
+    name: ELASTICSEARCH_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: eu-data-es-user
+        key: password

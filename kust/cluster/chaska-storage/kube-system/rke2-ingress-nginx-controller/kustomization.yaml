@@ -1,0 +1,13 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+resources:
+  - ../../../../bases/rke2-ingress-nginx-controller/
+patches:
+  # datacenter
+  - patch: |-
+      - op: replace
+        path: /data/X-Datacenter
+        value: chaska-storage
+    target:
+      kind: ConfigMap
+      name: custom-headers

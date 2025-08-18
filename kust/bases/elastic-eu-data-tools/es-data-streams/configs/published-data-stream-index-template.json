@@ -1,0 +1,12 @@
+{
+  "index_patterns": [
+      "published-data-stream*",
+      "published-meta-data-stream*"
+  ],
+  "data_stream": { },
+  "composed_of": [ "eu-default-mappings", "eu-data-settings" ],
+  "priority": 500,
+  "_meta": {
+    "description": "Template for published data streams"
+  }
+}

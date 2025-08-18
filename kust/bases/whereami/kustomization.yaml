@@ -1,0 +1,6 @@
+resources:
+  - resources/deployment.yaml
+  - resources/secret.yaml
+  - resources/service.yaml
+  - resources/serviceMonitor.yaml
+

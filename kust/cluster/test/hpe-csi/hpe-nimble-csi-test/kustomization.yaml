@@ -1,0 +1,11 @@
+namespace: vsphere-csi-test
+resources:
+  - namespace
+  - resources/test-nodes.yaml
+
+labels:
+- includeTemplates: true
+  includeSelectors: false
+  pairs:
+    app.kubernetes.io/part-of: hpe-nimble-csi
+    app.kubernetes.io/component: test-hpe-csi-operations

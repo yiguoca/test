@@ -1,0 +1,45 @@
+namespace: eu-data-tools
+resources:
+  # We dont want to use the following; this is used to build the entire elastic
+  # stack. If a delete occurs it would remove the elastic-root-ca-issuer; we want
+  # to avoid this scenario. We are going to operate under the assumption that
+  # bases/elastic/stage1 would have been triggered at some point.
+  # We are keeping this line purely for documentation purposes.
+  #- ../../../../bases/elastic/stage1/
+
+  # further the selfsigned-ca seems to need to use a specific namespace, which is being
+  # overwritten by the eu-data-tools. Still not sure if this needs to live in that
+  # namespace or another.
+  #- resources/selfsigned-ca.yaml
+  
+  - resources/elastic-cert.yaml
+  - resources/elasticsearch.yaml
+  - resources/kibana.yaml
+  - secrets/
+
+patches:
+  - target:
+      group: batch
+      kind: Job
+      name: elastic-cluster-ssl
+    path: patches/elastic-cluster-ssl-job.yaml
+
+configMapGenerator:
+  - name: master-jvm-options
+    files:
+      - configs/master.heap.jvm.options
+  - name: data-jvm-options
+    files:
+      - configs/data.heap.jvm.options
+
+generatorOptions:
+  disableNameSuffixHash: true
+  labels:
+    app.kubernetes.io/part-of: elastic
+
+labels:
+- includeSelectors: true
+  pairs:
+    app.kubernetes.io/part-of: elastic
+    photon/tier: infrastructure
+    stage: elastic

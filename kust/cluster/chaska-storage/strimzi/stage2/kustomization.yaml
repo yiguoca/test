@@ -1,0 +1,12 @@
+bases:
+  - ../../../../bases/kafka-strimzi/stage2/
+
+namespace: kafka
+
+patchesJson6902:
+- target:
+    group: rbac.authorization.k8s.io
+    version: v1
+    kind: ClusterRole
+    name: prometheus
+  path: patches/set-cluster-role.yaml

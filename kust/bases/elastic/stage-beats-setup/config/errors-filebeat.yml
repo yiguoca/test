@@ -1,0 +1,29 @@
+# If index lifecycle management is enabled (which is typically the default), setup.template.name and setup.template.pattern are ignored.
+setup.ilm.enabled: true
+setup.ilm.policy_name: "errors"
+setup.ilm.policy_file: "errors-ilm.json"
+setup.ilm.rollover_alias: "errors"
+setup.template.enabled: true
+setup.template.name: "errors"
+setup.template.pattern: "errors"
+setup.template.fields: "fields.yml"
+setup.template.priority: 1000
+setup.template.index_patterns: ["errors-*"]
+setup.template.aliases: ["errors"]
+setup.template.settings:
+  index.codec: best_compression
+  index.number_of_replicas: 1
+  index.number_of_shards: 3
+output.elasticsearch.enabled: true
+output.elasticsearch.hosts: ["${ELASTICSEARCH_HOST}"]
+output.elasticsearch.username: "${ELASTICSEARCH_USERNAME}"
+output.elasticsearch.password: "${ELASTICSEARCH_PASSWORD}"
+output.elasticsearch.ssl.enabled: true
+output.elasticsearch.ssl.verification_mode: none
+output.elasticsearch.protocol: https
+setup.kibana.host: "${KIBANA_HOST}"
+setup.kibana.protocol: https
+setup.kibana.username: "${KIBANA_USERNAME}"
+setup.kibana.password: "${KIBANA_PASSWORD}"
+setup.kibana.ssl.enabled: true
+setup.kibana.ssl.verification_mode: none

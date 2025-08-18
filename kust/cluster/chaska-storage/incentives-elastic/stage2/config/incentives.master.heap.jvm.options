@@ -1,0 +1,3 @@
+-Xms750m
+-Xmx750m
+-XX:-HeapDumpOnOutOfMemoryError

@@ -1,0 +1,14 @@
+{
+  "index_patterns": [
+      "pre-published-data-stream*",
+      "pre-published-meta-data-stream*",
+      "pre-published-segment-data-stream*",
+      "pre-published-segment-meta-data-stream*"
+  ],
+  "data_stream": { },
+  "composed_of": [ "eu-default-mappings", "eu-data-settings" ],
+  "priority": 500,
+  "_meta": {
+    "description": "Template for pre-published data streams"
+  }
+}

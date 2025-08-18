@@ -1,0 +1,34 @@
+namespace: eu-data-tools
+resources:
+  # defining out own elastic, kabana
+  - resources/elasticsearch.yaml
+  - resources/kibana.yaml
+  - secrets/
+
+  # for elastic we use our own generated cert, as communicated from the team on
+  # why we want to do this:
+  #  > So that the elastic instances will continue to work regardless of the
+  #  > presence/expiry status of the wildcard cert, I believe.
+  #  > Also so that they can be referenced by an .autodata.org hostname rather
+  #  > than through an ingress name.
+  - resources/elastic-cert.yaml
+
+configMapGenerator:
+  - name: master-jvm-options
+    files:
+      - configs/master.heap.jvm.options
+  - name: data-jvm-options
+    files:
+      - configs/data.heap.jvm.options
+
+generatorOptions:
+  disableNameSuffixHash: true
+  labels:
+    app.kubernetes.io/part-of: elastic
+
+labels:
+- includeSelectors: true
+  pairs:
+    app.kubernetes.io/part-of: elastic
+    photon/tier: infrastructure
+    stage: elastic

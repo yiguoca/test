@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vsphere-csi-controller
+  namespace: vmware-system-csi
+spec:
+  template:
+    spec:
+      affinity:            
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            - matchExpressions:
+              - key: node-role.kubernetes.io/controlplane
+                operator: Exists
+            # the original include node-role.kubernetes.io/master I assume for backwards compatibility
+            # but we get a warning in the logs so patching that out.
+            # - matchExpressions:
+            #   - key: node-role.kubernetes.io/master
+            #     operator: Exists
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+        # some of the stellantis us clusters have this taint spelling instead
+        - key: node-role.kubernetes.io/controlplane
+          operator: Exists
+          effect: NoSchedule
+        # we noticed some of our masters also have these taints
+        - key: node-role.kubernetes.io/etcd
+          effect: NoExecute
+          operator: Exists
+        # uncomment below toleration if you need an aggressive pod eviction in case when
+        # node becomes not-ready or unreachable. Default is 300 seconds if not specified.
+        #- key: node.kubernetes.io/not-ready
+        #  operator: Exists
+        #  effect: NoExecute
+        #  tolerationSeconds: 30
+        #- key: node.kubernetes.io/unreachable
+        #  operator: Exists
+        #  effect: NoExecute
+        #  tolerationSeconds: 30

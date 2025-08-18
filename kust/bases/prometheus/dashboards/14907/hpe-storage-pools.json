@@ -1,0 +1,272 @@
+{
+    "__requires": [
+      {
+        "type": "grafana",
+        "id": "grafana",
+        "name": "Grafana",
+        "version": "8.0.5"
+      },
+      {
+        "type": "datasource",
+        "id": "prometheus",
+        "name": "Prometheus",
+        "version": "1.0.0"
+      },
+      {
+        "type": "panel",
+        "id": "text",
+        "name": "Text",
+        "version": ""
+      },
+      {
+        "type": "panel",
+        "id": "timeseries",
+        "name": "Time series",
+        "version": ""
+      }
+    ],
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": "-- Grafana --",
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "type": "dashboard"
+        }
+      ]
+    },
+    "description": "Enumerates pools or CPGs of a selected storage array.",
+    "editable": true,
+    "gnetId": 14907,
+    "graphTooltip": 0,
+    "id": null,
+    "iteration": 1630369194598,
+    "links": [
+      {
+        "asDropdown": false,
+        "icon": "external link",
+        "includeVars": false,
+        "keepTime": true,
+        "tags": [
+          "HPE Storage Arrays"
+        ],
+        "targetBlank": false,
+        "title": "HPE Storage Arrays",
+        "tooltip": "",
+        "type": "dashboards",
+        "url": ""
+      }
+    ],
+    "panels": [
+      {
+        "datasource": "prometheus",
+        "description": "",
+        "gridPos": {
+          "h": 2,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "id": 4,
+        "options": {
+          "content": "**Tip:** Click a data point in the pool graph and click *List Volumes* to drill down in the pool. Click upper left corner in panel to drill down *Array Details*.           ",
+          "mode": "markdown"
+        },
+        "pluginVersion": "8.0.5",
+        "transparent": true,
+        "type": "text"
+      },
+      {
+        "datasource": "prometheus",
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineStyle": {
+                "fill": "solid"
+              },
+              "lineWidth": 2,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": true,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "links": [
+              {
+                "title": "List Volumes",
+                "url": "d/OcsMRkn7z?var-pool=${pool}&${array:queryparam}&${__url_time_range}"
+              }
+            ],
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "transparent",
+                  "value": null
+                }
+              ]
+            },
+            "unit": "bytes"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 2
+        },
+        "id": 2,
+        "links": [
+          {
+            "title": "Array Details",
+            "url": "d/nuo41vMnk?${array:queryparam}&${__url_time_range}"
+          }
+        ],
+        "options": {
+          "legend": {
+            "calcs": [
+              "last"
+            ],
+            "displayMode": "list",
+            "placement": "bottom"
+          },
+          "tooltip": {
+            "mode": "single"
+          }
+        },
+        "repeat": "pool",
+        "repeatDirection": "v",
+        "targets": [
+          {
+            "exemplar": true,
+            "expr": "hpe_storagepool_capacity_bytes{array=\"$array\", storagepool=\"$pool\"}",
+            "hide": false,
+            "instant": false,
+            "interval": "",
+            "legendFormat": "Capacity",
+            "refId": "B"
+          },
+          {
+            "exemplar": true,
+            "expr": "hpe_storagepool_volume_used_bytes{array=\"$array\", storagepool=\"$pool\"}",
+            "instant": false,
+            "interval": "",
+            "legendFormat": "Volume",
+            "refId": "A"
+        },
+        {
+            "exemplar": true,
+            "expr": "hpe_storagepool_data_reduction_bytes{array=\"$array\", storagepool=\"$pool\"}",
+            "hide": false,
+            "interval": "",
+            "legendFormat": "Reduction",
+            "refId": "C"
+          },
+          {
+            "exemplar": true,
+            "expr": "hpe_storagepool_snapshot_used_bytes{array=\"$array\", storagepool=\"$pool\"}",
+            "hide": false,
+            "interval": "",
+            "legendFormat": "Snapshot",
+            "refId": "D"
+          }
+        ],
+        "title": "Storage Pool Capacities ($array: $pool)",
+        "type": "timeseries"
+      }
+    ],
+    "refresh": "",
+    "schemaVersion": 30,
+    "style": "dark",
+    "tags": [
+      "HPE Storage Pools"
+    ],
+    "templating": {
+      "list": [
+        {
+          "allValue": null,
+          "current": {},
+          "datasource": "prometheus",
+          "definition": "label_values(array)",
+          "description": "Select array to visualize",
+          "error": null,
+          "hide": 2,
+          "includeAll": false,
+          "label": "Array",
+          "multi": false,
+          "name": "array",
+          "options": [],
+          "query": {
+            "query": "label_values(array)",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 0,
+          "type": "query"
+        },
+        {
+          "allValue": null,
+          "current": {},
+          "datasource": "prometheus",
+          "definition": "hpe_storagepool_snapshot_used_bytes{array=\"$array\"}",
+          "description": "Select pools",
+          "error": null,
+          "hide": 2,
+          "includeAll": true,
+          "label": "Pool",
+          "multi": true,
+          "name": "pool",
+          "options": [],
+          "query": {
+            "query": "hpe_storagepool_snapshot_used_bytes{array=\"$array\"}",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 1,
+          "regex": "/storagepool=\"([A-Za-z0-9_]+)\"/",
+          "skipUrlSync": false,
+          "sort": 0,
+          "type": "query"
+        }
+      ]
+    },
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "",
+    "title": "HPE Storage Pools",
+    "uid": "MQVBAqMnk",
+    "version": 62
+  }

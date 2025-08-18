@@ -1,0 +1,25 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    ingress.kubernetes.io/auth-realm: Authentication Required
+    ingress.kubernetes.io/auth-secret: basic-auth
+    ingress.kubernetes.io/auth-type: basic
+  name: prometheus
+  namespace: monitoring
+spec:
+  rules:
+    - host: prometheus.fcaus-f-storage.autodata.tech
+      http:
+        paths:
+          - backend:
+              service:
+                name: prometheus-chaska-storage
+                port:
+                  name: web
+            pathType: ImplementationSpecific
+  tls:
+    - hosts:
+        - prometheus.fcaus-f-storage.autodata.tech
+      secretName: fcaus-wildcard

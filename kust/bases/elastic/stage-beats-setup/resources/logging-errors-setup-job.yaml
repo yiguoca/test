@@ -1,0 +1,105 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: errors-filebeats-setup
+  labels:
+    photon/tier: infrastructure
+    app.kubernetes.io/instance: errors-filebeats-setup-job
+    app.kubernetes.io/name: errors-filebeats-setup
+    app.kubernetes.io/part-of: logging
+spec:
+  template:
+    spec:
+      serviceAccountName: filebeat
+      automountServiceAccountToken: true
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: true # Allows to provide richer host metadata
+      containers:
+      - name: logging-elastic-setup
+        image: docker.elastic.co/beats/filebeat:7.16.3
+        command: ["/bin/sh", "-c"]
+        args: ["filebeat setup -e -environment container"]
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+          limits:
+            cpu: "1000m"
+            memory: "256Mi"
+        securityContext:
+          runAsUser: 0
+        volumeMounts:
+          - name: varlogcontainers
+            mountPath: /var/log/containers
+          - name: varlogpods
+            mountPath: /var/log/pods
+          - name: varlibdockercontainers
+            mountPath: /var/lib/docker/containers
+          - name: field-config
+            mountPath: /usr/share/filebeat/fields.yml
+            subPath: fields.yml
+          - name: errors-ilm
+            mountPath: /usr/share/filebeat/errors-ilm.json
+            subPath: errors-ilm.json
+          - name: filebeat-config
+            mountPath: /usr/share/filebeat/filebeat.yml
+            subPath: filebeat.yml
+        env: []
+          # - name: NODE_NAME
+          #   valueFrom:
+          #     fieldRef:
+          #       fieldPath: spec.nodeName
+          # - name: DATA_CENTER
+          #   value: London
+          # - name: ELASTICSEARCH_HOST
+          #   value: "logging-es-http.logging.svc:9200"
+          # - name: ELASTICSEARCH_USERNAME
+          #   value: "elastic"
+          # - name: ELASTICSEARCH_PASSWORD
+          #   valueFrom:
+          #     secretKeyRef:
+          #       name: logging-es-elastic-user
+          #       key: elastic
+          # - name: KIBANA_HOST
+          #   value: "logging-kb-http.logging.svc:5601"
+          # - name: KIBANA_USERNAME
+          #   valueFrom:
+          #     secretKeyRef:
+          #       name: photon-elastic-user
+          #       key: username
+          # - name: KIBANA_PASSWORD
+          #   valueFrom:
+          #     secretKeyRef:
+          #       name: photon-elastic-user
+          #       key: password
+      volumes:
+        - name: varlogcontainers
+          hostPath:
+            path: /var/log/containers
+        - name: varlogpods
+          hostPath:
+            path: /var/log/pods
+        - name: varlibdockercontainers
+          hostPath:
+            path: /var/lib/docker/containers
+        - name: field-config
+          configMap:
+            name: field-config
+            items:
+            - key: logging-fields.yaml
+              path: fields.yml
+        - name: errors-ilm
+          configMap:
+            name: errors-ilm
+            items:
+            - key:  errors-ilm.json
+              path: errors-ilm.json
+        - name: filebeat-config
+          configMap:
+            name: filebeat-config
+            items:
+            - key: errors-filebeat.yml
+              path: filebeat.yml
+      restartPolicy: Never
+  backoffLimit: 0

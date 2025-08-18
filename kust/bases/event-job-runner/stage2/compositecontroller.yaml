@@ -1,0 +1,21 @@
+apiVersion: metacontroller.k8s.io/v1alpha1
+kind: CompositeController
+metadata:
+  name: eventjobrunner-controller
+  namespace: eventjobrunner
+spec:
+  generateSelector: true
+  parentResource:
+    apiVersion: eventjobrunner.autodatacorp.org/v1
+    resource: eventrunners
+  childResources:
+    - apiVersion: batch/v1
+      resource: jobs
+  resyncPeriodSeconds: 30
+  hooks:
+    sync:
+      webhook:
+        url: http://eventjobrunner-controller.eventjobrunner/sync
+    finalize:
+      webhook:
+        url: http://eventjobrunner-controller.eventjobrunner/finalize

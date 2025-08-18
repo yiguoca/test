@@ -1,0 +1,8 @@
+configMapGenerator:
+  - name: kafka-metrics
+    files:
+      - config/kafka-metrics-config.yaml
+      - config/zookeeper-metrics-config.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true

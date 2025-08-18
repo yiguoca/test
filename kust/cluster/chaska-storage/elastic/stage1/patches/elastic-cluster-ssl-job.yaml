@@ -1,0 +1,20 @@
+- op: add
+  path: /spec/template/spec/containers/0/env
+  value: 
+    - name: PUBLIC_KEY
+      valueFrom:
+        secretKeyRef:
+          key: tls.crt
+          name: elastic-root-secret
+    - name: PRIVATE_KEY
+      valueFrom:
+        secretKeyRef:
+          key: tls.key
+          name: elastic-root-secret
+    - name: CA_CERT
+      valueFrom:
+        secretKeyRef:
+          key: ca.crt
+          name: elastic-root-secret
+    - name: SECRET_ID
+      value: '7656'

@@ -1,0 +1,125 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: logging-backfill-data-job
+  namespace: logging
+  labels:
+    app.kubernetes.io/instance: logging-backfill-data-job
+    app.kubernetes.io/name: logging-backfill-data
+    app.kubernetes.io/part-of: logging
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      #-------------------------------------------------------------------------
+      # This is used to help populate a series of index used to verify that the
+      # elasticdump-reindex.sh is funtioning as expected
+      initContainers:
+      - name: test-elasticdump-preparation
+        imagePullPolicy: Always
+        image: docker.fcaus-ct-storage.autodata.tech/fcaus/support/gizmo:1.0.0
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            bash /elastic/script/test-prep.sh access-2023.08.15-0001
+            bash /elastic/script/test-prep.sh access-2023.08.14-0001
+        volumeMounts:
+          - name: scripts-es-dump
+            mountPath: /elastic/script
+        env:
+          - name: ES_HOST
+            value: https://logging-es.fcaus-te.autodata.tech/
+          - name: ES_USERNAME
+            valueFrom:
+              secretKeyRef:
+                key: username
+                name: photon-elastic-user
+          - name: ES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: password
+                name: photon-elastic-user
+
+      #-------------------------------------------------------------------------
+      containers:
+
+      - name: es-dump-access-aug-14
+        imagePullPolicy: Always
+        image: docker.fcaus-ct-storage.autodata.tech/fcaus/support/elasticdump:1.0.0
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            sleep 60
+
+            bash /elastic/script/elasticdump-reindex.sh
+
+            bash /elastic/script/test-assertion.sh access-2023.08.14-0002
+        volumeMounts:
+          - name: scripts-es-dump
+            mountPath: /elastic/script
+        env:
+          - name: SOURCE
+            value: https://logging-es.fcaus-te.autodata.tech/access-2023.08.14-0001
+          - name: TARGET
+            value: https://logging-es.fcaus-te.autodata.tech/access-2023.08.14-0002
+          - name: LIMIT
+            value: "1000"
+          #- name: ADDITIONAL_ARGS
+          #  value: "--offset=12345"
+          - name: ES_USERNAME
+            valueFrom:
+              secretKeyRef:
+                key: username
+                name: photon-elastic-user
+          - name: ES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: password
+                name: photon-elastic-user
+          # this env is for the test-assertion
+          - name: ES_HOST
+            value: https://logging-es.fcaus-te.autodata.tech/
+
+      - name: es-dump-access-aug-15
+        imagePullPolicy: Always
+        image: docker.fcaus-ct-storage.autodata.tech/fcaus/support/elasticdump:1.0.0
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            sleep 60
+
+            bash /elastic/script/elasticdump-reindex.sh
+
+            bash /elastic/script/test-assertion.sh access-2023.08.15-0002
+        volumeMounts:
+          - name: scripts-es-dump
+            mountPath: /elastic/script
+        env:
+          - name: SOURCE
+            value: https://logging-es.fcaus-te.autodata.tech/access-2023.08.15-0001
+          - name: TARGET
+            value: https://logging-es.fcaus-te.autodata.tech/access-2023.08.15-0002
+          - name: LIMIT
+            value: "1000"
+          - name: ES_USERNAME
+            valueFrom:
+              secretKeyRef:
+                key: username
+                name: photon-elastic-user
+          - name: ES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: password
+                name: photon-elastic-user
+          # this env is for the test-assertion
+          - name: ES_HOST
+            value: https://logging-es.fcaus-te.autodata.tech/
+
+      #-------------------------------------------------------------------------
+      volumes:
+        - name: scripts-es-dump
+          configMap:
+            name: scripts-es-dump
+            defaultMode: 0777

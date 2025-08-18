@@ -1,0 +1,7 @@
+---
+apiVersion: fca.autodata.net/v1
+kind: ThycoticSSLSecretGenerator
+metadata:
+  name: incentives-es-http-certs-public-hillsboro
+  namespace: incentives-search
+secret: 7655

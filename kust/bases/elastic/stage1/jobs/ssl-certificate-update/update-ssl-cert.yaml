@@ -1,0 +1,44 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: elastic-cluster-ssl
+  namespace: cert-manager
+spec:
+  template:
+    spec:
+      volumes:
+      - name: thycotic-ssl-certificate-update
+        configMap:
+          name: thycotic-ssl-certificate-update
+          defaultMode: 0755
+      restartPolicy: Never
+      containers:
+        - name: elastic-cluster-ssl
+          image: git.autodatacorp.org:5555/fcaus/support/kustom-docker:0.4.1
+          volumeMounts:
+          - mountPath: /thycotic-upload
+            name: thycotic-ssl-certificate-update
+          env: []
+            # - name: PUBLIC_KEY
+            #   valueFrom:
+            #     secretKeyRef:
+            #       key: tls.crt
+            #       name: elastic-root-secret
+            # - name: PRIVATE_KEY
+            #   valueFrom:
+            #     secretKeyRef:
+            #       key: tls.key
+            #       name: elastic-root-secret
+            # - name: CA_CERT
+            #   valueFrom:
+            #     secretKeyRef:
+            #       key: ca.crt
+            #       name: elastic-root-secret
+            # - name: SECRET_ID
+            #   value: '7399'
+          command: 
+            - 'sh'
+            - '-c'
+            - '/thycotic-upload/thycotic-ssl-certificate-update.sh'
+      imagePullSecrets:
+        - name: myregistrykey

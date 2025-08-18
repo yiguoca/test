@@ -1,0 +1,30 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: catalog-es-cert
+spec:
+  isCA: true
+  dnsNames:
+    - catalog.fcaus-f-storage.autodata.tech
+    - catalog-es-http
+    - catalog-es-http.catalog.svc 
+    - fchu-prif-xkmp1.autodata.org
+    - fchu-prif-xkmp2.autodata.org
+    - fchu-prif-xkmp3.autodata.org
+    - fchu-prif-xknp1.autodata.org
+    - fchu-prif-xknp2.autodata.org
+    - fchu-prif-xknp3.autodata.org
+    - fchu-prif-xknp4.autodata.org
+    - fchu-prif-xknp5.autodata.org
+  secretName: catalog-es-cert
+  # 87600h = 3650 days * 24 hours
+  duration: 87600h
+  # 720h = 30 days * 24 hours
+  renewBefore: 720h
+  issuerRef:
+    name: elastic-root-ca-issuer
+    kind: ClusterIssuer
+  subject:
+    organizations:
+      - catalog

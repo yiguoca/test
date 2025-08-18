@@ -1,0 +1,28 @@
+{
+    "attributes": {
+        "description": "",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": "{\"query\":{\"query\":\"\",\"language\":\"kuery\"},\"filter\":[{\"$state\":{\"store\":\"appState\"},\"meta\":{\"alias\":null,\"disabled\":false,\"key\":\"photon.api.name\",\"negate\":false,\"type\":\"exists\",\"value\":\"exists\",\"indexRefName\":\"7days-access\"},\"query\":{\"exists\":{\"field\":\"photon.api.name\"}}}],\"indexRefName\":\"7days-access\"}"
+        },
+        "title": "Load - Total Request Count",
+        "uiStateJSON": "{}",
+        "version": 1,
+        "visState": "{\"title\":\"Load - Total Request Count\",\"type\":\"metric\",\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"params\":{\"customLabel\":\"Total\"},\"schema\":\"metric\"}],\"params\":{\"addTooltip\":true,\"addLegend\":false,\"type\":\"metric\",\"metric\":{\"percentageMode\":false,\"useRanges\":false,\"colorSchema\":\"Green to Red\",\"metricColorMode\":\"None\",\"colorsRange\":[{\"from\":0,\"to\":10000}],\"labels\":{\"show\":true},\"invertColors\":false,\"style\":{\"bgFill\":\"#000\",\"bgColor\":false,\"labelColor\":false,\"subText\":\"\",\"fontSize\":60}}}}"
+    },
+    "references": [{
+            "id": "7days-access",
+            "name": "7days-access",
+            "type": "index-pattern"
+        },
+        {
+            "id": "photon",
+            "name": "photon",
+            "type": "tag"
+        },
+        {
+            "id": "stellantis",
+            "name": "stellantis",
+            "type": "tag"
+        }
+    ]
+}

@@ -1,0 +1,21 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana
+  namespace: monitoring
+spec:
+  rules:
+    - host: grafana.fcaus-f-storage.autodata.tech
+      http:
+        paths:
+          - backend:
+              service:
+                name: grafana
+                port:
+                  number: 3000
+            pathType: ImplementationSpecific
+  tls:
+    - hosts:
+        - grafana.fcaus-f-storage.autodata.tech
+      secretName: fcaus-wildcard

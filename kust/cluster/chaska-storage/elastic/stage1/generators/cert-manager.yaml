@@ -1,0 +1,7 @@
+---
+apiVersion: fca.autodata.net/v1
+kind: ThycoticDockerConfigSecretGenerator
+metadata:
+  name: myregistrykey
+  namespace: cert-manager
+secrets: 6158

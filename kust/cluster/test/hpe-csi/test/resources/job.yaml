@@ -1,0 +1,35 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: test-pod
+  namespace: test-hpe-cli
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      nodeSelector:
+        kubernetes.io/hostname: "lchu-teif-xkn03"
+        photon/storage.nimble: "true"
+      containers:
+      - name: test-pod
+        image: docker.fcaus-ct-storage.autodata.tech/fcaus/support/gizmo:1.0.0
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            echo "[INFO] attempting to create file ..."
+            touch /data-test/message.txt
+            echo "[INFO] attempting to populate file ..."
+            echo "hello world" > /data-test/message.txt
+            echo "[INFO] attempting to read file ..."
+            cat /data-test/message.txt
+            echo "[INFO] completed"
+        volumeMounts:
+          - name: test-pvc
+            mountPath: /data-test
+      volumes:
+        - name: test-pvc
+          persistentVolumeClaim:
+            claimName: test-pvc
+            readOnly: false

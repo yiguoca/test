@@ -1,0 +1,189 @@
+# This allows us to verify that all the nodes that support vsphere storage
+# have the capability to provision and connect to a PVC with the vsphere
+# storage classes. 
+# 
+# This is important as it allows us to verify that our agent (worker) nodes 
+# are correctly configured to support vsphere storage.
+
+# This is an example of the event we are trying to avoid
+# Warning  FailedScheduling        7m15s                default-scheduler        0/6 nodes are available: pod has unbound immediate PersistentVolumeClaims. preemption: 0/6 nodes are available: 6 Preemption is not helpful for scheduling.
+# Normal   Scheduled               7m13s                default-scheduler        Successfully assigned vsphere-csi-test/test-job-66mxl to lchu-teif-xkn02
+# Normal   SuccessfulAttachVolume  7m13s                attachdetach-controller  AttachVolume.Attach succeeded for volume "pvc-841db837-8bdc-4971-82b8-013c0b4c45bd"
+# Warning  FailedMount             53s (x11 over 7m5s)  kubelet                  MountVolume.MountDevice failed for volume "pvc-841db837-8bdc-4971-82b8-013c0b4c45bd" : rpc error: code = NotFound desc = disk: 6000c29c69288b357a35e5463d2a801c not attached to node
+---
+# needed for a headless service to allow the statefulset to work
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-node
+spec:
+  clusterIP: None
+  selector:
+    app: test-node
+  ports:
+    - port: 80
+    
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app.kubernetes.io/name: test-node
+    app.kubernetes.io/managed-by: test-node
+  name: test-node
+spec:
+  serviceName: test-node
+  replicas: 3  # Set this to the number of worker nodes
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      app: test-node
+
+  template:
+    metadata:
+      labels:
+        app: test-node
+        app.kubernetes.io/name: test-node
+    spec:
+      terminationGracePeriodSeconds: 60
+      
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: storage/vsphere
+                    operator: In
+                    values:
+                      - "true"
+
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - test-node
+              topologyKey: "kubernetes.io/hostname"
+      
+      # we need to add tollerations incase we have some nodes with taints
+      # but they have the vsphere storage capability (storage/vsphere=true)
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+        # some of the stellantis us clusters have this taint spelling instead
+        - key: node-role.kubernetes.io/controlplane
+          operator: Exists
+          effect: NoSchedule
+        # we noticed some of our masters also have these taints
+        - key: node-role.kubernetes.io/etcd
+          effect: NoExecute
+          operator: Exists
+      initContainers:
+
+        # this allows us to check, can we mount the pvc
+        - name: pvc-checker
+          image: docker.fcaus-ct-storage.autodata.tech/fcaus/support/gizmo:1.0.0
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "[INFO] echo PVC mounted successfully"
+          volumeMounts:
+            - name: test-volume
+              mountPath: /data-test
+          resources:
+            requests:
+              memory: "16Mi"
+              cpu: "5m"
+            limits:
+              memory: "32Mi"
+              cpu: "10m"
+
+        # this allows us to test that we can read/write to the pvc
+        - name: pvc-readwrite
+          image: docker.fcaus-ct-storage.autodata.tech/fcaus/support/gizmo:1.0.0
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "[INFO] attempting to create file ..."
+              touch /data-test/message.txt
+              echo "[INFO] attempting to populate file ..."
+              echo "hello world" > /data-test/message.txt
+              echo "[INFO] attempting to read file ..."
+              cat /data-test/message.txt
+              echo "[INFO] completed"
+          volumeMounts:
+            - name: test-volume
+              mountPath: /data-test
+          resources:
+            requests:
+              memory: "16Mi"
+              cpu: "5m"
+            limits:
+              memory: "32Mi"
+              cpu: "10m"
+      # this is so the readiness and startup probe can work
+        - name: mark-pvc-ready
+          image: docker.fcaus-ct-storage.autodata.tech/fcaus/support/gizmo:1.0.0
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "[INFO] creating readiness file"
+              touch /data-test/ready
+          volumeMounts:
+            - name: test-volume
+              mountPath: /data-test
+          resources:
+            requests:
+              memory: "16Mi"
+              cpu: "5m"
+            limits:
+              memory: "32Mi"
+              cpu: "10m"
+
+      # this is required because statefulsets are longlived
+      containers:
+        - name: completed
+          image: docker.fcaus-ct-storage.autodata.tech/busybox:latest
+          command: ["/bin/sh", "-ec", "while :; do echo '.'; sleep 5 ; done"]
+          volumeMounts:
+            - name: test-volume
+              mountPath: /mnt/test
+          startupProbe:
+                exec:
+                  command:
+                    - sh
+                    - -c
+                    - 'test -f /mnt/test/ready'
+                failureThreshold: 30
+                periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - 'test -f /mnt/test/ready'
+            failureThreshold: 3
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "16Mi"
+              cpu: "5m"
+            limits:
+              memory: "32Mi"
+              cpu: "10m"
+
+  volumeClaimTemplates:
+    - metadata:
+        name: test-volume
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 5Mi
+        storageClassName: #example: "vsphere-london-non-prod-delete"

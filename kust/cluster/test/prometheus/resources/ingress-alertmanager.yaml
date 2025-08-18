@@ -1,0 +1,25 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    ingress.kubernetes.io/auth-realm: Authorization Required - ok
+    ingress.kubernetes.io/auth-secret: basic-auth
+    ingress.kubernetes.io/auth-type: basic
+  name: alertmanager
+  namespace: monitoring
+spec:
+  rules:
+    - host: alertmanager.fcaus-te.autodata.tech
+      http:
+        paths:
+          - backend:
+              service:
+                  name: alertmanager-main
+                  port:
+                    number: 9093
+            pathType: ImplementationSpecific
+  tls:
+    - hosts:
+        - alertmanager.fcaus-te.autodata.tech
+      secretName: fcaus-wildcard

@@ -1,0 +1,51 @@
+# A few different approaches to setting up volume snapshot definitions.
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
+metadata:
+  name: hpe-nimble-chaska-prod-volume-snapshot-delete
+driver: csi.hpe.com
+deletionPolicy: Delete
+parameters:
+  #https://scod.hpedev.io/container_storage_provider/hpe_alletra_6000/index.html#volumesnapshotclass_parameters
+  #writable: "false"
+  #online: "false"
+  description: "Snapshot created by the HPE CSI Driver"
+  csi.storage.k8s.io/snapshotter-secret-name: nimble-chaska-prod
+  csi.storage.k8s.io/snapshotter-secret-namespace: hpe-storage
+  csi.storage.k8s.io/snapshotter-list-secret-name: nimble-chaska-prod
+  csi.storage.k8s.io/snapshotter-list-secret-namespace: hpe-storage
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
+metadata:
+  name: hpe-nimble-chaska-prod-volume-snapshot-retain
+driver: csi.hpe.com
+deletionPolicy: Retain
+parameters:
+  #https://scod.hpedev.io/container_storage_provider/hpe_alletra_6000/index.html#volumesnapshotclass_parameters
+  #writable: "false"
+  #online: "false"
+  description: "Snapshot created by the HPE CSI Driver (Retain)"
+  csi.storage.k8s.io/snapshotter-secret-name: nimble-chaska-prod
+  csi.storage.k8s.io/snapshotter-secret-namespace: hpe-storage
+  csi.storage.k8s.io/snapshotter-list-secret-name: nimble-chaska-prod
+  csi.storage.k8s.io/snapshotter-list-secret-namespace: hpe-storage
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
+metadata:
+  name: hpe-nimble-chaska-prod-volume-snapshot-restorepoint
+  annotations:
+    snapshot.storage.kubernetes.io/is-default-class: "true"
+driver: csi.hpe.com
+deletionPolicy: Retain
+parameters:
+  #https://scod.hpedev.io/container_storage_provider/hpe_alletra_6000/index.html#volumesnapshotclass_parameters
+  #writable: false
+  online: "true" # if snapshot does not remain online we need Infrastructure team to enable it on the array.
+  description: "HPE CSI Driver for Kubernetes Snapshot Restore Point"
+  csi.storage.k8s.io/snapshotter-secret-name: nimble-chaska-prod
+  csi.storage.k8s.io/snapshotter-secret-namespace: hpe-storage
+  csi.storage.k8s.io/snapshotter-list-secret-name: nimble-chaska-prod
+  csi.storage.k8s.io/snapshotter-list-secret-namespace: hpe-storage

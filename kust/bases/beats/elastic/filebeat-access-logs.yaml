@@ -1,0 +1,104 @@
+apiVersion: beat.k8s.elastic.co/v1beta1
+kind: Beat
+metadata:
+  name: filebeat-access-logs
+spec:
+  type: filebeat
+  version: 7.16.3
+  config:
+    setup.ilm.enabled: true
+    # See base/elastic/beats/setup for the policy_name used in setup configuration.
+    setup.ilm.policy_name: "access"
+    filebeat.autodiscover.providers:
+    - node: ${NODE_NAME}
+      type: kubernetes
+      labels.dedot: false
+      annotations.dedot: false
+      add_resource_metadata:
+        namespace:
+          labels.dedot: false
+          annotations.dedot: false
+        node:
+          enabled: false
+          labels.dedot: false
+          annotations.dedot: false
+      hints.default_config.enabled: "false"
+      templates:
+      - condition.and:
+          - equals:
+              kubernetes.namespace: kube-system
+          - contains:
+              kubernetes.container.name: "ingress-nginx-controller"
+        config:
+        - paths: ["/var/log/containers/*${data.kubernetes.container.id}.log"]
+          type: container
+    processors:
+    - add_kubernetes_metadata: {}
+    output:
+      elasticsearch:
+        enabled: true
+        hosts: ["${ELASTICSEARCH_HOST}"]
+        username: '${ELASTICSEARCH_USERNAME}'
+        password: '${ELASTICSEARCH_PASSWORD}'
+        protocol: https
+        index: "access"
+        non_indexable_policy.dead_letter_index:
+          index: "dead-letter-access-logs"
+        ssl:
+              verification_mode: "none"
+  daemonSet:
+    podTemplate:
+      spec:
+        serviceAccountName: filebeat
+        automountServiceAccountToken: true
+        terminationGracePeriodSeconds: 30
+        dnsPolicy: ClusterFirstWithHostNet
+        hostNetwork: true # Allows to provide richer host metadata
+        containers:
+        - name: filebeat
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+          - name: varlogcontainers
+            mountPath: /var/log/containers
+          - name: varlogpods
+            mountPath: /var/log/pods
+          - name: varlibdockercontainers
+            mountPath: /var/lib/docker/containers
+          # Below serves as an example of the configurations to be specified by an overlay.
+          # env:
+          # - name: NODE_NAME
+          #   valueFrom:
+          #     fieldRef:
+          #       fieldPath: spec.nodeName
+          # - name: DATA_CENTER
+          #   value: London
+          # - name: ELASTICSEARCH_HOST
+          #   valueFrom:
+          #     secretKeyRef:
+          #       name: logging-elasticsearch
+          #       key: host
+          # - name: ELASTICSEARCH_USERNAME
+          #   valueFrom:
+          #     secretKeyRef:
+          #       name: logging-elasticsearch
+          #       key: username
+          # - name: ELASTICSEARCH_PASSWORD
+          #   valueFrom:
+          #     secretKeyRef:
+          #       name: logging-elasticsearch
+          #       key: password
+        volumes:
+        - name: varlogcontainers
+          hostPath:
+            path: /var/log/containers
+        - name: varlogpods
+          hostPath:
+            path: /var/log/pods
+        - name: varlibdockercontainers
+          hostPath:
+            path: /var/lib/docker/containers
+    updateStrategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxUnavailable: 1

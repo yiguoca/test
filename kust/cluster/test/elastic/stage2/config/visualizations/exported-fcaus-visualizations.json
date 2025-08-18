@@ -1,0 +1,665 @@
+[
+    {
+        "_id": "9cf57420-20d7-11e9-90e4-9f231e1bd85d",
+        "_type": "visualization",
+        "_source": {
+            "title": "Status Code Ratio [FCAUS]",
+            "visState": "{\"title\":\"Status Code Ratio [FCAUS]\",\"type\":\"pie\",\"params\":{\"type\":\"pie\",\"addTooltip\":true,\"addLegend\":true,\"legendPosition\":\"right\",\"isDonut\":true,\"labels\":{\"show\":true,\"values\":true,\"last_level\":true,\"truncate\":100}},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{}},{\"id\":\"2\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"segment\",\"params\":{\"field\":\"nginx.status.keyword\",\"size\":5,\"order\":\"desc\",\"orderBy\":\"1\"}}]}",
+            "uiStateJSON": "{\"vis\":{\"legendOpen\":false}}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "1397bcc0-2491-11e9-8a1e-f1835c3b38b4",
+        "_type": "visualization",
+        "_source": {
+            "title": "Top 10 App Log Counts",
+            "visState": "{\"title\":\"Top 10 App Log Counts\",\"type\":\"horizontal_bar\",\"params\":{\"type\":\"histogram\",\"grid\":{\"categoryLines\":false,\"style\":{\"color\":\"#eee\"}},\"categoryAxes\":[{\"id\":\"CategoryAxis-1\",\"type\":\"category\",\"position\":\"left\",\"show\":true,\"style\":{},\"scale\":{\"type\":\"linear\"},\"labels\":{\"show\":true,\"rotate\":0,\"filter\":false,\"truncate\":200},\"title\":{}}],\"valueAxes\":[{\"id\":\"ValueAxis-1\",\"name\":\"LeftAxis-1\",\"type\":\"value\",\"position\":\"bottom\",\"show\":true,\"style\":{},\"scale\":{\"type\":\"linear\",\"mode\":\"normal\"},\"labels\":{\"show\":true,\"rotate\":75,\"filter\":true,\"truncate\":100},\"title\":{\"text\":\"Count\"}}],\"seriesParams\":[{\"show\":true,\"type\":\"histogram\",\"mode\":\"normal\",\"data\":{\"label\":\"Count\",\"id\":\"1\"},\"valueAxis\":\"ValueAxis-1\",\"drawLinesBetweenPoints\":true,\"showCircles\":true}],\"addTooltip\":true,\"addLegend\":true,\"legendPosition\":\"bottom\",\"times\":[],\"addTimeMarker\":false},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{}},{\"id\":\"2\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"segment\",\"params\":{\"field\":\"kubernetes.container_name.keyword\",\"size\":10,\"order\":\"desc\",\"orderBy\":\"1\",\"customLabel\":\"Container Name\"}}]}",
+            "uiStateJSON": "{}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"0cb62dc0-307a-11e9-a3a4-a7395bd45802\",\"filter\":[],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "a66d0e40-24bb-11e9-90e4-9f231e1bd85d",
+        "_type": "visualization",
+        "_source": {
+            "title": "Frequency of App Startup/Restart [FCAUS]",
+            "visState": "{\"title\":\"Frequency of App Startup/Restart [FCAUS]\",\"type\":\"heatmap\",\"params\":{\"type\":\"heatmap\",\"addTooltip\":true,\"addLegend\":true,\"enableHover\":false,\"legendPosition\":\"right\",\"times\":[],\"colorsNumber\":4,\"colorSchema\":\"Greens\",\"setColorRange\":false,\"colorsRange\":[],\"invertColors\":false,\"percentageMode\":false,\"valueAxes\":[{\"show\":false,\"id\":\"ValueAxis-1\",\"type\":\"value\",\"scale\":{\"type\":\"linear\",\"defaultYExtents\":false},\"labels\":{\"show\":false,\"rotate\":0,\"color\":\"#555\"}}]},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{}},{\"id\":\"3\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"segment\",\"params\":{\"field\":\"kubernetes.container_name.keyword\",\"size\":20,\"order\":\"desc\",\"orderBy\":\"1\",\"customLabel\":\"Applications\"}}]}",
+            "uiStateJSON": "{\"vis\":{\"defaultColors\":{\"0 - 100\":\"rgb(247,252,245)\",\"100 - 200\":\"rgb(199,233,192)\",\"200 - 300\":\"rgb(116,196,118)\",\"300 - 400\":\"rgb(35,139,69)\"}}}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"0cb62dc0-307a-11e9-a3a4-a7395bd45802\",\"filter\":[{\"meta\":{\"index\":\"094fdbc0-94ff-11e8-8002-27b53bdb450e\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"phrase\",\"key\":\"log\",\"value\":\"*startup*\",\"params\":{\"query\":\"*startup*\",\"type\":\"phrase\"}},\"query\":{\"match\":{\"log\":{\"query\":\"*startup*\",\"type\":\"phrase\"}}},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "d40b8260-2492-11e9-90e4-9f231e1bd85d",
+        "_type": "visualization",
+        "_source": {
+            "title": "Top 10 Warn/Error Producing Apps [FCAUS]",
+            "visState": "{\"title\":\"Top 10 Warn/Error Producing Apps [FCAUS]\",\"type\":\"heatmap\",\"params\":{\"type\":\"heatmap\",\"addTooltip\":true,\"addLegend\":true,\"enableHover\":true,\"legendPosition\":\"bottom\",\"times\":[],\"colorsNumber\":4,\"colorSchema\":\"Greens\",\"setColorRange\":false,\"colorsRange\":[],\"invertColors\":false,\"percentageMode\":false,\"valueAxes\":[{\"show\":false,\"id\":\"ValueAxis-1\",\"type\":\"value\",\"scale\":{\"type\":\"linear\",\"defaultYExtents\":false},\"labels\":{\"show\":true,\"rotate\":0,\"color\":\"#555\"}}]},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{}},{\"id\":\"2\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"segment\",\"params\":{\"field\":\"kubernetes.container_name.keyword\",\"size\":5,\"order\":\"desc\",\"orderBy\":\"1\",\"customLabel\":\"Container Name\"}},{\"id\":\"3\",\"enabled\":true,\"type\":\"filters\",\"schema\":\"group\",\"params\":{\"filters\":[{\"input\":{\"query\":\"error\"},\"label\":\"\"},{\"input\":{\"query\":\"warn\"}}]}}]}",
+            "uiStateJSON": "{\"vis\":{\"defaultColors\":{\"0 - 200,000\":\"rgb(247,252,245)\",\"200,000 - 400,000\":\"rgb(199,233,192)\",\"400,000 - 600,000\":\"rgb(116,196,118)\",\"600,000 - 800,000\":\"rgb(35,139,69)\"}}}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"0cb62dc0-307a-11e9-a3a4-a7395bd45802\",\"filter\":[],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "df270e00-2490-11e9-8a1e-f1835c3b38b4",
+        "_type": "visualization",
+        "_source": {
+            "title": "Log Counts over Time [FCAUS]",
+            "visState": "{\"title\":\"Log Counts over Time [FCAUS]\",\"type\":\"line\",\"params\":{\"type\":\"line\",\"grid\":{\"categoryLines\":false,\"style\":{\"color\":\"#eee\"}},\"categoryAxes\":[{\"id\":\"CategoryAxis-1\",\"type\":\"category\",\"position\":\"bottom\",\"show\":true,\"style\":{},\"scale\":{\"type\":\"linear\"},\"labels\":{\"show\":true,\"truncate\":100},\"title\":{}}],\"valueAxes\":[{\"id\":\"ValueAxis-1\",\"name\":\"LeftAxis-1\",\"type\":\"value\",\"position\":\"left\",\"show\":true,\"style\":{},\"scale\":{\"type\":\"linear\",\"mode\":\"normal\"},\"labels\":{\"show\":true,\"rotate\":0,\"filter\":false,\"truncate\":100},\"title\":{\"text\":\"Count\"}}],\"seriesParams\":[{\"show\":\"true\",\"type\":\"line\",\"mode\":\"normal\",\"data\":{\"label\":\"Count\",\"id\":\"1\"},\"valueAxis\":\"ValueAxis-1\",\"drawLinesBetweenPoints\":true,\"showCircles\":true}],\"addTooltip\":true,\"addLegend\":true,\"legendPosition\":\"bottom\",\"times\":[],\"addTimeMarker\":true},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{}},{\"id\":\"2\",\"enabled\":true,\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"@timestamp\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}},{\"id\":\"3\",\"enabled\":true,\"type\":\"filters\",\"schema\":\"group\",\"params\":{\"filters\":[{\"input\":{\"query\":\"error\"},\"label\":\"\"},{\"input\":{\"query\":\"warn\"}},{\"input\":{\"query\":\"info\"}},{\"input\":{\"query\":\"debug\"}}]}}]}",
+            "uiStateJSON": "{\"vis\":{\"colors\":{\"error\":\"#BF1B00\",\"warn\":\"#EF843C\",\"info\":\"#7EB26D\",\"debug\":\"#6ED0E0\"}}}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"0cb62dc0-307a-11e9-a3a4-a7395bd45802\",\"filter\":[],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "857abad0-135d-11e9-8a1e-f1835c3b38b4",
+        "_type": "visualization",
+        "_source": {
+            "title": "log counts top 10",
+            "visState": "{\"aggs\":[{\"enabled\":true,\"id\":\"2\",\"params\":{\"customLabel\":\"container name\",\"field\":\"kubernetes.container_name.keyword\",\"order\":\"desc\",\"orderBy\":\"_term\",\"size\":10},\"schema\":\"bucket\",\"type\":\"terms\"},{\"enabled\":true,\"id\":\"3\",\"params\":{\"customBucket\":{\"enabled\":true,\"id\":\"3-bucket\",\"params\":{\"filters\":[{\"input\":{\"query\":\"error\"},\"label\":\"\"}]},\"schema\":{\"aggFilter\":[],\"deprecate\":false,\"editor\":false,\"group\":\"none\",\"max\":null,\"min\":0,\"name\":\"bucketAgg\",\"params\":[],\"title\":\"Bucket Agg\"},\"type\":\"filters\"},\"customLabel\":\"error\",\"customMetric\":{\"enabled\":true,\"id\":\"3-metric\",\"params\":{},\"schema\":{\"aggFilter\":[\"!top_hits\",\"!percentiles\",\"!percentile_ranks\",\"!median\",\"!std_dev\",\"!sum_bucket\",\"!avg_bucket\",\"!min_bucket\",\"!max_bucket\",\"!derivative\",\"!moving_avg\",\"!serial_diff\",\"!cumulative_sum\"],\"deprecate\":false,\"editor\":false,\"group\":\"none\",\"max\":null,\"min\":0,\"name\":\"metricAgg\",\"params\":[],\"title\":\"Metric Agg\"},\"type\":\"count\"}},\"schema\":\"metric\",\"type\":\"avg_bucket\"},{\"enabled\":true,\"id\":\"4\",\"params\":{\"customBucket\":{\"enabled\":true,\"id\":\"4-bucket\",\"params\":{\"filters\":[{\"input\":{\"query\":\"warn\"},\"label\":\"\"}]},\"schema\":{\"aggFilter\":[],\"deprecate\":false,\"editor\":false,\"group\":\"none\",\"max\":null,\"min\":0,\"name\":\"bucketAgg\",\"params\":[],\"title\":\"Bucket Agg\"},\"type\":\"filters\"},\"customLabel\":\"warn\",\"customMetric\":{\"enabled\":true,\"id\":\"4-metric\",\"params\":{},\"schema\":{\"aggFilter\":[\"!top_hits\",\"!percentiles\",\"!percentile_ranks\",\"!median\",\"!std_dev\",\"!sum_bucket\",\"!avg_bucket\",\"!min_bucket\",\"!max_bucket\",\"!derivative\",\"!moving_avg\",\"!serial_diff\",\"!cumulative_sum\"],\"deprecate\":false,\"editor\":false,\"group\":\"none\",\"max\":null,\"min\":0,\"name\":\"metricAgg\",\"params\":[],\"title\":\"Metric Agg\"},\"type\":\"count\"}},\"schema\":\"metric\",\"type\":\"avg_bucket\"},{\"enabled\":true,\"id\":\"5\",\"params\":{\"customBucket\":{\"enabled\":true,\"id\":\"5-bucket\",\"params\":{\"filters\":[{\"input\":{\"query\":\"info\"},\"label\":\"\"}]},\"schema\":{\"aggFilter\":[],\"deprecate\":false,\"editor\":false,\"group\":\"none\",\"max\":null,\"min\":0,\"name\":\"bucketAgg\",\"params\":[],\"title\":\"Bucket Agg\"},\"type\":\"filters\"},\"customLabel\":\"info\",\"customMetric\":{\"enabled\":true,\"id\":\"5-metric\",\"params\":{\"customLabel\":\"\"},\"schema\":{\"aggFilter\":[\"!top_hits\",\"!percentiles\",\"!percentile_ranks\",\"!median\",\"!std_dev\",\"!sum_bucket\",\"!avg_bucket\",\"!min_bucket\",\"!max_bucket\",\"!derivative\",\"!moving_avg\",\"!serial_diff\",\"!cumulative_sum\"],\"deprecate\":false,\"editor\":false,\"group\":\"none\",\"max\":null,\"min\":0,\"name\":\"metricAgg\",\"params\":[],\"title\":\"Metric Agg\"},\"type\":\"count\"}},\"schema\":\"metric\",\"type\":\"avg_bucket\"},{\"enabled\":true,\"id\":\"6\",\"params\":{\"customBucket\":{\"enabled\":true,\"id\":\"6-bucket\",\"params\":{\"filters\":[{\"input\":{\"query\":\"debug\"},\"label\":\"\"}]},\"schema\":{\"aggFilter\":[],\"deprecate\":false,\"editor\":false,\"group\":\"none\",\"max\":null,\"min\":0,\"name\":\"bucketAgg\",\"params\":[],\"title\":\"Bucket Agg\"},\"type\":\"filters\"},\"customLabel\":\"debug\",\"customMetric\":{\"enabled\":true,\"id\":\"6-metric\",\"params\":{},\"schema\":{\"aggFilter\":[\"!top_hits\",\"!percentiles\",\"!percentile_ranks\",\"!median\",\"!std_dev\",\"!sum_bucket\",\"!avg_bucket\",\"!min_bucket\",\"!max_bucket\",\"!derivative\",\"!moving_avg\",\"!serial_diff\",\"!cumulative_sum\"],\"deprecate\":false,\"editor\":false,\"group\":\"none\",\"max\":null,\"min\":0,\"name\":\"metricAgg\",\"params\":[],\"title\":\"Metric Agg\"},\"type\":\"count\"}},\"schema\":\"metric\",\"type\":\"avg_bucket\"}],\"params\":{\"perPage\":10,\"showMeticsAtAllLevels\":false,\"showPartialRows\":false,\"showTotal\":false,\"sort\":{\"columnIndex\":null,\"direction\":null},\"totalFunc\":\"sum\"},\"title\":\"log counts top 10\",\"type\":\"table\"}",
+            "uiStateJSON": "{\"vis\":{\"params\":{\"sort\":{\"columnIndex\":1,\"direction\":\"desc\"}}}}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"0cb62dc0-307a-11e9-a3a4-a7395bd45802\",\"filter\":[],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "3a805210-24a6-11e9-90e4-9f231e1bd85d",
+        "_type": "visualization",
+        "_source": {
+            "title": "Load Balance Distribution over Nodes [FCAUS]",
+            "visState": "{\"title\":\"Load Balance Distribution over Nodes [FCAUS]\",\"type\":\"heatmap\",\"params\":{\"addLegend\":true,\"addTooltip\":true,\"colorSchema\":\"Greens\",\"colorsNumber\":4,\"colorsRange\":[],\"enableHover\":false,\"invertColors\":false,\"legendPosition\":\"bottom\",\"percentageMode\":false,\"setColorRange\":false,\"times\":[],\"type\":\"heatmap\",\"valueAxes\":[{\"id\":\"ValueAxis-1\",\"labels\":{\"color\":\"#555\",\"rotate\":0,\"show\":false},\"scale\":{\"defaultYExtents\":false,\"type\":\"linear\"},\"show\":false,\"type\":\"value\"}]},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{\"customLabel\":\"Hits\"}},{\"id\":\"2\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"segment\",\"params\":{\"field\":\"kubernetes.host.keyword\",\"size\":32,\"order\":\"desc\",\"orderBy\":\"1\"}}]}",
+            "uiStateJSON": "{\"vis\":{\"defaultColors\":{\"0 - 550,000\":\"rgb(247,252,245)\",\"550,000 - 1,100,000\":\"rgb(199,233,192)\",\"1,100,000 - 1,650,000\":\"rgb(116,196,118)\",\"1,650,000 - 2,200,000\":\"rgb(35,139,69)\"}}}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[],\"query\":{\"language\":\"lucene\",\"query\":\"\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "dd778fa0-2498-11e9-90e4-9f231e1bd85d",
+        "_type": "visualization",
+        "_source": {
+            "title": "London - Request/Response Performance [FCAUS]",
+            "visState": "{\"aggs\":[{\"enabled\":true,\"id\":\"2\",\"params\":{\"customLabel\":\"Total\"},\"schema\":\"metric\",\"type\":\"count\"},{\"enabled\":true,\"id\":\"1\",\"params\":{\"customBucket\":{\"enabled\":true,\"id\":\"1-bucket\",\"params\":{\"customInterval\":\"2h\",\"extended_bounds\":{},\"field\":\"@timestamp\",\"interval\":\"s\",\"min_doc_count\":1},\"schema\":{\"aggFilter\":[],\"deprecate\":false,\"editor\":false,\"group\":\"none\",\"max\":null,\"min\":0,\"name\":\"bucketAgg\",\"params\":[],\"title\":\"Bucket Agg\"},\"type\":\"date_histogram\"},\"customLabel\":\"Avg. Request per Sec\",\"customMetric\":{\"enabled\":true,\"id\":\"1-metric\",\"params\":{\"customLabel\":\"\"},\"schema\":{\"aggFilter\":[\"!top_hits\",\"!percentiles\",\"!percentile_ranks\",\"!median\",\"!std_dev\",\"!sum_bucket\",\"!avg_bucket\",\"!min_bucket\",\"!max_bucket\",\"!derivative\",\"!moving_avg\",\"!serial_diff\",\"!cumulative_sum\"],\"deprecate\":false,\"editor\":false,\"group\":\"none\",\"max\":null,\"min\":0,\"name\":\"metricAgg\",\"params\":[],\"title\":\"Metric Agg\"},\"type\":\"count\"}},\"schema\":\"metric\",\"type\":\"avg_bucket\"},{\"enabled\":true,\"id\":\"3\",\"params\":{\"customLabel\":\"Avg. Request Time (s)\",\"field\":\"nginx.request_time\"},\"schema\":\"metric\",\"type\":\"avg\"},{\"enabled\":true,\"id\":\"4\",\"params\":{\"customLabel\":\"Avg. Response Time (s)\",\"field\":\"nginx.upstream_response_time\"},\"schema\":\"metric\",\"type\":\"avg\"}],\"params\":{\"addLegend\":false,\"addTooltip\":true,\"metric\":{\"colorSchema\":\"Green to Red\",\"colorsRange\":[{\"from\":0,\"to\":10000}],\"invertColors\":false,\"labels\":{\"show\":true},\"metricColorMode\":\"None\",\"percentageMode\":false,\"style\":{\"bgColor\":false,\"bgFill\":\"#000\",\"fontSize\":40,\"labelColor\":false,\"subText\":\"\"},\"useRanges\":false},\"type\":\"metric\"},\"title\":\"London - Request/Response Performance [FCAUS]\",\"type\":\"metric\"}",
+            "uiStateJSON": "{}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"phrase\",\"key\":\"datacenter.keyword\",\"value\":\"london\",\"params\":{\"query\":\"london\",\"type\":\"phrase\"}},\"query\":{\"match\":{\"datacenter.keyword\":{\"query\":\"london\",\"type\":\"phrase\"}}},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "31373a50-2499-11e9-90e4-9f231e1bd85d",
+        "_type": "visualization",
+        "_source": {
+            "title": "Portland - Request/Response Performance [FCAUS]",
+            "visState": "{\"aggs\":[{\"enabled\":true,\"id\":\"2\",\"params\":{\"customLabel\":\"Total\"},\"schema\":\"metric\",\"type\":\"count\"},{\"enabled\":true,\"id\":\"1\",\"params\":{\"customBucket\":{\"enabled\":true,\"id\":\"1-bucket\",\"params\":{\"customInterval\":\"2h\",\"extended_bounds\":{},\"field\":\"@timestamp\",\"interval\":\"s\",\"min_doc_count\":1},\"schema\":{\"aggFilter\":[],\"deprecate\":false,\"editor\":false,\"group\":\"none\",\"max\":null,\"min\":0,\"name\":\"bucketAgg\",\"params\":[],\"title\":\"Bucket Agg\"},\"type\":\"date_histogram\"},\"customLabel\":\"Avg. Request per Sec\",\"customMetric\":{\"enabled\":true,\"id\":\"1-metric\",\"params\":{\"customLabel\":\"\"},\"schema\":{\"aggFilter\":[\"!top_hits\",\"!percentiles\",\"!percentile_ranks\",\"!median\",\"!std_dev\",\"!sum_bucket\",\"!avg_bucket\",\"!min_bucket\",\"!max_bucket\",\"!derivative\",\"!moving_avg\",\"!serial_diff\",\"!cumulative_sum\"],\"deprecate\":false,\"editor\":false,\"group\":\"none\",\"max\":null,\"min\":0,\"name\":\"metricAgg\",\"params\":[],\"title\":\"Metric Agg\"},\"type\":\"count\"}},\"schema\":\"metric\",\"type\":\"avg_bucket\"},{\"enabled\":true,\"id\":\"3\",\"params\":{\"customLabel\":\"Avg. Request Time (s)\",\"field\":\"nginx.request_time\"},\"schema\":\"metric\",\"type\":\"avg\"},{\"enabled\":true,\"id\":\"4\",\"params\":{\"customLabel\":\"Avg. Response Time (s)\",\"field\":\"nginx.upstream_response_time\"},\"schema\":\"metric\",\"type\":\"avg\"}],\"params\":{\"addLegend\":false,\"addTooltip\":true,\"metric\":{\"colorSchema\":\"Green to Red\",\"colorsRange\":[{\"from\":0,\"to\":10000}],\"invertColors\":false,\"labels\":{\"show\":true},\"metricColorMode\":\"None\",\"percentageMode\":false,\"style\":{\"bgColor\":false,\"bgFill\":\"#000\",\"fontSize\":40,\"labelColor\":false,\"subText\":\"\"},\"useRanges\":false},\"type\":\"metric\"},\"title\":\"Portland - Request/Response Performance [FCAUS]\",\"type\":\"metric\"}",
+            "uiStateJSON": "{}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"phrase\",\"key\":\"datacenter.keyword\",\"value\":\"portland\",\"params\":{\"query\":\"portland\",\"type\":\"phrase\"}},\"query\":{\"match\":{\"datacenter.keyword\":{\"query\":\"portland\",\"type\":\"phrase\"}}},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "1e25dca0-2bba-11e9-bcb6-13d0538eb282",
+        "_type": "visualization",
+        "_source": {
+            "title": "Brand Avg. Request per Second over Time [API][FCAUS]",
+            "visState": "{\"title\":\"Brand Avg. Request per Second over Time [API][FCAUS]\",\"type\":\"area\",\"params\":{\"addLegend\":true,\"addTimeMarker\":true,\"addTooltip\":true,\"categoryAxes\":[{\"id\":\"CategoryAxis-1\",\"labels\":{\"show\":true,\"truncate\":100},\"position\":\"bottom\",\"scale\":{\"type\":\"linear\"},\"show\":true,\"style\":{},\"title\":{},\"type\":\"category\"}],\"grid\":{\"categoryLines\":false,\"style\":{\"color\":\"#eee\"}},\"legendPosition\":\"bottom\",\"seriesParams\":[{\"data\":{\"id\":\"1\",\"label\":\"Per Second\"},\"drawLinesBetweenPoints\":true,\"interpolate\":\"linear\",\"mode\":\"normal\",\"show\":\"true\",\"showCircles\":true,\"type\":\"histogram\",\"valueAxis\":\"ValueAxis-1\"}],\"times\":[],\"type\":\"area\",\"valueAxes\":[{\"id\":\"ValueAxis-1\",\"labels\":{\"filter\":false,\"rotate\":0,\"show\":true,\"truncate\":100},\"name\":\"LeftAxis-1\",\"position\":\"left\",\"scale\":{\"mode\":\"normal\",\"type\":\"linear\"},\"show\":true,\"style\":{},\"title\":{\"text\":\"Per Second\"},\"type\":\"value\"}]},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"avg_bucket\",\"schema\":\"metric\",\"params\":{\"customBucket\":{\"id\":\"1-bucket\",\"enabled\":true,\"type\":\"date_histogram\",\"schema\":\"bucketAgg\",\"params\":{\"field\":\"@timestamp\",\"interval\":\"s\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}},\"customMetric\":{\"id\":\"1-metric\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metricAgg\",\"params\":{}},\"customLabel\":\"Per Second\"}},{\"id\":\"2\",\"enabled\":true,\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"@timestamp\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}},{\"id\":\"3\",\"enabled\":true,\"type\":\"filters\",\"schema\":\"group\",\"params\":{\"filters\":[{\"input\":{\"query\":\"CUT*\"},\"label\":\"ram\"},{\"input\":{\"query\":\"CUJ*\"},\"label\":\"jeep\"},{\"input\":{\"query\":\"CUC*\"},\"label\":\"chrysler\"},{\"input\":{\"query\":\"CUD*\"},\"label\":\"dodge\"},{\"input\":{\"query\":\"CUY*\"},\"label\":\"alfa romeo\"},{\"input\":{\"query\":\"CUX*\"},\"label\":\"fiat\"}]}}]}",
+            "uiStateJSON": "{\"spy\":{\"mode\":{\"fill\":false,\"name\":null}}}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"exists\",\"key\":\"fca.api\",\"value\":\"exists\"},\"exists\":{\"field\":\"fca.api\"},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"language\":\"lucene\",\"query\":\"\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "36000d00-2499-11e9-90e4-9f231e1bd85d",
+        "_type": "visualization",
+        "_source": {
+            "title": "Flint - Request/Response Performance [API][FCAUS]",
+            "visState": "{\"aggs\":[{\"enabled\":true,\"id\":\"2\",\"params\":{\"customLabel\":\"Total\"},\"schema\":\"metric\",\"type\":\"count\"},{\"enabled\":true,\"id\":\"1\",\"params\":{\"customBucket\":{\"enabled\":true,\"id\":\"1-bucket\",\"params\":{\"customInterval\":\"2h\",\"extended_bounds\":{},\"field\":\"@timestamp\",\"interval\":\"s\",\"min_doc_count\":1},\"schema\":{\"aggFilter\":[],\"deprecate\":false,\"editor\":false,\"group\":\"none\",\"max\":null,\"min\":0,\"name\":\"bucketAgg\",\"params\":[],\"title\":\"Bucket Agg\"},\"type\":\"date_histogram\"},\"customLabel\":\"Avg. Request per Sec\",\"customMetric\":{\"enabled\":true,\"id\":\"1-metric\",\"params\":{\"customLabel\":\"\"},\"schema\":{\"aggFilter\":[\"!top_hits\",\"!percentiles\",\"!percentile_ranks\",\"!median\",\"!std_dev\",\"!sum_bucket\",\"!avg_bucket\",\"!min_bucket\",\"!max_bucket\",\"!derivative\",\"!moving_avg\",\"!serial_diff\",\"!cumulative_sum\"],\"deprecate\":false,\"editor\":false,\"group\":\"none\",\"max\":null,\"min\":0,\"name\":\"metricAgg\",\"params\":[],\"title\":\"Metric Agg\"},\"type\":\"count\"}},\"schema\":\"metric\",\"type\":\"avg_bucket\"},{\"enabled\":true,\"id\":\"3\",\"params\":{\"customLabel\":\"Avg. Request Time (s)\",\"field\":\"nginx.request_time\"},\"schema\":\"metric\",\"type\":\"avg\"},{\"enabled\":true,\"id\":\"4\",\"params\":{\"customLabel\":\"Avg. Response Time (s)\",\"field\":\"nginx.upstream_response_time\"},\"schema\":\"metric\",\"type\":\"avg\"}],\"params\":{\"addLegend\":false,\"addTooltip\":true,\"metric\":{\"colorSchema\":\"Green to Red\",\"colorsRange\":[{\"from\":0,\"to\":10000}],\"invertColors\":false,\"labels\":{\"show\":true},\"metricColorMode\":\"None\",\"percentageMode\":false,\"style\":{\"bgColor\":false,\"bgFill\":\"#000\",\"fontSize\":40,\"labelColor\":false,\"subText\":\"\"},\"useRanges\":false},\"type\":\"metric\"},\"title\":\"Flint - Request/Response Performance [API][FCAUS]\",\"type\":\"metric\"}",
+            "uiStateJSON": "{}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"phrase\",\"key\":\"datacenter.keyword\",\"value\":\"flint\",\"params\":{\"query\":\"flint\",\"type\":\"phrase\"}},\"query\":{\"match\":{\"datacenter.keyword\":{\"query\":\"flint\",\"type\":\"phrase\"}}},\"$state\":{\"store\":\"appState\"}},{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"exists\",\"key\":\"fca.api\",\"value\":\"exists\"},\"exists\":{\"field\":\"fca.api\"},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "c78240d0-20c1-11e9-90e4-9f231e1bd85d",
+        "_type": "visualization",
+        "_source": {
+            "title": "Avg. Response/Request Time over Time [API][FCAUS]",
+            "visState": "{\"title\":\"Avg. Response/Request Time over Time [API][FCAUS]\",\"type\":\"histogram\",\"params\":{\"type\":\"histogram\",\"grid\":{\"categoryLines\":false,\"style\":{\"color\":\"#eee\"}},\"categoryAxes\":[{\"id\":\"CategoryAxis-1\",\"type\":\"category\",\"position\":\"bottom\",\"show\":true,\"style\":{},\"scale\":{\"type\":\"linear\"},\"labels\":{\"show\":true,\"truncate\":100,\"filter\":true},\"title\":{}}],\"valueAxes\":[{\"id\":\"ValueAxis-1\",\"name\":\"LeftAxis-1\",\"type\":\"value\",\"position\":\"left\",\"show\":true,\"style\":{},\"scale\":{\"type\":\"linear\",\"mode\":\"normal\"},\"labels\":{\"show\":true,\"rotate\":0,\"filter\":false,\"truncate\":100},\"title\":{\"text\":\"Time (s)\"}}],\"seriesParams\":[{\"show\":\"true\",\"type\":\"histogram\",\"mode\":\"normal\",\"data\":{\"label\":\"Avg Response Time (s)\",\"id\":\"1\"},\"valueAxis\":\"ValueAxis-1\",\"drawLinesBetweenPoints\":true,\"showCircles\":true},{\"show\":true,\"mode\":\"normal\",\"type\":\"histogram\",\"drawLinesBetweenPoints\":true,\"showCircles\":true,\"data\":{\"id\":\"3\",\"label\":\"Avg Request Time (s)\"},\"valueAxis\":\"ValueAxis-1\"}],\"addTooltip\":true,\"addLegend\":true,\"legendPosition\":\"bottom\",\"times\":[],\"addTimeMarker\":true},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"avg\",\"schema\":\"metric\",\"params\":{\"field\":\"nginx.upstream_response_time\",\"customLabel\":\"Avg Response Time (s)\"}},{\"id\":\"2\",\"enabled\":true,\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"@timestamp\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}},{\"id\":\"3\",\"enabled\":true,\"type\":\"avg\",\"schema\":\"metric\",\"params\":{\"field\":\"nginx.request_time\",\"customLabel\":\"Avg Request Time (s)\"}}]}",
+            "uiStateJSON": "{\"spy\":{\"mode\":{\"name\":null,\"fill\":false}},\"vis\":{\"legendOpen\":true,\"colors\":{\"Avg Response Time (s)\":\"#7EB26D\",\"Avg Request Time (s)\":\"#1F78C1\"}}}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"exists\",\"key\":\"fca.api\",\"value\":\"exists\"},\"exists\":{\"field\":\"fca.api\"},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "808c46f0-20bf-11e9-90e4-9f231e1bd85d",
+        "_type": "visualization",
+        "_source": {
+            "title": "All - Request/Response Performance [API][FCAUS]",
+            "visState": "{\"aggs\":[{\"enabled\":true,\"id\":\"2\",\"params\":{\"customLabel\":\"Total\"},\"schema\":\"metric\",\"type\":\"count\"},{\"enabled\":true,\"id\":\"1\",\"params\":{\"customBucket\":{\"enabled\":true,\"id\":\"1-bucket\",\"params\":{\"customInterval\":\"2h\",\"extended_bounds\":{},\"field\":\"@timestamp\",\"interval\":\"s\",\"min_doc_count\":1},\"schema\":{\"aggFilter\":[],\"deprecate\":false,\"editor\":false,\"group\":\"none\",\"max\":null,\"min\":0,\"name\":\"bucketAgg\",\"params\":[],\"title\":\"Bucket Agg\"},\"type\":\"date_histogram\"},\"customLabel\":\"Avg. Request per Sec\",\"customMetric\":{\"enabled\":true,\"id\":\"1-metric\",\"params\":{\"customLabel\":\"\"},\"schema\":{\"aggFilter\":[\"!top_hits\",\"!percentiles\",\"!percentile_ranks\",\"!median\",\"!std_dev\",\"!sum_bucket\",\"!avg_bucket\",\"!min_bucket\",\"!max_bucket\",\"!derivative\",\"!moving_avg\",\"!serial_diff\",\"!cumulative_sum\"],\"deprecate\":false,\"editor\":false,\"group\":\"none\",\"max\":null,\"min\":0,\"name\":\"metricAgg\",\"params\":[],\"title\":\"Metric Agg\"},\"type\":\"count\"}},\"schema\":\"metric\",\"type\":\"avg_bucket\"},{\"enabled\":true,\"id\":\"3\",\"params\":{\"customLabel\":\"Avg. Request Time (s)\",\"field\":\"nginx.request_time\"},\"schema\":\"metric\",\"type\":\"avg\"},{\"enabled\":true,\"id\":\"4\",\"params\":{\"customLabel\":\"Avg. Response Time (s)\",\"field\":\"nginx.upstream_response_time\"},\"schema\":\"metric\",\"type\":\"avg\"}],\"params\":{\"addLegend\":false,\"addTooltip\":true,\"metric\":{\"colorSchema\":\"Green to Red\",\"colorsRange\":[{\"from\":0,\"to\":10000}],\"invertColors\":false,\"labels\":{\"show\":true},\"metricColorMode\":\"None\",\"percentageMode\":false,\"style\":{\"bgColor\":false,\"bgFill\":\"#000\",\"fontSize\":40,\"labelColor\":false,\"subText\":\"\"},\"useRanges\":false},\"type\":\"metric\"},\"title\":\"All - Request/Response Performance [API][FCAUS]\",\"type\":\"metric\"}",
+            "uiStateJSON": "{}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"exists\",\"key\":\"fca.api\",\"value\":\"exists\"},\"exists\":{\"field\":\"fca.api\"},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "27903900-2bbc-11e9-bcb6-13d0538eb282",
+        "_type": "visualization",
+        "_source": {
+            "title": "Avg. Request per Second over Time [API][FCAUS]",
+            "visState": "{\"title\":\"Avg. Request per Second over Time [API][FCAUS]\",\"type\":\"area\",\"params\":{\"addLegend\":true,\"addTimeMarker\":true,\"addTooltip\":true,\"categoryAxes\":[{\"id\":\"CategoryAxis-1\",\"labels\":{\"show\":true,\"truncate\":100},\"position\":\"bottom\",\"scale\":{\"type\":\"linear\"},\"show\":true,\"style\":{},\"title\":{},\"type\":\"category\"}],\"grid\":{\"categoryLines\":false,\"style\":{\"color\":\"#eee\"}},\"legendPosition\":\"bottom\",\"seriesParams\":[{\"data\":{\"id\":\"1\",\"label\":\"Avg. Requests Per Second\"},\"drawLinesBetweenPoints\":true,\"interpolate\":\"linear\",\"mode\":\"normal\",\"show\":\"true\",\"showCircles\":true,\"type\":\"histogram\",\"valueAxis\":\"ValueAxis-1\"}],\"times\":[],\"type\":\"area\",\"valueAxes\":[{\"id\":\"ValueAxis-1\",\"labels\":{\"filter\":false,\"rotate\":0,\"show\":true,\"truncate\":100},\"name\":\"LeftAxis-1\",\"position\":\"left\",\"scale\":{\"mode\":\"normal\",\"type\":\"linear\"},\"show\":true,\"style\":{},\"title\":{\"text\":\"Avg. Requests Per Second\"},\"type\":\"value\"}]},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"avg_bucket\",\"schema\":\"metric\",\"params\":{\"customBucket\":{\"id\":\"1-bucket\",\"enabled\":true,\"type\":\"date_histogram\",\"schema\":\"bucketAgg\",\"params\":{\"field\":\"@timestamp\",\"interval\":\"s\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}},\"customMetric\":{\"id\":\"1-metric\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metricAgg\",\"params\":{}},\"customLabel\":\"Avg. Requests Per Second\"}},{\"id\":\"2\",\"enabled\":true,\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"@timestamp\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}}]}",
+            "uiStateJSON": "{\"spy\":{\"mode\":{\"fill\":false,\"name\":null}}}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"exists\",\"key\":\"fca.api\",\"value\":\"exists\"},\"exists\":{\"field\":\"fca.api\"},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"language\":\"lucene\",\"query\":\"\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "7ce6fec0-2306-11e9-90e4-9f231e1bd85d",
+        "_type": "visualization",
+        "_source": {
+            "title": "Avg. Request/Response Size over Time [API][FCAUS]",
+            "visState": "{\"title\":\"Avg. Request/Response Size over Time [API][FCAUS]\",\"type\":\"histogram\",\"params\":{\"type\":\"histogram\",\"grid\":{\"categoryLines\":false,\"style\":{\"color\":\"#eee\"}},\"categoryAxes\":[{\"id\":\"CategoryAxis-1\",\"type\":\"category\",\"position\":\"bottom\",\"show\":true,\"style\":{},\"scale\":{\"type\":\"linear\"},\"labels\":{\"show\":true,\"truncate\":100},\"title\":{}}],\"valueAxes\":[{\"id\":\"ValueAxis-1\",\"name\":\"LeftAxis-1\",\"type\":\"value\",\"position\":\"left\",\"show\":true,\"style\":{},\"scale\":{\"type\":\"linear\",\"mode\":\"normal\"},\"labels\":{\"show\":true,\"rotate\":0,\"filter\":false,\"truncate\":100},\"title\":{\"text\":\"Average nginx.request_length\"}}],\"seriesParams\":[{\"show\":\"true\",\"type\":\"histogram\",\"mode\":\"normal\",\"data\":{\"label\":\"Avg Request Size (kb)\",\"id\":\"1\"},\"valueAxis\":\"ValueAxis-1\",\"drawLinesBetweenPoints\":true,\"showCircles\":true},{\"show\":true,\"mode\":\"normal\",\"type\":\"histogram\",\"drawLinesBetweenPoints\":true,\"showCircles\":true,\"data\":{\"id\":\"3\",\"label\":\"Avg Response Size (kb)\"},\"valueAxis\":\"ValueAxis-1\"}],\"addTooltip\":true,\"addLegend\":true,\"legendPosition\":\"bottom\",\"times\":[],\"addTimeMarker\":true},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"avg\",\"schema\":\"metric\",\"params\":{\"field\":\"nginx.request_length\",\"customLabel\":\"Avg Request Size (kb)\"}},{\"id\":\"2\",\"enabled\":true,\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"@timestamp\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}},{\"id\":\"3\",\"enabled\":true,\"type\":\"avg\",\"schema\":\"metric\",\"params\":{\"field\":\"nginx.upstream_response_length\",\"customLabel\":\"Avg Response Size (kb)\"}}]}",
+            "uiStateJSON": "{}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"exists\",\"key\":\"fca.api\",\"value\":\"exists\"},\"exists\":{\"field\":\"fca.api\"},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "b5a349b0-24a2-11e9-90e4-9f231e1bd85d",
+        "_type": "visualization",
+        "_source": {
+            "title": "Load - Average Request Per Second [API][FCAUS]",
+            "visState": "{\"title\":\"Load - Average Request Per Second [API][FCAUS]\",\"type\":\"gauge\",\"params\":{\"addLegend\":true,\"addTooltip\":true,\"gauge\":{\"backStyle\":\"Full\",\"colorSchema\":\"Green to Red\",\"colorsRange\":[{\"from\":0,\"to\":100},{\"from\":100,\"to\":200},{\"from\":200,\"to\":300}],\"extendRange\":false,\"gaugeColorMode\":\"Labels\",\"gaugeStyle\":\"Full\",\"gaugeType\":\"Arc\",\"invertColors\":false,\"labels\":{\"color\":\"black\",\"show\":false},\"orientation\":\"vertical\",\"percentageMode\":false,\"scale\":{\"color\":\"#333\",\"labels\":false,\"show\":true},\"style\":{\"bgColor\":false,\"bgFill\":\"#eee\",\"bgMask\":false,\"bgWidth\":0.9,\"fontSize\":60,\"labelColor\":true,\"mask\":false,\"maskBars\":50,\"subText\":\"\",\"width\":0.9},\"type\":\"meter\",\"verticalSplit\":false},\"isDisplayWarning\":false,\"type\":\"gauge\"},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"avg_bucket\",\"schema\":\"metric\",\"params\":{\"customBucket\":{\"id\":\"1-bucket\",\"enabled\":true,\"type\":\"date_histogram\",\"schema\":\"bucketAgg\",\"params\":{\"field\":\"@timestamp\",\"interval\":\"s\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}},\"customMetric\":{\"id\":\"1-metric\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metricAgg\",\"params\":{}},\"customLabel\":\"Per Second\"}}]}",
+            "uiStateJSON": "{\"vis\":{\"defaultColors\":{\"0 - 100\":\"rgb(0,104,55)\",\"100 - 200\":\"rgb(255,255,190)\",\"200 - 300\":\"rgb(165,0,38)\"}},\"spy\":{\"mode\":{\"name\":null,\"fill\":false}}}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"exists\",\"key\":\"fca.api\",\"value\":\"exists\"},\"exists\":{\"field\":\"fca.api\"},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "748efaa0-24a2-11e9-90e4-9f231e1bd85d",
+        "_type": "visualization",
+        "_source": {
+            "title": "Load - Average Response Time [API][FCAUS]",
+            "visState": "{\"title\":\"Load - Average Response Time [API][FCAUS]\",\"type\":\"gauge\",\"params\":{\"type\":\"gauge\",\"addTooltip\":true,\"addLegend\":true,\"isDisplayWarning\":false,\"gauge\":{\"verticalSplit\":true,\"extendRange\":true,\"percentageMode\":false,\"gaugeType\":\"Arc\",\"gaugeStyle\":\"Full\",\"backStyle\":\"Full\",\"orientation\":\"vertical\",\"colorSchema\":\"Green to Red\",\"gaugeColorMode\":\"Labels\",\"colorsRange\":[{\"from\":0,\"to\":1},{\"from\":1,\"to\":3},{\"from\":3,\"to\":5}],\"invertColors\":false,\"labels\":{\"show\":false,\"color\":\"black\"},\"scale\":{\"show\":true,\"labels\":false,\"color\":\"#333\"},\"type\":\"meter\",\"style\":{\"bgWidth\":0.9,\"width\":0.9,\"mask\":false,\"bgMask\":false,\"maskBars\":50,\"bgFill\":\"#eee\",\"bgColor\":false,\"subText\":\"\",\"fontSize\":60,\"labelColor\":true}}},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"avg\",\"schema\":\"metric\",\"params\":{\"field\":\"nginx.upstream_response_time\",\"customLabel\":\"Seconds\"}}]}",
+            "uiStateJSON": "{\"vis\":{\"defaultColors\":{\"0 - 1\":\"rgb(0,104,55)\",\"1 - 3\":\"rgb(255,255,190)\",\"3 - 5\":\"rgb(165,0,38)\"}},\"spy\":{\"mode\":{\"name\":null,\"fill\":false}}}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"exists\",\"key\":\"fca.api\",\"value\":\"exists\"},\"exists\":{\"field\":\"fca.api\"},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "270ffaf0-24b5-11e9-90e4-9f231e1bd85d",
+        "_type": "visualization",
+        "_source": {
+            "title": "Top 10 Payloads [API][FCAUS]",
+            "visState": "{\"title\":\"Top 10 Payloads [API][FCAUS]\",\"type\":\"histogram\",\"params\":{\"type\":\"histogram\",\"grid\":{\"categoryLines\":false,\"style\":{\"color\":\"#eee\"}},\"categoryAxes\":[{\"id\":\"CategoryAxis-1\",\"type\":\"category\",\"position\":\"bottom\",\"show\":false,\"style\":{},\"scale\":{\"type\":\"linear\"},\"labels\":{\"show\":true,\"truncate\":100},\"title\":{}}],\"valueAxes\":[{\"id\":\"ValueAxis-1\",\"name\":\"LeftAxis-1\",\"type\":\"value\",\"position\":\"left\",\"show\":true,\"style\":{},\"scale\":{\"type\":\"linear\",\"mode\":\"normal\"},\"labels\":{\"show\":true,\"rotate\":0,\"filter\":false,\"truncate\":100},\"title\":{\"text\":\"Min Payload in Bytes\"}}],\"seriesParams\":[{\"show\":\"true\",\"type\":\"histogram\",\"mode\":\"normal\",\"data\":{\"label\":\"Min Payload in Bytes\",\"id\":\"1\"},\"valueAxis\":\"ValueAxis-1\",\"drawLinesBetweenPoints\":true,\"showCircles\":true},{\"show\":true,\"mode\":\"normal\",\"type\":\"histogram\",\"drawLinesBetweenPoints\":true,\"showCircles\":true,\"data\":{\"id\":\"2\",\"label\":\"Avg. Payload in Bytes\"},\"valueAxis\":\"ValueAxis-1\"},{\"show\":true,\"mode\":\"normal\",\"type\":\"histogram\",\"drawLinesBetweenPoints\":true,\"showCircles\":true,\"data\":{\"id\":\"3\",\"label\":\"Max Payload in Bytes\"},\"valueAxis\":\"ValueAxis-1\"}],\"addTooltip\":true,\"addLegend\":true,\"legendPosition\":\"right\",\"times\":[],\"addTimeMarker\":false},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"min\",\"schema\":\"metric\",\"params\":{\"field\":\"nginx.body_bytes_sent\",\"customLabel\":\"Min Payload in Bytes\"}},{\"id\":\"2\",\"enabled\":true,\"type\":\"avg\",\"schema\":\"metric\",\"params\":{\"field\":\"nginx.body_bytes_sent\",\"customLabel\":\"Avg. Payload in Bytes\"}},{\"id\":\"3\",\"enabled\":true,\"type\":\"max\",\"schema\":\"metric\",\"params\":{\"field\":\"nginx.body_bytes_sent\",\"customLabel\":\"Max Payload in Bytes\"}},{\"id\":\"4\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"segment\",\"params\":{\"field\":\"fca.api.keyword\",\"size\":10,\"order\":\"desc\",\"orderBy\":\"1\"}}]}",
+            "uiStateJSON": "{}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"exists\",\"key\":\"fca.api\",\"value\":\"exists\"},\"exists\":{\"field\":\"fca.api\"},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "493c37b0-3162-11e9-a3a4-a7395bd45802",
+        "_type": "visualization",
+        "_source": {
+            "title": "Top 10 Frequency over Time [API][FCAUS]",
+            "visState": "{\"title\":\"Top 10 Frequency over Time [API][FCAUS]\",\"type\":\"line\",\"params\":{\"type\":\"line\",\"grid\":{\"categoryLines\":false,\"style\":{\"color\":\"#eee\"}},\"categoryAxes\":[{\"id\":\"CategoryAxis-1\",\"type\":\"category\",\"position\":\"bottom\",\"show\":true,\"style\":{},\"scale\":{\"type\":\"linear\"},\"labels\":{\"show\":true,\"truncate\":100},\"title\":{}}],\"valueAxes\":[{\"id\":\"ValueAxis-1\",\"name\":\"LeftAxis-1\",\"type\":\"value\",\"position\":\"left\",\"show\":true,\"style\":{},\"scale\":{\"type\":\"linear\",\"mode\":\"normal\"},\"labels\":{\"show\":true,\"rotate\":0,\"filter\":false,\"truncate\":100},\"title\":{\"text\":\"Count\"}}],\"seriesParams\":[{\"show\":\"true\",\"type\":\"line\",\"mode\":\"normal\",\"data\":{\"label\":\"Count\",\"id\":\"1\"},\"valueAxis\":\"ValueAxis-1\",\"drawLinesBetweenPoints\":true,\"showCircles\":true}],\"addTooltip\":true,\"addLegend\":true,\"legendPosition\":\"right\",\"times\":[],\"addTimeMarker\":true},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{}},{\"id\":\"2\",\"enabled\":true,\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"@timestamp\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}},{\"id\":\"3\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"group\",\"params\":{\"field\":\"fca.api.keyword\",\"size\":5,\"order\":\"desc\",\"orderBy\":\"1\"}}]}",
+            "uiStateJSON": "{}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"exists\",\"key\":\"fca.api\",\"value\":\"exists\"},\"exists\":{\"field\":\"fca.api\"},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "29b4df80-20c0-11e9-90e4-9f231e1bd85d",
+        "_type": "visualization",
+        "_source": {
+            "title": "Top 10 Frequency [API][FCAUS]",
+            "visState": "{\"title\":\"Top 10 Frequency [API][FCAUS]\",\"type\":\"horizontal_bar\",\"params\":{\"type\":\"histogram\",\"grid\":{\"categoryLines\":false,\"style\":{\"color\":\"#eee\"}},\"categoryAxes\":[{\"id\":\"CategoryAxis-1\",\"type\":\"category\",\"position\":\"left\",\"show\":true,\"style\":{},\"scale\":{\"type\":\"linear\"},\"labels\":{\"show\":true,\"rotate\":0,\"filter\":false,\"truncate\":200},\"title\":{}}],\"valueAxes\":[{\"id\":\"ValueAxis-1\",\"name\":\"LeftAxis-1\",\"type\":\"value\",\"position\":\"bottom\",\"show\":true,\"style\":{},\"scale\":{\"type\":\"linear\",\"mode\":\"normal\"},\"labels\":{\"show\":true,\"rotate\":75,\"filter\":true,\"truncate\":100},\"title\":{\"text\":\"Count\"}}],\"seriesParams\":[{\"show\":true,\"type\":\"histogram\",\"mode\":\"normal\",\"data\":{\"label\":\"Count\",\"id\":\"1\"},\"valueAxis\":\"ValueAxis-1\",\"drawLinesBetweenPoints\":true,\"showCircles\":true}],\"addTooltip\":true,\"addLegend\":true,\"legendPosition\":\"bottom\",\"times\":[],\"addTimeMarker\":false,\"orderBucketsBySum\":true},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{}},{\"id\":\"2\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"segment\",\"params\":{\"field\":\"fca.api.keyword\",\"size\":10,\"order\":\"desc\",\"orderBy\":\"1\",\"customLabel\":\"API\"}}]}",
+            "uiStateJSON": "{\"vis\":{\"legendOpen\":false}}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"exists\",\"key\":\"fca.api\",\"value\":\"exists\"},\"exists\":{\"field\":\"fca.api\"},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "8f69de20-24a3-11e9-90e4-9f231e1bd85d",
+        "_type": "visualization",
+        "_source": {
+            "title": "Load - Average Request Time [API][FCAUS]",
+            "visState": "{\"title\":\"Load - Average Request Time [API][FCAUS]\",\"type\":\"gauge\",\"params\":{\"type\":\"gauge\",\"addTooltip\":true,\"addLegend\":true,\"isDisplayWarning\":false,\"gauge\":{\"verticalSplit\":false,\"extendRange\":true,\"percentageMode\":false,\"gaugeType\":\"Arc\",\"gaugeStyle\":\"Full\",\"backStyle\":\"Full\",\"orientation\":\"vertical\",\"colorSchema\":\"Green to Red\",\"gaugeColorMode\":\"Labels\",\"colorsRange\":[{\"from\":0,\"to\":1},{\"from\":1,\"to\":3},{\"from\":3,\"to\":5}],\"invertColors\":false,\"labels\":{\"show\":false,\"color\":\"black\"},\"scale\":{\"show\":true,\"labels\":false,\"color\":\"#333\"},\"type\":\"meter\",\"style\":{\"bgWidth\":0.9,\"width\":0.9,\"mask\":false,\"bgMask\":false,\"maskBars\":50,\"bgFill\":\"#eee\",\"bgColor\":false,\"subText\":\"\",\"fontSize\":60,\"labelColor\":true}}},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"avg\",\"schema\":\"metric\",\"params\":{\"field\":\"nginx.request_time\",\"customLabel\":\"Seconds\"}}]}",
+            "uiStateJSON": "{\"vis\":{\"defaultColors\":{\"0 - 1\":\"rgb(0,104,55)\",\"1 - 3\":\"rgb(255,255,190)\",\"3 - 5\":\"rgb(165,0,38)\"}}}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"exists\",\"key\":\"fca.api\",\"value\":\"exists\"},\"exists\":{\"field\":\"fca.api\"},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "779f0ee0-24a4-11e9-90e4-9f231e1bd85d",
+        "_type": "visualization",
+        "_source": {
+            "title": "Load - Total Request Count [API][FCAUS]",
+            "visState": "{\"title\":\"Load - Total Request Count [API][FCAUS]\",\"type\":\"metric\",\"params\":{\"addTooltip\":true,\"addLegend\":false,\"type\":\"metric\",\"metric\":{\"percentageMode\":false,\"useRanges\":false,\"colorSchema\":\"Green to Red\",\"metricColorMode\":\"None\",\"colorsRange\":[{\"from\":0,\"to\":10000}],\"labels\":{\"show\":true},\"invertColors\":false,\"style\":{\"bgFill\":\"#000\",\"bgColor\":false,\"labelColor\":false,\"subText\":\"\",\"fontSize\":40}}},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{\"customLabel\":\"Total\"}}]}",
+            "uiStateJSON": "{}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"exists\",\"key\":\"fca.api\",\"value\":\"exists\"},\"exists\":{\"field\":\"fca.api\"},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"language\":\"lucene\",\"query\":\"\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "16638540-20d3-11e9-90e4-9f231e1bd85d",
+        "_type": "visualization",
+        "_source": {
+            "title": "Requests per Brand [API][FCAUS]",
+            "visState": "{\"title\":\"Requests per Brand [API][FCAUS]\",\"type\":\"pie\",\"params\":{\"addLegend\":true,\"addTooltip\":true,\"isDonut\":true,\"labels\":{\"last_level\":true,\"show\":true,\"truncate\":100,\"values\":true},\"legendPosition\":\"right\",\"type\":\"pie\"},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{}},{\"id\":\"2\",\"enabled\":true,\"type\":\"filters\",\"schema\":\"segment\",\"params\":{\"filters\":[{\"input\":{\"query\":\"CUT*\"},\"label\":\"RAM\"},{\"input\":{\"query\":\"CUJ*\"},\"label\":\"Jeep\"},{\"input\":{\"query\":\"CUC*\"},\"label\":\"Chrysler\"},{\"input\":{\"query\":\"CUX*\"},\"label\":\"Fiat\"},{\"input\":{\"query\":\"CUY*\"},\"label\":\"Alfa\"},{\"input\":{\"query\":\"CUD*\"},\"label\":\"Dodge\"}]}}]}",
+            "uiStateJSON": "{}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"exists\",\"key\":\"fca.api\",\"value\":\"exists\"},\"exists\":{\"field\":\"fca.api\"},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"language\":\"lucene\",\"query\":\"\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "756d31f0-3161-11e9-a3a4-a7395bd45802",
+        "_type": "visualization",
+        "_source": {
+            "title": "Top 10 Slowest [API][FCAUS]",
+            "visState": "{\"title\":\"Top 10 Slowest [API][FCAUS]\",\"type\":\"line\",\"params\":{\"addLegend\":true,\"addTimeMarker\":false,\"addTooltip\":true,\"categoryAxes\":[{\"id\":\"CategoryAxis-1\",\"labels\":{\"show\":true,\"truncate\":100},\"position\":\"bottom\",\"scale\":{\"type\":\"linear\"},\"show\":true,\"style\":{},\"title\":{},\"type\":\"category\"}],\"grid\":{\"categoryLines\":false,\"style\":{\"color\":\"#eee\"}},\"legendPosition\":\"bottom\",\"seriesParams\":[{\"data\":{\"id\":\"1\",\"label\":\"Avg Response Time (s)\"},\"drawLinesBetweenPoints\":true,\"mode\":\"normal\",\"show\":\"true\",\"showCircles\":true,\"type\":\"line\",\"valueAxis\":\"ValueAxis-1\"}],\"times\":[],\"type\":\"line\",\"valueAxes\":[{\"id\":\"ValueAxis-1\",\"labels\":{\"filter\":false,\"rotate\":0,\"show\":true,\"truncate\":100},\"name\":\"LeftAxis-1\",\"position\":\"left\",\"scale\":{\"mode\":\"normal\",\"type\":\"linear\"},\"show\":true,\"style\":{},\"title\":{\"text\":\"Avg Response Time (s)\"},\"type\":\"value\"}]},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"avg\",\"schema\":\"metric\",\"params\":{\"field\":\"nginx.upstream_response_time\",\"customLabel\":\"Avg Response Time (s)\"}},{\"id\":\"2\",\"enabled\":true,\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"@timestamp\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}},{\"id\":\"3\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"group\",\"params\":{\"field\":\"fca.api.keyword\",\"size\":10,\"order\":\"asc\",\"orderBy\":\"1\"}}]}",
+            "uiStateJSON": "{}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"exists\",\"key\":\"fca.api\",\"value\":\"exists\"},\"exists\":{\"field\":\"fca.api\"},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "5b4cfd60-3449-11e9-a3a4-a7395bd45802",
+        "_type": "visualization",
+        "_source": {
+            "title": "Top 10 Slowest Requests [API][FCAUS]",
+            "visState": "{\"title\":\"Top 10 Slowest Requests [API][FCAUS]\",\"type\":\"line\",\"params\":{\"addLegend\":true,\"addTimeMarker\":false,\"addTooltip\":true,\"categoryAxes\":[{\"id\":\"CategoryAxis-1\",\"labels\":{\"show\":true,\"truncate\":100},\"position\":\"bottom\",\"scale\":{\"type\":\"linear\"},\"show\":true,\"style\":{},\"title\":{},\"type\":\"category\"}],\"grid\":{\"categoryLines\":false,\"style\":{\"color\":\"#eee\"}},\"legendPosition\":\"bottom\",\"seriesParams\":[{\"data\":{\"id\":\"1\",\"label\":\"Average nginx.upstream_response_time\"},\"drawLinesBetweenPoints\":true,\"mode\":\"normal\",\"show\":\"true\",\"showCircles\":true,\"type\":\"line\",\"valueAxis\":\"ValueAxis-1\"}],\"times\":[],\"type\":\"line\",\"valueAxes\":[{\"id\":\"ValueAxis-1\",\"labels\":{\"filter\":false,\"rotate\":0,\"show\":true,\"truncate\":100},\"name\":\"LeftAxis-1\",\"position\":\"left\",\"scale\":{\"mode\":\"normal\",\"type\":\"linear\"},\"show\":true,\"style\":{},\"title\":{\"text\":\"Average nginx.upstream_response_time\"},\"type\":\"value\"}]},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"avg\",\"schema\":\"metric\",\"params\":{\"field\":\"nginx.upstream_response_time\"}},{\"id\":\"2\",\"enabled\":true,\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"@timestamp\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}},{\"id\":\"3\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"group\",\"params\":{\"field\":\"nginx.uri.keyword\",\"size\":10,\"order\":\"asc\",\"orderBy\":\"1\"}}]}",
+            "uiStateJSON": "{}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"exists\",\"key\":\"fca.api\",\"value\":\"exists\"},\"exists\":{\"field\":\"fca.api\"},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "2e172f00-3165-11e9-a3a4-a7395bd45802",
+        "_type": "visualization",
+        "_source": {
+            "title": "Unique IPs Map [API][FCAUS][nGinx]",
+            "visState": "{\"title\":\"Unique IPs Map [API][FCAUS][nGinx]\",\"type\":\"tile_map\",\"params\":{\"mapType\":\"Scaled Circle Markers\",\"isDesaturated\":true,\"addTooltip\":true,\"heatClusterSize\":1.5,\"legendPosition\":\"bottomright\",\"mapZoom\":2,\"mapCenter\":[0,0],\"wms\":{\"enabled\":false,\"options\":{\"format\":\"image/png\",\"transparent\":true}}},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"cardinality\",\"schema\":\"metric\",\"params\":{\"field\":\"nginx.remote_addr.keyword\"}},{\"id\":\"2\",\"enabled\":true,\"type\":\"geohash_grid\",\"schema\":\"segment\",\"params\":{\"field\":\"nginx.geoip.location\",\"autoPrecision\":true,\"isFilteredByCollar\":true,\"useGeocentroid\":true,\"precision\":3}}]}",
+            "uiStateJSON": "{\"mapZoom\":5,\"mapCenter\":[40.26276066437183,-98.92089843750001]}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"exists\",\"key\":\"fca.api\",\"value\":\"exists\"},\"exists\":{\"field\":\"fca.api\"},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "95362c30-24a5-11e9-8a1e-f1835c3b38b4",
+        "_type": "visualization",
+        "_source": {
+            "title": "Heatmap Non 2XX Response Codes [FCAUS]",
+            "visState": "{\"title\":\"Heatmap Non 2XX Response Codes [FCAUS]\",\"type\":\"heatmap\",\"params\":{\"type\":\"heatmap\",\"addTooltip\":true,\"addLegend\":true,\"enableHover\":false,\"legendPosition\":\"right\",\"times\":[],\"colorsNumber\":4,\"colorSchema\":\"Greens\",\"setColorRange\":false,\"colorsRange\":[],\"invertColors\":false,\"percentageMode\":false,\"valueAxes\":[{\"show\":false,\"id\":\"ValueAxis-1\",\"type\":\"value\",\"scale\":{\"type\":\"linear\",\"defaultYExtents\":false},\"labels\":{\"show\":false,\"rotate\":0,\"color\":\"#555\"}}]},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{}},{\"id\":\"3\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"group\",\"params\":{\"field\":\"nginx.status.keyword\",\"size\":5,\"order\":\"desc\",\"orderBy\":\"1\"}},{\"id\":\"4\",\"enabled\":true,\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"@timestamp\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}}]}",
+            "uiStateJSON": "{\"vis\":{\"defaultColors\":{\"0 - 60\":\"rgb(247,252,245)\",\"60 - 120\":\"rgb(199,233,192)\",\"120 - 180\":\"rgb(116,196,118)\",\"180 - 240\":\"rgb(35,139,69)\"}}}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[{\"meta\":{\"index\":\"b7622e40-e1e7-11e8-b12f-e11b9cb95dfe\",\"type\":\"phrases\",\"key\":\"nginx.status.keyword\",\"value\":\"2*, 3*\",\"params\":[\"2*\",\"3*\"],\"negate\":true,\"disabled\":false,\"alias\":null},\"query\":{\"bool\":{\"should\":[{\"match_phrase\":{\"nginx.status.keyword\":\"2*\"}},{\"match_phrase\":{\"nginx.status.keyword\":\"3*\"}}],\"minimum_should_match\":1}},\"$state\":{\"store\":\"appState\"}},{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"exists\",\"key\":\"fca.api\",\"value\":\"exists\"},\"exists\":{\"field\":\"fca.api\"},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "3d2ac4b0-35d5-11e9-a3a4-a7395bd45802",
+        "_type": "visualization",
+        "_source": {
+            "title": "Top Urls by Response Code [API][FCAUS]",
+            "visState": "{\"title\":\"Top Urls by Response Code [API][FCAUS]\",\"type\":\"pie\",\"params\":{\"type\":\"pie\",\"addTooltip\":true,\"addLegend\":true,\"legendPosition\":\"bottom\",\"isDonut\":false,\"labels\":{\"show\":false,\"values\":true,\"last_level\":true,\"truncate\":100}},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{}},{\"id\":\"2\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"split\",\"params\":{\"field\":\"nginx.uri.keyword\",\"size\":5,\"order\":\"desc\",\"orderBy\":\"1\",\"row\":false}},{\"id\":\"3\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"segment\",\"params\":{\"field\":\"nginx.status.keyword\",\"size\":5,\"order\":\"desc\",\"orderBy\":\"1\"}}]}",
+            "uiStateJSON": "{}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"exists\",\"key\":\"fca.api\",\"value\":\"exists\"},\"exists\":{\"field\":\"fca.api\"},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "c91611d0-2493-11e9-90e4-9f231e1bd85d",
+        "_type": "visualization",
+        "_source": {
+            "title": "Log Level Ratio [FCAUS]",
+            "visState": "{\"title\":\"Log Level Ratio [FCAUS]\",\"type\":\"pie\",\"params\":{\"type\":\"pie\",\"addTooltip\":true,\"addLegend\":true,\"legendPosition\":\"bottom\",\"isDonut\":true,\"labels\":{\"show\":true,\"values\":true,\"last_level\":true,\"truncate\":100}},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{}},{\"id\":\"2\",\"enabled\":true,\"type\":\"filters\",\"schema\":\"segment\",\"params\":{\"filters\":[{\"input\":{\"query\":\"error\"},\"label\":\"\"},{\"input\":{\"query\":\"warn\"}},{\"input\":{\"query\":\"info\"}},{\"input\":{\"query\":\"debug\"}}]}}]}",
+            "uiStateJSON": "{\"vis\":{\"colors\":{\"debug\":\"#6ED0E0\",\"error\":\"#BF1B00\",\"info\":\"#508642\",\"warn\":\"#E0752D\"}}}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"0cb62dc0-307a-11e9-a3a4-a7395bd45802\",\"filter\":[],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "d4ec7010-497f-11e9-a3a4-a7395bd45802",
+        "_type": "visualization",
+        "_source": {
+            "title": "Table - Average Request Per Second [API][FCAUS]",
+            "visState": "{\"aggs\":[{\"enabled\":true,\"id\":\"1\",\"params\":{\"customBucket\":{\"enabled\":true,\"id\":\"1-bucket\",\"params\":{\"customInterval\":\"2h\",\"extended_bounds\":{},\"field\":\"@timestamp\",\"interval\":\"s\",\"min_doc_count\":1},\"schema\":{\"aggFilter\":[],\"deprecate\":false,\"editor\":false,\"group\":\"none\",\"max\":null,\"min\":0,\"name\":\"bucketAgg\",\"params\":[],\"title\":\"Bucket Agg\"},\"type\":\"date_histogram\"},\"customLabel\":\"Avg. Requests Per Second\",\"customMetric\":{\"enabled\":true,\"id\":\"1-metric\",\"params\":{},\"schema\":{\"aggFilter\":[\"!top_hits\",\"!percentiles\",\"!percentile_ranks\",\"!median\",\"!std_dev\",\"!sum_bucket\",\"!avg_bucket\",\"!min_bucket\",\"!max_bucket\",\"!derivative\",\"!moving_avg\",\"!serial_diff\",\"!cumulative_sum\"],\"deprecate\":false,\"editor\":false,\"group\":\"none\",\"max\":null,\"min\":0,\"name\":\"metricAgg\",\"params\":[],\"title\":\"Metric Agg\"},\"type\":\"count\"}},\"schema\":\"metric\",\"type\":\"avg_bucket\"},{\"enabled\":true,\"id\":\"2\",\"params\":{\"customLabel\":\"API\",\"field\":\"fca.api.keyword\",\"order\":\"desc\",\"orderBy\":\"_term\",\"size\":100},\"schema\":\"bucket\",\"type\":\"terms\"},{\"enabled\":true,\"id\":\"3\",\"params\":{\"customLabel\":\"Avg. Response Time (s)\",\"field\":\"nginx.upstream_response_time\"},\"schema\":\"metric\",\"type\":\"avg\"},{\"enabled\":true,\"id\":\"4\",\"params\":{\"customBucket\":{\"enabled\":true,\"id\":\"4-bucket\",\"params\":{\"customInterval\":\"2h\",\"extended_bounds\":{},\"field\":\"@timestamp\",\"interval\":\"s\",\"min_doc_count\":1},\"schema\":{\"aggFilter\":[],\"deprecate\":false,\"editor\":false,\"group\":\"none\",\"max\":null,\"min\":0,\"name\":\"bucketAgg\",\"params\":[],\"title\":\"Bucket Agg\"},\"type\":\"date_histogram\"},\"customLabel\":\"Max Requests Per Second\",\"customMetric\":{\"enabled\":true,\"id\":\"4-metric\",\"params\":{},\"schema\":{\"aggFilter\":[\"!top_hits\",\"!percentiles\",\"!percentile_ranks\",\"!median\",\"!std_dev\",\"!sum_bucket\",\"!avg_bucket\",\"!min_bucket\",\"!max_bucket\",\"!derivative\",\"!moving_avg\",\"!serial_diff\",\"!cumulative_sum\"],\"deprecate\":false,\"editor\":false,\"group\":\"none\",\"max\":null,\"min\":0,\"name\":\"metricAgg\",\"params\":[],\"title\":\"Metric Agg\"},\"type\":\"count\"}},\"schema\":\"metric\",\"type\":\"max_bucket\"}],\"params\":{\"perPage\":40,\"showMeticsAtAllLevels\":false,\"showPartialRows\":false,\"showTotal\":true,\"sort\":{\"columnIndex\":null,\"direction\":null},\"totalFunc\":\"sum\"},\"title\":\"Table - Average Request Per Second [API][FCAUS]\",\"type\":\"table\"}",
+            "uiStateJSON": "{\"vis\":{\"params\":{\"sort\":{\"columnIndex\":null,\"direction\":null}}}}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "1565b540-6698-11e9-b0c5-af4d3161f392",
+        "_type": "visualization",
+        "_source": {
+            "title": "Average, Max, and Total Response Sizes",
+            "visState": "{\"title\":\"Average, Max, and Total Response Sizes\",\"type\":\"table\",\"params\":{\"perPage\":50,\"showPartialRows\":false,\"showMeticsAtAllLevels\":false,\"sort\":{\"columnIndex\":null,\"direction\":null},\"showTotal\":false,\"totalFunc\":\"sum\"},\"aggs\":[{\"id\":\"2\",\"enabled\":true,\"type\":\"avg\",\"schema\":\"metric\",\"params\":{\"field\":\"nginx.upstream_response_length\",\"customLabel\":\"Average Response Size\"}},{\"id\":\"4\",\"enabled\":true,\"type\":\"date_histogram\",\"schema\":\"bucket\",\"params\":{\"field\":\"@timestamp\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}},{\"id\":\"5\",\"enabled\":true,\"type\":\"max\",\"schema\":\"metric\",\"params\":{\"field\":\"nginx.upstream_response_length\",\"customLabel\":\"Max Response Size\"}},{\"id\":\"6\",\"enabled\":true,\"type\":\"sum\",\"schema\":\"metric\",\"params\":{\"field\":\"nginx.upstream_response_length\",\"customLabel\":\"Total Response Size\"}}]}",
+            "uiStateJSON": "{\"vis\":{\"params\":{\"sort\":{\"columnIndex\":null,\"direction\":null}}}}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "d1d46660-8b85-11e9-b0c5-af4d3161f392",
+        "_type": "visualization",
+        "_source": {
+            "title": "AccessUpstreamResponseTimePortland",
+            "visState": "{\"title\":\"AccessUpstreamResponseTimePortland\",\"type\":\"table\",\"params\":{\"perPage\":10,\"showPartialRows\":false,\"showMeticsAtAllLevels\":false,\"sort\":{\"columnIndex\":null,\"direction\":null},\"showTotal\":false,\"totalFunc\":\"sum\"},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"avg\",\"schema\":\"metric\",\"params\":{\"field\":\"nginx.upstream_response_time\"}},{\"id\":\"2\",\"enabled\":true,\"type\":\"date_histogram\",\"schema\":\"bucket\",\"params\":{\"field\":\"@timestamp\",\"interval\":\"d\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}},{\"id\":\"3\",\"enabled\":true,\"type\":\"max\",\"schema\":\"metric\",\"params\":{\"field\":\"nginx.upstream_response_time\"}}]}",
+            "uiStateJSON": "{\"vis\":{\"params\":{\"sort\":{\"columnIndex\":null,\"direction\":null}}}}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"type\":\"phrases\",\"key\":\"nginx.namespace\",\"value\":\"blue, green\",\"params\":[\"blue\",\"green\"],\"negate\":false,\"disabled\":false,\"alias\":null},\"query\":{\"bool\":{\"should\":[{\"match_phrase\":{\"nginx.namespace\":\"blue\"}},{\"match_phrase\":{\"nginx.namespace\":\"green\"}}],\"minimum_should_match\":1}},\"$state\":{\"store\":\"appState\"}},{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"phrase\",\"key\":\"datacenter\",\"value\":\"portland\",\"params\":{\"query\":\"portland\",\"type\":\"phrase\"}},\"query\":{\"match\":{\"datacenter\":{\"query\":\"portland\",\"type\":\"phrase\"}}},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "39e20270-78a9-11e9-b0c5-af4d3161f392",
+        "_type": "visualization",
+        "_source": {
+            "title": "AccessUpstreamResponseTimeFlint",
+            "visState": "{\"title\":\"AccessUpstreamResponseTimeFlint\",\"type\":\"table\",\"params\":{\"perPage\":10,\"showPartialRows\":false,\"showMeticsAtAllLevels\":false,\"sort\":{\"columnIndex\":null,\"direction\":null},\"showTotal\":false,\"totalFunc\":\"sum\"},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"avg\",\"schema\":\"metric\",\"params\":{\"field\":\"nginx.upstream_response_time\"}},{\"id\":\"2\",\"enabled\":true,\"type\":\"date_histogram\",\"schema\":\"bucket\",\"params\":{\"field\":\"@timestamp\",\"interval\":\"d\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}},{\"id\":\"3\",\"enabled\":true,\"type\":\"max\",\"schema\":\"metric\",\"params\":{\"field\":\"nginx.upstream_response_time\"}}]}",
+            "uiStateJSON": "{\"vis\":{\"params\":{\"sort\":{\"columnIndex\":null,\"direction\":null}}}}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"type\":\"phrases\",\"key\":\"nginx.namespace\",\"value\":\"blue, green\",\"params\":[\"blue\",\"green\"],\"negate\":false,\"disabled\":false,\"alias\":null},\"query\":{\"bool\":{\"should\":[{\"match_phrase\":{\"nginx.namespace\":\"blue\"}},{\"match_phrase\":{\"nginx.namespace\":\"green\"}}],\"minimum_should_match\":1}},\"$state\":{\"store\":\"appState\"}},{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"phrase\",\"key\":\"datacenter\",\"value\":\"flint\",\"params\":{\"query\":\"flint\",\"type\":\"phrase\"}},\"query\":{\"match\":{\"datacenter\":{\"query\":\"flint\",\"type\":\"phrase\"}}},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "3afdab50-2499-11e9-90e4-9f231e1bd85d",
+        "_type": "visualization",
+        "_source": {
+            "title": "Azure - Request/Response Performance [API][FCAUS]",
+            "visState": "{\"aggs\":[{\"enabled\":true,\"id\":\"2\",\"params\":{\"customLabel\":\"Total\"},\"schema\":\"metric\",\"type\":\"count\"},{\"enabled\":true,\"id\":\"1\",\"params\":{\"customBucket\":{\"enabled\":true,\"id\":\"1-bucket\",\"params\":{\"customInterval\":\"2h\",\"extended_bounds\":{},\"field\":\"@timestamp\",\"interval\":\"s\",\"min_doc_count\":1},\"schema\":{\"aggFilter\":[],\"deprecate\":false,\"editor\":false,\"group\":\"none\",\"max\":null,\"min\":0,\"name\":\"bucketAgg\",\"params\":[],\"title\":\"Bucket Agg\"},\"type\":\"date_histogram\"},\"customLabel\":\"Avg. Request per Sec\",\"customMetric\":{\"enabled\":true,\"id\":\"1-metric\",\"params\":{\"customLabel\":\"\"},\"schema\":{\"aggFilter\":[\"!top_hits\",\"!percentiles\",\"!percentile_ranks\",\"!median\",\"!std_dev\",\"!sum_bucket\",\"!avg_bucket\",\"!min_bucket\",\"!max_bucket\",\"!derivative\",\"!moving_avg\",\"!serial_diff\",\"!cumulative_sum\"],\"deprecate\":false,\"editor\":false,\"group\":\"none\",\"max\":null,\"min\":0,\"name\":\"metricAgg\",\"params\":[],\"title\":\"Metric Agg\"},\"type\":\"count\"}},\"schema\":\"metric\",\"type\":\"avg_bucket\"},{\"enabled\":true,\"id\":\"3\",\"params\":{\"customLabel\":\"Avg. Request Time (s)\",\"field\":\"nginx.request_time\"},\"schema\":\"metric\",\"type\":\"avg\"},{\"enabled\":true,\"id\":\"4\",\"params\":{\"customLabel\":\"Avg. Response Time (s)\",\"field\":\"nginx.upstream_response_time\"},\"schema\":\"metric\",\"type\":\"avg\"}],\"params\":{\"addLegend\":false,\"addTooltip\":true,\"metric\":{\"colorSchema\":\"Green to Red\",\"colorsRange\":[{\"from\":0,\"to\":10000}],\"invertColors\":false,\"labels\":{\"show\":true},\"metricColorMode\":\"None\",\"percentageMode\":false,\"style\":{\"bgColor\":false,\"bgFill\":\"#000\",\"fontSize\":40,\"labelColor\":false,\"subText\":\"\"},\"useRanges\":false},\"type\":\"metric\"},\"title\":\"Azure - Request/Response Performance [API][FCAUS]\",\"type\":\"metric\"}",
+            "uiStateJSON": "{}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"exists\",\"key\":\"fca.api\",\"value\":\"exists\"},\"exists\":{\"field\":\"fca.api\"},\"$state\":{\"store\":\"appState\"}},{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"phrase\",\"key\":\"datacenter.keyword\",\"value\":\"azure-aks\",\"params\":{\"query\":\"azure-aks\",\"type\":\"phrase\"}},\"query\":{\"match\":{\"datacenter.keyword\":{\"query\":\"azure-aks\",\"type\":\"phrase\"}}},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "a9ee52a0-20d2-11e9-90e4-9f231e1bd85d",
+        "_type": "visualization",
+        "_source": {
+            "title": "Top 25 CCode Frequency [Configure][API][FCAUS]",
+            "visState": "{\"title\":\"Top 25 CCode Frequency [Configure][API][FCAUS]\",\"type\":\"horizontal_bar\",\"params\":{\"type\":\"histogram\",\"grid\":{\"categoryLines\":false,\"style\":{\"color\":\"#eee\"}},\"categoryAxes\":[{\"id\":\"CategoryAxis-1\",\"type\":\"category\",\"position\":\"left\",\"show\":true,\"style\":{},\"scale\":{\"type\":\"linear\"},\"labels\":{\"show\":true,\"rotate\":0,\"filter\":false,\"truncate\":200},\"title\":{}}],\"valueAxes\":[{\"id\":\"ValueAxis-1\",\"name\":\"LeftAxis-1\",\"type\":\"value\",\"position\":\"bottom\",\"show\":true,\"style\":{},\"scale\":{\"type\":\"linear\",\"mode\":\"normal\"},\"labels\":{\"show\":true,\"rotate\":75,\"filter\":true,\"truncate\":100},\"title\":{\"text\":\"Count\"}}],\"seriesParams\":[{\"show\":true,\"type\":\"histogram\",\"mode\":\"normal\",\"data\":{\"label\":\"Count\",\"id\":\"1\"},\"valueAxis\":\"ValueAxis-1\",\"drawLinesBetweenPoints\":true,\"showCircles\":true}],\"addTooltip\":true,\"addLegend\":true,\"legendPosition\":\"bottom\",\"times\":[],\"addTimeMarker\":false,\"orderBucketsBySum\":true},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{}},{\"id\":\"2\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"segment\",\"params\":{\"field\":\"fca.params.ccode.keyword\",\"size\":25,\"order\":\"desc\",\"orderBy\":\"1\"}}]}",
+            "uiStateJSON": "{}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"phrase\",\"key\":\"fca.api\",\"value\":\"configure\",\"params\":{\"query\":\"configure\",\"type\":\"phrase\"}},\"query\":{\"match\":{\"fca.api\":{\"query\":\"configure\",\"type\":\"phrase\"}}},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "682958e0-57ec-11ea-b48f-f393d00be431",
+        "_type": "visualization",
+        "_source": {
+            "title": "FCA API Distribution",
+            "visState": "{\"title\":\"FCA API Distribution\",\"type\":\"table\",\"params\":{\"perPage\":25,\"showMeticsAtAllLevels\":false,\"showPartialRows\":false,\"showTotal\":false,\"sort\":{\"columnIndex\":null,\"direction\":null},\"totalFunc\":\"sum\"},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{\"customLabel\":\"\"}},{\"id\":\"2\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"bucket\",\"params\":{\"field\":\"fca.api.keyword\",\"size\":20,\"order\":\"desc\",\"orderBy\":\"1\"}}]}",
+            "uiStateJSON": "{\"vis\":{\"params\":{\"sort\":{\"columnIndex\":null,\"direction\":null}}}}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"type\":\"phrases\",\"key\":\"nginx.namespace\",\"value\":\"blue, green\",\"params\":[\"blue\",\"green\"],\"negate\":false,\"disabled\":false,\"alias\":null},\"query\":{\"bool\":{\"should\":[{\"match_phrase\":{\"nginx.namespace\":\"blue\"}},{\"match_phrase\":{\"nginx.namespace\":\"green\"}}],\"minimum_should_match\":1}},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"language\":\"lucene\",\"query\":\"\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "dfea5970-57eb-11ea-b48f-f393d00be431",
+        "_type": "visualization",
+        "_source": {
+            "title": "FCA API Monitored by Site 24x7",
+            "visState": "{\"title\":\"FCA API Monitored by Site 24x7\",\"type\":\"table\",\"params\":{\"perPage\":10,\"showPartialRows\":false,\"showMeticsAtAllLevels\":false,\"sort\":{\"columnIndex\":null,\"direction\":null},\"showTotal\":false,\"totalFunc\":\"sum\"},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{\"customLabel\":\"\"}},{\"id\":\"2\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"bucket\",\"params\":{\"field\":\"fca.api.keyword\",\"size\":10,\"order\":\"desc\",\"orderBy\":\"1\"}}]}",
+            "uiStateJSON": "{\"vis\":{\"params\":{\"sort\":{\"columnIndex\":null,\"direction\":null}}}}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"phrase\",\"key\":\"nginx.http_user_agent\",\"value\":\"Site24x7/1.0\",\"params\":{\"query\":\"Site24x7/1.0\",\"type\":\"phrase\"}},\"query\":{\"match\":{\"nginx.http_user_agent\":{\"query\":\"Site24x7/1.0\",\"type\":\"phrase\"}}},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "0092c1d0-ac15-11ea-9a04-17c587ac2b40",
+        "_type": "visualization",
+        "_source": {
+            "title": "Traffic by API",
+            "visState": "{\"title\":\"Traffic by API\",\"type\":\"line\",\"params\":{\"type\":\"line\",\"grid\":{\"categoryLines\":false,\"style\":{\"color\":\"#eee\"}},\"categoryAxes\":[{\"id\":\"CategoryAxis-1\",\"type\":\"category\",\"position\":\"bottom\",\"show\":true,\"style\":{},\"scale\":{\"type\":\"linear\"},\"labels\":{\"show\":true,\"truncate\":100},\"title\":{}}],\"valueAxes\":[{\"id\":\"ValueAxis-1\",\"name\":\"LeftAxis-1\",\"type\":\"value\",\"position\":\"left\",\"show\":true,\"style\":{},\"scale\":{\"type\":\"log\",\"mode\":\"normal\"},\"labels\":{\"show\":true,\"rotate\":0,\"filter\":false,\"truncate\":100},\"title\":{\"text\":\"Count\"}}],\"seriesParams\":[{\"show\":\"true\",\"type\":\"line\",\"mode\":\"normal\",\"data\":{\"label\":\"Count\",\"id\":\"1\"},\"valueAxis\":\"ValueAxis-1\",\"drawLinesBetweenPoints\":true,\"showCircles\":true,\"interpolate\":\"cardinal\"}],\"addTooltip\":true,\"addLegend\":true,\"legendPosition\":\"right\",\"times\":[],\"addTimeMarker\":false},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{}},{\"id\":\"2\",\"enabled\":true,\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"@timestamp\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}},{\"id\":\"3\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"group\",\"params\":{\"field\":\"fca.api.keyword\",\"size\":10,\"order\":\"desc\",\"orderBy\":\"1\"}}]}",
+            "uiStateJSON": "{}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "a512ebf0-9f67-11ea-9a04-17c587ac2b40",
+        "_type": "visualization",
+        "_source": {
+            "title": "Axios User Agent IPs",
+            "visState": "{\"title\":\"Axios User Agent IPs\",\"type\":\"table\",\"params\":{\"perPage\":10,\"showPartialRows\":false,\"showMeticsAtAllLevels\":false,\"sort\":{\"columnIndex\":null,\"direction\":null},\"showTotal\":false,\"totalFunc\":\"sum\"},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{}},{\"id\":\"2\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"bucket\",\"params\":{\"field\":\"nginx.remote_addr.keyword\",\"size\":5,\"order\":\"desc\",\"orderBy\":\"1\"}}]}",
+            "uiStateJSON": "{\"vis\":{\"params\":{\"sort\":{\"columnIndex\":null,\"direction\":null}}}}",
+            "description": "",
+            "version": 1,
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"filter\":[{\"meta\":{\"index\":\"5bd70370-3160-11e9-a3a4-a7395bd45802\",\"negate\":false,\"disabled\":false,\"alias\":null,\"type\":\"phrase\",\"key\":\"nginx.http_user_agent.keyword\",\"value\":\"axios/0.19.2\",\"params\":{\"query\":\"axios/0.19.2\",\"type\":\"phrase\"}},\"query\":{\"match\":{\"nginx.http_user_agent.keyword\":{\"query\":\"axios/0.19.2\",\"type\":\"phrase\"}}},\"$state\":{\"store\":\"appState\"}}],\"query\":{\"query\":\"\",\"language\":\"lucene\"}}"
+            }
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    }
+]

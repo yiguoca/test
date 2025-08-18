@@ -1,0 +1,6 @@
+resources:
+  - ../../../../bases/elastic-system/stage1
+  - selfsigned-ca.yaml
+
+commonLabels:
+  stage: one

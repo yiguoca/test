@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: es-redundancy-setup-job
+  labels:
+    app.kubernetes.io/instance: es-redundancy-setup-job
+    app.kubernetes.io/name: es-redundancy-setup
+    app.kubernetes.io/component: elasticsearch
+spec:
+  template:
+    spec:
+      containers:
+      # creates a snapshot repositories
+      # documentation:
+      #  - https://www.elastic.co/guide/en/elasticsearch/reference/current/put-snapshot-repo-api.html
+      #  - https://www.elastic.co/guide/en/elasticsearch/reference/current/repository-azure.html#repository-azure-repository-settings
+      - name: snapshots-setup
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          curl --location --request PUT https://$ELASTICSEARCH_HOST/_snapshot/eu-data-repository --header 'kbn-xsrf: true' --cacert $SSL_CERT_FILE -u $ELASTICSEARCH_USERNAME:$ELASTICSEARCH_PASSWORD --header 'Content-Type: application/json' --data @/usr/share/configs/eu-data-repository.json
+
+          curl --location --request PUT https://$ELASTICSEARCH_HOST/_slm/policy/eu-datastream-daily-snapshots --header 'kbn-xsrf: true' --cacert $SSL_CERT_FILE -u $ELASTICSEARCH_USERNAME:$ELASTICSEARCH_PASSWORD --header 'Content-Type: application/json' --data @/usr/share/configs/eu-datastream-daily-snapshots-slm.json
+        image: curlimages/curl:7.72.0
+        env:
+          - name: SSL_CERT_FILE
+            value: /usr/share/certs/tls.crt
+        volumeMounts:
+          - name: redundancy-configs
+            mountPath: /usr/share/configs/
+          - name: elastic-certs
+            mountPath: /usr/share/certs/
+
+      volumes:
+        - name: redundancy-configs
+          configMap:
+            name: es-redundancy-configs
+        - name: elastic-certs
+          secret:
+            secretName: eu-data-es-cert
+      restartPolicy: Never
+  backoffLimit: 0

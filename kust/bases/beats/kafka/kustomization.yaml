@@ -1,0 +1,4 @@
+resources:
+  - ../common/
+  - filebeat-access-logs.yaml
+  - filebeat-application-logs.yaml

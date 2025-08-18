@@ -1,0 +1,8 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: hpe-csi-info-metrics
+  namespace: hpe-storage
+  labels:
+    app.kubernetes.io/name: hpe-csi-info-metrics
+    cluster: fcaus-f-storage

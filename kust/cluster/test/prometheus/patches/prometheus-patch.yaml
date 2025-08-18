@@ -1,0 +1,15 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  labels:
+    prometheus: k8s
+  name: k8s
+  namespace: monitoring
+spec:
+  retention: "3d"
+  externalUrl: https://prometheus.fcaus-te.autodata.tech
+  externalLabels:
+    datacenter: london
+  podMetadata:
+    labels:
+      app.kubernetes.io/instance: test

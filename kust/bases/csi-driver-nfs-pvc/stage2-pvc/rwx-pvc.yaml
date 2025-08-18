@@ -1,0 +1,40 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  annotations:
+    pv.kubernetes.io/provisioned-by: nfs.csi.k8s.io
+  name: nfs-rwx-pvcname
+spec:
+  capacity:
+    # placeholder below: storage must be consistent across nfs-server, RWX pv, and RWX pvc
+    storage: 1Mi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Delete
+  mountOptions:
+    - nfsvers=4.1
+  csi:
+    driver: nfs.csi.k8s.io
+    # volumeHandle format: {nfs-server-address}#{sub-dir-name}#{share-name}
+    # make sure this value is unique for every share in the cluster
+    # placeholder below: replace pvcname, namespace, and cluster-domain with cluster-specific values
+    volumeHandle: nfs-server-pvcname.namespace.svc.cluster-domain##share
+    volumeAttributes:
+      # placeholder below: replace pvcname, namespace, and cluster-domain with cluster-specific values
+      server: nfs-server-pvcname.namespace.svc.cluster-domain
+      share: /
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: nfs-rwx-pvcname
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      # placeholder below: storage must be consistent across nfs-server, RWX pv, and RWX pvc
+      storage: 1Mi
+  volumeName: nfs-rwx-pvcname
+  storageClassName: ""

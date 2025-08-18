@@ -1,0 +1,20 @@
+resources:
+  - ../../../../bases/logstash
+
+namespace: logging
+
+configMapGenerator:
+  - name: logstash-pipeline
+    behavior: replace
+    files:
+      - config/pipeline-access-logs.conf
+      - config/pipeline-errors.conf
+      - config/pipeline-application-logs.conf
+      - config/pipeline-dead-letter.conf
+
+generators:
+  - generators/piper-elastic-user.yaml
+
+patches:
+  - path: patches/logging-logstash.yaml
+

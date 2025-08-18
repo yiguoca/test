@@ -1,0 +1,25 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    app.kubernetes.io/name: akhq
+    app.kubernetes.io/component: messaging
+    app.kubernetes.io/version: 3.8.3-management-alpine
+  name: akhq-ui
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: eu-data-akhq.fcaus-te.autodata.tech
+      http:
+        paths:
+          - pathType: ImplementationSpecific
+            backend:
+              service:
+                name: akhq
+                port:
+                  name: http
+  tls:
+    - secretName: fcaus-wildcard
+      hosts:
+        - eu-data-akhq.fcaus-te.autodata.tech

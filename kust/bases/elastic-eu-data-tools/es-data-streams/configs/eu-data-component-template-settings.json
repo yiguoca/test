@@ -1,0 +1,11 @@
+{
+  "template": {
+    "settings": {
+      "index.lifecycle.name": "eu-data-lifecycle-policy",
+      "index.default_pipeline": "add-timestamp"
+    }
+  },
+  "_meta": {
+    "description": "Setting for eu data stream ILM"
+  }
+}

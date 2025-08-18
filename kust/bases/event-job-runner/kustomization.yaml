@@ -1,0 +1,5 @@
+# combine for now - usual CRD race conditions shouldn't happen unless this is pulled into another kustomization that
+# defines an EventRunner instance.
+resources:
+  - stage1
+  - stage2

@@ -1,0 +1,123 @@
+# inventory is included in logging elastic setup
+.azure-elastic-inventory:
+  timeout: 2h
+  environment:
+    name: elastic/azure/inventory
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:azure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_AZURE_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/azure/elastic/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+hillsboro-storage-elastic:
+  environment:
+    name: elastic/hillsboro-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n elastic-system pod elastic-operator-0
+    - ./build-with-plugins.sh cluster/hillsboro-storage/elastic/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+hillsboro-storage-elastic-apply-ilm:
+  environment:
+    name: elastic/hillsboro-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n eckmon pod eckmon-es-default-0
+    - kubectl delete job es-ilm-setup-job -n eckmon --ignore-not-found=true
+    - ./build-with-plugins.sh bases/elastic/eckmon-ilm-policy | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+
+chaska-storage-elastic:
+  environment:
+    name: elastic/chaska-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n elastic-system pod elastic-operator-0
+    - ./build-with-plugins.sh cluster/chaska-storage/elastic/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+chaska-storage-elastic-apply-ilm:
+  environment:
+    name: elastic/chaska-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n eckmon pod eckmon-es-default-0
+    - kubectl delete job es-ilm-setup-job -n eckmon --ignore-not-found=true
+    - ./build-with-plugins.sh bases/elastic/eckmon-ilm-policy | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+
+ct-storage-elastic-apply-ilm:
+  environment:
+    name: elastic/ct-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:continuous-testing-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_CT_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n eckmon pod eckmon-es-default-0
+    - kubectl delete job es-ilm-setup-job -n eckmon --ignore-not-found=true
+    - ./build-with-plugins.sh bases/elastic/eckmon-ilm-policy | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"

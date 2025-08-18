@@ -1,0 +1,19 @@
+resources:
+  - ../../../../bases/elastic/stage2/
+
+transformers:
+  - transformers/image-rewriter.yaml
+
+patches:
+  - target:
+      group: batch
+      version: v1
+      kind: Job
+      name: logging-access-job
+    path: patches/logging-access-job.yaml
+  - target:
+      group: batch
+      version: v1
+      kind: CronJob
+      name: logging-manage-alias-cron
+    path: patches/logging-manage-alias-cron.yaml

@@ -1,0 +1,124 @@
+resources:
+  - github.com/prometheus-operator/kube-prometheus.git?ref=v0.12.0
+
+configMapGenerator:
+  - name: fca-common-dashboards
+    namespace: monitoring
+    files:
+      - dashboards/cpu-usage-by-namespace.json
+      - dashboards/unhealthy-pods-in-a-namespace.json
+  - name: photon-hpe-storage-dashboards
+    namespace: monitoring
+    files:
+      - dashboards/14836/hpe-storage-array.json
+      - dashboards/14905/hpe-csi-driver-kubernetes-namespace-explorer.json
+      - dashboards/14907/hpe-storage-pools.json
+      - dashboards/14908/hpe-storage-arrays-details.json
+      - dashboards/14909/hpe-storage-volumes.json
+      - dashboards/14910/hpe-storage-volume-details.json
+
+patchesStrategicMerge:
+  - patches/grafana-dashboard-config-patch.yaml
+  - patches/grafana-dashboards-configmap.yaml
+
+patches:
+  # add a label so we can not deploy the KubeControllerManager ServiceMonitor
+  - target:
+      kind: ServiceMonitor
+      name: kube-controller-manager
+      namespace: monitoring
+    patch: |-
+      - op: add
+        path: /metadata/labels
+        value:
+          skip: "these"
+  # same for kube-scheduler
+  - target:
+      kind: ServiceMonitor
+      name: kube-scheduler
+      namespace: monitoring
+    patch: |-
+      - op: add
+        path: /metadata/labels
+        value:
+          skip: "these"
+  # same for all NetworkPolicies
+  - target:
+      kind: NetworkPolicy
+      namespace: monitoring
+    patch: |-
+      - op: add
+        path: /metadata/labels
+        value:
+          skip: "these"
+# kube-prometheus >v0.7.0 (0.9.0 actively uses) PrometheusRule patch:
+  - target:
+      name: kubernetes-monitoring-rules
+      namespace: monitoring
+      kind: PrometheusRule
+    # could break whenever upstream changes their rules... ick.  Modification is to ignore the monitoring namespace.
+    # Update CPUThrottlingHigh to exclude the monitoring namespace
+    # also get rid of KubeControllerManagerDown and KubeSchedulerDown
+    patch: |-
+      - op: replace
+        path: /spec/groups/1/rules/7/expr
+        value: |
+          sum(increase(container_cpu_cfs_throttled_periods_total{container!="", namespace!="monitoring"}[5m])) by (container, pod, namespace)
+          /
+          sum(increase(container_cpu_cfs_periods_total{}[5m])) by (container, pod, namespace)
+          > ( 25 / 100 )
+      - op: remove
+        path: "/spec/groups/8/rules/0"
+      - op: remove
+        path: "/spec/groups/7/rules/0"
+# kube-prometheus v0.7.0 PrometheusRule patch (keeping around for backwards compatibility):
+  - target:
+      name: prometheus-k8s-rules
+      namespace: monitoring
+      kind: PrometheusRule
+    patch: |-
+      - op: replace
+        path: /spec/groups/14/rules/7/expr
+        value: |
+          sum(increase(container_cpu_cfs_throttled_periods_total{container!="", namespace!="monitoring"}[5m])) by (container, pod, namespace)
+          /
+          sum(increase(container_cpu_cfs_periods_total{}[5m])) by (container, pod, namespace)
+          > ( 25 / 100 )
+      - op: remove
+        path: "/spec/groups/21/rules/0"
+      - op: remove
+        path: "/spec/groups/20/rules/0"
+  - target:
+      kind: CustomResourceDefinition
+    patch: |-
+      - op: add
+        path: /spec/preserveUnknownFields
+        value: false
+      - op: add
+        path: /metadata/labels
+        value:
+          stage: "one"
+          skip: "these"
+  - target:
+      kind: Deployment
+      name: kube-state-metrics
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 300Mi
+  - target:
+      name: k8s
+      kind: Prometheus
+    patch: |-
+      - op: add
+        path: /spec/alerting/alertmanagers/-
+        value:
+          namespace: default
+          name: alertmanager-operated
+          port: web
+      - op: add
+        path: /spec/ruleSelector
+        value:
+          matchLabels:
+            role: alert-rules
+            prometheus: kafka

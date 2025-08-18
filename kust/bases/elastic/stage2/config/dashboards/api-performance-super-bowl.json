@@ -1,0 +1,68 @@
+{
+    "attributes": {
+        "description": "",
+        "hits": 0,
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": "{\"query\":{\"query\":\"\",\"language\":\"kuery\"},\"filter\":[{\"query\":{\"regexp\":{\"nginx.host\":{\"value\":\"fca-us-tech-azure.*|www.*\"}}},\"meta\":{\"type\":\"custom\",\"negate\":false,\"alias\":\"Production Access Logs\",\"key\":\"query\",\"value\":\"{\\\"regexp\\\":{\\\"nginx.host\\\":{\\\"value\\\":\\\"fca-us-tech-azure.*|www.*\\\"}}}\",\"indexRefName\":\"7days-access\"},\"$state\":{\"store\":\"appState\"}},{\"meta\":{\"type\":\"phrases\",\"key\":\"photon.api.name\",\"params\":[\"hostd/analytics\"],\"alias\":null,\"negate\":true,\"disabled\":false,\"indexRefName\":\"7days-access\"},\"query\":{\"bool\":{\"should\":[{\"match_phrase\":{\"photon.api.name\":\"hostd/analytics\"}}],\"minimum_should_match\":1}},\"$state\":{\"store\":\"appState\"}}]}"
+        },
+        "optionsJSON": "{\"useMargins\":true,\"syncColors\":false,\"hidePanelTitles\":false}",
+        "panelsJSON": "[{\"version\":\"7.16.3\",\"type\":\"visualization\",\"gridData\":{\"x\":0,\"y\":0,\"w\":10,\"h\":12,\"i\":\"52ec3df0-f2c5-4c03-bc2f-64e412104f86\"},\"panelIndex\":\"52ec3df0-f2c5-4c03-bc2f-64e412104f86\",\"embeddableConfig\":{\"vis\":{\"defaultColors\":{\"0 - 50\":\"rgb(0,104,55)\",\"50 - 75\":\"rgb(254,254,189)\",\"75 - 100\":\"rgb(165,0,38)\"},\"legendOpen\":false},\"enhancements\":{}},\"panelRefName\":\"panel_52ec3df0-f2c5-4c03-bc2f-64e412104f86\"},{\"version\":\"7.16.3\",\"type\":\"visualization\",\"gridData\":{\"x\":10,\"y\":0,\"w\":10,\"h\":12,\"i\":\"2c53de20-f5c6-458f-8ced-594da8bab6ee\"},\"panelIndex\":\"2c53de20-f5c6-458f-8ced-594da8bab6ee\",\"embeddableConfig\":{\"vis\":{\"defaultColors\":{\"0 - 50\":\"rgb(0,104,55)\",\"50 - 75\":\"rgb(254,254,189)\",\"75 - 100\":\"rgb(165,0,38)\"},\"legendOpen\":false},\"enhancements\":{}},\"panelRefName\":\"panel_2c53de20-f5c6-458f-8ced-594da8bab6ee\"},{\"version\":\"7.16.3\",\"type\":\"visualization\",\"gridData\":{\"x\":20,\"y\":0,\"w\":10,\"h\":12,\"i\":\"a6d72b87-1c9c-46eb-9572-780905da9b25\"},\"panelIndex\":\"a6d72b87-1c9c-46eb-9572-780905da9b25\",\"embeddableConfig\":{\"vis\":{\"defaultColors\":{\"0 - 50\":\"rgb(0,104,55)\",\"50 - 75\":\"rgb(254,254,189)\",\"75 - 100\":\"rgb(165,0,38)\"},\"legendOpen\":false},\"enhancements\":{}},\"panelRefName\":\"panel_a6d72b87-1c9c-46eb-9572-780905da9b25\"},{\"version\":\"7.16.3\",\"type\":\"visualization\",\"gridData\":{\"x\":30,\"y\":0,\"w\":10,\"h\":12,\"i\":\"98d4b87a-d0fc-4784-b859-4dead05a003f\"},\"panelIndex\":\"98d4b87a-d0fc-4784-b859-4dead05a003f\",\"embeddableConfig\":{\"enhancements\":{}},\"panelRefName\":\"panel_98d4b87a-d0fc-4784-b859-4dead05a003f\"},{\"version\":\"7.16.3\",\"type\":\"visualization\",\"gridData\":{\"x\":0,\"y\":12,\"w\":10,\"h\":12,\"i\":\"1ba13e40-4e50-40e4-a571-d144c8668446\"},\"panelIndex\":\"1ba13e40-4e50-40e4-a571-d144c8668446\",\"embeddableConfig\":{\"vis\":{\"legendOpen\":false},\"enhancements\":{}},\"panelRefName\":\"panel_1ba13e40-4e50-40e4-a571-d144c8668446\"},{\"version\":\"7.16.3\",\"type\":\"visualization\",\"gridData\":{\"x\":10,\"y\":12,\"w\":10,\"h\":12,\"i\":\"a02ffe65-4a7d-4c49-83d2-9e4214fc12a5\"},\"panelIndex\":\"a02ffe65-4a7d-4c49-83d2-9e4214fc12a5\",\"embeddableConfig\":{\"enhancements\":{}},\"panelRefName\":\"panel_a02ffe65-4a7d-4c49-83d2-9e4214fc12a5\"},{\"version\":\"7.16.3\",\"type\":\"visualization\",\"gridData\":{\"x\":20,\"y\":12,\"w\":20,\"h\":18,\"i\":\"4965119a-7395-4823-bffe-2237b69eb30b\"},\"panelIndex\":\"4965119a-7395-4823-bffe-2237b69eb30b\",\"embeddableConfig\":{\"enhancements\":{},\"vis\":{\"legendOpen\":false}},\"panelRefName\":\"panel_4965119a-7395-4823-bffe-2237b69eb30b\"},{\"version\":\"7.16.3\",\"type\":\"visualization\",\"gridData\":{\"x\":0,\"y\":24,\"w\":20,\"h\":17,\"i\":\"7800a3cc-8eb0-479f-a80b-a6b211ad1a97\"},\"panelIndex\":\"7800a3cc-8eb0-479f-a80b-a6b211ad1a97\",\"embeddableConfig\":{\"enhancements\":{},\"vis\":{\"legendOpen\":false}},\"panelRefName\":\"panel_7800a3cc-8eb0-479f-a80b-a6b211ad1a97\"},{\"version\":\"7.16.3\",\"type\":\"visualization\",\"gridData\":{\"x\":20,\"y\":30,\"w\":20,\"h\":26,\"i\":\"1518a7fa-1844-4bdd-806f-b43ebddb14a3\"},\"panelIndex\":\"1518a7fa-1844-4bdd-806f-b43ebddb14a3\",\"embeddableConfig\":{\"enhancements\":{},\"vis\":{\"legendOpen\":false}},\"panelRefName\":\"panel_1518a7fa-1844-4bdd-806f-b43ebddb14a3\"},{\"version\":\"7.16.3\",\"type\":\"visualization\",\"gridData\":{\"x\":0,\"y\":41,\"w\":20,\"h\":15,\"i\":\"9d1aa685-8540-490a-b9b5-c119ee10e607\"},\"panelIndex\":\"9d1aa685-8540-490a-b9b5-c119ee10e607\",\"embeddableConfig\":{\"enhancements\":{},\"vis\":{\"legendOpen\":false}},\"panelRefName\":\"panel_9d1aa685-8540-490a-b9b5-c119ee10e607\"}]",
+        "timeRestore": false,
+        "title": "API Performance Super Bowl",
+        "version": 1
+    },
+    "references": [{
+            "id": "7days-access",
+            "name": "7days-access",
+            "type": "index-pattern"
+        }, {
+            "id": "photon",
+            "name": "photon",
+            "type": "tag"
+        }, {
+            "id": "stellantis",
+            "name": "stellantis",
+            "type": "tag"
+        }, {
+            "id": "load-average-request-per-second",
+            "name": "52ec3df0-f2c5-4c03-bc2f-64e412104f86:panel_52ec3df0-f2c5-4c03-bc2f-64e412104f86",
+            "type": "visualization"
+        }, {
+            "id": "load-average-response-time",
+            "name": "2c53de20-f5c6-458f-8ced-594da8bab6ee:panel_2c53de20-f5c6-458f-8ced-594da8bab6ee",
+            "type": "visualization"
+        }, {
+            "id": "load-average-request-time",
+            "name": "a6d72b87-1c9c-46eb-9572-780905da9b25:panel_a6d72b87-1c9c-46eb-9572-780905da9b25",
+            "type": "visualization"
+        }, {
+            "id": "load-total-request-count",
+            "name": "98d4b87a-d0fc-4784-b859-4dead05a003f:panel_98d4b87a-d0fc-4784-b859-4dead05a003f",
+            "type": "visualization"
+        }, {
+            "id": "requests-per-brand",
+            "name": "1ba13e40-4e50-40e4-a571-d144c8668446:panel_1ba13e40-4e50-40e4-a571-d144c8668446",
+            "type": "visualization"
+        }, {
+            "id": "status-code-ratio",
+            "name": "a02ffe65-4a7d-4c49-83d2-9e4214fc12a5:panel_a02ffe65-4a7d-4c49-83d2-9e4214fc12a5",
+            "type": "visualization"
+        }, {
+            "id": "top-10-frequency",
+            "name": "4965119a-7395-4823-bffe-2237b69eb30b:panel_4965119a-7395-4823-bffe-2237b69eb30b",
+            "type": "visualization"
+        }, {
+            "id": "avg-requestresponse-size-over-time",
+            "name": "7800a3cc-8eb0-479f-a80b-a6b211ad1a97:panel_7800a3cc-8eb0-479f-a80b-a6b211ad1a97",
+            "type": "visualization"
+        }, {
+            "id": "top-25-ccode-frequency",
+            "name": "1518a7fa-1844-4bdd-806f-b43ebddb14a3:panel_1518a7fa-1844-4bdd-806f-b43ebddb14a3",
+            "type": "visualization"
+        }, {
+            "id": "avg-responserequest-time-over-time",
+            "name": "9d1aa685-8540-490a-b9b5-c119ee10e607:panel_9d1aa685-8540-490a-b9b5-c119ee10e607",
+            "type": "visualization"
+        }
+    ]
+}

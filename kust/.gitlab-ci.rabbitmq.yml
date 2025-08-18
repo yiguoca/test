@@ -1,0 +1,188 @@
+chaska-storage-rabbitmq-system:
+  environment:
+    name: rabbitmq/system/chaska-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: 
+    - job: validate-syntax
+  stage: deploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/chaska-storage/rabbitmq-system/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+chaska-storage-rabbitmq:
+  timeout: 1h
+  environment:
+    name: rabbitmq/chaska-storage
+    url: https://rabbitmq.fcaus-f-storage.autodata.tech/
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: 
+    - job: validate-syntax
+  stage: deploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if rabbitmq-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n rabbitmq-system pod -l app.kubernetes.io/name=rabbitmq-cluster-operator
+    - ./build-with-plugins.sh cluster/chaska-storage/rabbitmq/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 30
+    - kubectl wait --for=condition=ready --timeout=3m -n rabbitmq pod -l app.kubernetes.io/part-of=rabbitmq
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+hillsboro-storage-rabbitmq-system:
+  environment:
+    name: rabbitmq/system/hillsboro-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: 
+    - job: validate-syntax
+  stage: deploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/hillsboro-storage/rabbitmq-system/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+hillsboro-storage-rabbitmq:
+  timeout: 1h
+  environment:
+    name: rabbitmq/hillsboro-storage
+    url: https://rabbitmq.fcaus-p-storage.autodata.tech/
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: 
+    - job: validate-syntax
+  stage: deploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if rabbitmq-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n rabbitmq-system pod -l app.kubernetes.io/name=rabbitmq-cluster-operator
+    - ./build-with-plugins.sh cluster/hillsboro-storage/rabbitmq/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 30
+    - kubectl wait --for=condition=ready --timeout=3m -n rabbitmq pod -l app.kubernetes.io/part-of=rabbitmq
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+ct-rabbitmq-system:
+  environment:
+    name: rabbitmq/system/continuous-testing
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:continuous-testing
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_CT_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/ctkube/rabbitmq-system/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis-us"
+    - "cluster:ctkube"
+
+ct-storage-rabbitmq-system:
+  environment:
+    name: rabbitmq/system/continuous-testing-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: 
+    - job: validate-syntax
+  stage: deploy:continuous-testing-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CT_STORAGE_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/ct-storage/rabbitmq-system/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis-us"
+    - "cluster:ct-storage"
+
+ct-storage-rabbitmq:
+  timeout: 1h
+  environment:
+    name: rabbitmq/continuous-testing-storage
+    url: https://rabbitmq.fcaus-ct-storage.autodata.tech/
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: 
+    - job: validate-syntax
+  stage: deploy:continuous-testing-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CT_STORAGE_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if rabbitmq-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n rabbitmq-system pod -l app.kubernetes.io/name=rabbitmq-cluster-operator
+    - ./build-with-plugins.sh cluster/ct-storage/rabbitmq/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 30
+    - kubectl wait --for=condition=ready --timeout=3m -n rabbitmq pod -l app.kubernetes.io/part-of=rabbitmq
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis-us"
+    - "cluster:ct-storage"
+
+test-infrastructure-rabbitmq-system:
+  environment:
+    name: rabbitmq/system/test-infrastructure
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: 
+    - job: validate-syntax
+  stage: deploy:test-infrastructure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_TEST_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/test/rabbitmq-system/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis-us"
+
+test-infrastructure-rabbitmq:
+  timeout: 1h
+  environment:
+    name: rabbitmq/test-infrastructure
+    url: https://rabbitmq.fcaus-te.autodata.tech/
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: 
+    - job: validate-syntax
+  stage: deploy:test-infrastructure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_TEST_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if rabbitmq-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n rabbitmq-system pod -l app.kubernetes.io/name=rabbitmq-cluster-operator
+    - ./build-with-plugins.sh cluster/test/rabbitmq/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 30
+    - kubectl wait --for=condition=ready --timeout=3m -n rabbitmq pod -l app.kubernetes.io/part-of=rabbitmq
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis-us"

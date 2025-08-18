@@ -1,0 +1,92 @@
+[
+    {
+        "_id": "MySQL-slowest-queries",
+        "_type": "visualization",
+        "_source": {
+            "description": "",
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"filter\":[]}"
+            },
+            "savedSearchId": "Filebeat-MySQL-Slow-log",
+            "title": "Top slowest queries [Filebeat MySQL]",
+            "uiStateJSON": "{\"vis\":{\"params\":{\"sort\":{\"columnIndex\":null,\"direction\":null}}}}",
+            "version": 1,
+            "visState": "{\"title\":\"Top slowest queries [Filebeat MySQL]\",\"type\":\"table\",\"params\":{\"perPage\":10,\"showPartialRows\":false,\"showMeticsAtAllLevels\":false,\"sort\":{\"columnIndex\":null,\"direction\":null},\"showTotal\":false,\"totalFunc\":\"sum\"},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"max\",\"schema\":\"metric\",\"params\":{\"field\":\"mysql.slowlog.query_time.sec\",\"customLabel\":\"Query time\"}},{\"id\":\"2\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"bucket\",\"params\":{\"field\":\"mysql.slowlog.query\",\"size\":5,\"order\":\"desc\",\"orderBy\":\"1\",\"customLabel\":\"Query\"}},{\"id\":\"3\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"bucket\",\"params\":{\"field\":\"mysql.slowlog.user\",\"size\":5,\"order\":\"desc\",\"orderBy\":\"1\",\"customLabel\":\"User\"}}]}"
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "MySQL-Slow-queries-over-time",
+        "_type": "visualization",
+        "_source": {
+            "description": "",
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"filter\":[]}"
+            },
+            "savedSearchId": "Filebeat-MySQL-Slow-log",
+            "title": "Slow queries over time [Filebeat MySQL]",
+            "uiStateJSON": "{\"vis\":{\"colors\":{\"Slow queries\":\"#EF843C\"}}}",
+            "version": 1,
+            "visState": "{\"title\":\"Slow queries over time [Filebeat MySQL]\",\"type\":\"histogram\",\"params\":{\"shareYAxis\":true,\"addTooltip\":true,\"addLegend\":true,\"legendPosition\":\"right\",\"scale\":\"linear\",\"mode\":\"stacked\",\"times\":[],\"addTimeMarker\":false,\"defaultYExtents\":false,\"setYExtents\":false,\"yAxis\":{},\"type\":\"histogram\",\"grid\":{\"categoryLines\":false,\"style\":{\"color\":\"#eee\"}},\"categoryAxes\":[{\"id\":\"CategoryAxis-1\",\"type\":\"category\",\"position\":\"bottom\",\"show\":true,\"style\":{},\"scale\":{\"type\":\"linear\"},\"labels\":{\"show\":true,\"truncate\":100},\"title\":{\"text\":\"@timestamp per 30 seconds\"}}],\"valueAxes\":[{\"id\":\"ValueAxis-1\",\"name\":\"LeftAxis-1\",\"type\":\"value\",\"position\":\"left\",\"show\":true,\"style\":{},\"scale\":{\"type\":\"linear\",\"mode\":\"normal\"},\"labels\":{\"show\":true,\"rotate\":0,\"filter\":false,\"truncate\":100},\"title\":{\"text\":\"Slow queries\"}}],\"seriesParams\":[{\"show\":\"true\",\"type\":\"histogram\",\"mode\":\"stacked\",\"data\":{\"label\":\"Slow queries\",\"id\":\"1\"},\"valueAxis\":\"ValueAxis-1\",\"drawLinesBetweenPoints\":true,\"showCircles\":true}]},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{\"customLabel\":\"Slow queries\"}},{\"id\":\"2\",\"enabled\":true,\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"@timestamp\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}}]}"
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "MySQL-error-logs",
+        "_type": "visualization",
+        "_source": {
+            "description": "",
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"filter\":[]}"
+            },
+            "savedSearchId": "Filebeat-MySQL-error-log",
+            "title": "Error logs over time [Filebeat MySQL]",
+            "uiStateJSON": "{\"vis\":{\"colors\":{\"Count\":\"#447EBC\",\"Error logs\":\"#1F78C1\"}}}",
+            "version": 1,
+            "visState": "{\"title\":\"Error logs over time [Filebeat MySQL]\",\"type\":\"histogram\",\"params\":{\"shareYAxis\":true,\"addTooltip\":true,\"addLegend\":true,\"legendPosition\":\"right\",\"scale\":\"linear\",\"mode\":\"stacked\",\"times\":[],\"addTimeMarker\":false,\"defaultYExtents\":false,\"setYExtents\":false,\"yAxis\":{},\"type\":\"histogram\",\"grid\":{\"categoryLines\":false,\"style\":{\"color\":\"#eee\"}},\"categoryAxes\":[{\"id\":\"CategoryAxis-1\",\"type\":\"category\",\"position\":\"bottom\",\"show\":true,\"style\":{},\"scale\":{\"type\":\"linear\"},\"labels\":{\"show\":true,\"truncate\":100},\"title\":{\"text\":\"@timestamp per 30 seconds\"}}],\"valueAxes\":[{\"id\":\"ValueAxis-1\",\"name\":\"LeftAxis-1\",\"type\":\"value\",\"position\":\"left\",\"show\":true,\"style\":{},\"scale\":{\"type\":\"linear\",\"mode\":\"normal\"},\"labels\":{\"show\":true,\"rotate\":0,\"filter\":false,\"truncate\":100},\"title\":{\"text\":\"Error logs\"}}],\"seriesParams\":[{\"show\":\"true\",\"type\":\"histogram\",\"mode\":\"stacked\",\"data\":{\"label\":\"Error logs\",\"id\":\"1\"},\"valueAxis\":\"ValueAxis-1\",\"drawLinesBetweenPoints\":true,\"showCircles\":true}]},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{\"customLabel\":\"Error logs\"}},{\"id\":\"2\",\"enabled\":true,\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"@timestamp\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}}]}"
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "MySQL-Error-logs-levels",
+        "_type": "visualization",
+        "_source": {
+            "description": "",
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"filter\":[]}"
+            },
+            "savedSearchId": "Filebeat-MySQL-error-log",
+            "title": "Error logs levels breakdown [Filebeat MySQL]",
+            "uiStateJSON": "{\"vis\":{\"colors\":{\"Note\":\"#9AC48A\",\"Warning\":\"#F9934E\",\"ERROR\":\"#E24D42\"}}}",
+            "version": 1,
+            "visState": "{\"title\":\"Error logs levels breakdown [Filebeat MySQL]\",\"type\":\"pie\",\"params\":{\"shareYAxis\":true,\"addTooltip\":true,\"addLegend\":true,\"legendPosition\":\"bottom\",\"isDonut\":false,\"type\":\"pie\"},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{}},{\"id\":\"2\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"segment\",\"params\":{\"field\":\"mysql.error.level\",\"size\":5,\"order\":\"desc\",\"orderBy\":\"1\"}}]}"
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    },
+    {
+        "_id": "MySQL-Slow-logs-by-count",
+        "_type": "visualization",
+        "_source": {
+            "description": "",
+            "kibanaSavedObjectMeta": {
+                "searchSourceJSON": "{\"filter\":[]}"
+            },
+            "savedSearchId": "Filebeat-MySQL-Slow-log",
+            "title": "Slow logs breakdown [Filebeat MySQL]",
+            "uiStateJSON": "{}",
+            "version": 1,
+            "visState": "{\"title\":\"Slow logs breakdown [Filebeat MySQL]\",\"type\":\"pie\",\"params\":{\"shareYAxis\":true,\"addTooltip\":true,\"addLegend\":true,\"legendPosition\":\"bottom\",\"isDonut\":false,\"type\":\"pie\"},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"count\",\"schema\":\"metric\",\"params\":{}},{\"id\":\"2\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"segment\",\"params\":{\"field\":\"mysql.slowlog.query\",\"size\":5,\"order\":\"desc\",\"orderBy\":\"1\"}}]}"
+        },
+        "_meta": {
+            "savedObjectVersion": 2
+        }
+    }
+]

@@ -1,0 +1,40 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: eu-data-es-cert
+spec:
+  isCA: true
+  dnsNames:
+    # elastic
+    - eu-data-es.fcaus-f-storage
+    - eu-data-es.fcaus-f-storage.svc
+    - eu-data-es.fcaus-f-storage.autodata.tech
+    - eu-data-es-http
+    - eu-data-es-http.eu-data-tools.svc
+    - eu-data-es-http.eu-data-tools.svc.rancher-fcaus-f-storage.autodata.org
+    - kube.fcaus-f-storage.autodata.tech
+    # nodes
+    - fchu-prif-xknp1
+    - fchu-prif-xknp2
+    - fchu-prif-xknp3
+    - fchu-prif-xknp4
+    - fchu-prif-xknp5
+    - fchu-prif-xknp6
+    - fchu-prif-xknp7
+    - fchu-prif-xknp8
+    - fchu-prif-xknp1.autodatacorp.org
+    - fchu-prif-xknp2.autodatacorp.org
+    - fchu-prif-xknp3.autodatacorp.org
+    - fchu-prif-xknp4.autodatacorp.org
+    - fchu-prif-xknp5.autodatacorp.org
+    - fchu-prif-xknp6.autodatacorp.org
+    - fchu-prif-xknp7.autodatacorp.org
+    - fchu-prif-xknp8.autodatacorp.org
+  secretName: eu-data-es-cert
+  issuerRef:
+    name: elastic-root-ca-issuer
+    kind: ClusterIssuer
+  subject:
+    organizations:
+      - eu-data-tools

@@ -1,0 +1,388 @@
+hillsboro-storage-logging:
+  timeout: 2h
+  environment:
+    name: elastic/logging/hillsboro-storage
+    url: https://logging.fcaus-p-storage.autodata.tech/
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n elastic-system pod elastic-operator-0
+    - ./build-with-plugins.sh cluster/hillsboro-storage/elastic/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 30
+    - kubectl wait --for=condition=ready --timeout=3m -n logging pod -l elasticsearch.k8s.elastic.co/cluster-name=logging
+    - kubectl wait --for=condition=ready --timeout=3m -n logging pod -l kibana.k8s.elastic.co/name=logging
+    - ./build-with-plugins.sh cluster/hillsboro-storage/elastic/stage-beats-setup | kubectl apply --server-side -f - 2>&1 | sed /unchanged/d
+    - sleep 30
+    - kubectl wait --for=condition=complete --timeout=3m -n logging job/application-filebeats-setup
+    - kubectl wait --for=condition=complete --timeout=3m -n logging job/access-filebeats-setup
+    - kubectl wait --for=condition=complete --timeout=3m -n logging job/errors-filebeats-setup
+    - ./build-with-plugins.sh cluster/hillsboro-storage/elastic/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    # Will error if kafka-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n kafka-system pod -l name=strimzi-cluster-operator
+    - ./build-with-plugins.sh cluster/hillsboro-storage/kafka/logging/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 30
+    # kubectl wait for ready triggers off first container completing, need to use this to wait for zookeeper. Sometimes they require multiple deletions/restarts to startup properly
+    - while [[ $(kubectl get pods -l strimzi.io/name=kafka-logging-zookeeper -n logging -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == *"False"* ]]; do echo "waiting for zookeeper pods. Check status, perform manual deletion as necessary" && sleep 10; done
+    - kubectl wait --for=condition=ready --timeout=3m -n logging pod -l strimzi.io/cluster=kafka-logging
+    - ./build-with-plugins.sh cluster/hillsboro-storage/kafka/logging/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    # Sleep to validate topics created
+    - sleep 60
+    - ./build-with-plugins.sh cluster/hillsboro-storage/logstash/stage1| kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+hillsboro-storage-logging-elastic-update:
+  timeout: 1h
+  environment:
+    name: elastic/logging/hillsboro-storage
+    url: https://logging.fcaus-p-storage.autodata.tech/
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n elastic-system pod elastic-operator-0
+    - ./build-with-plugins.sh cluster/hillsboro-storage/elastic/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - ./build-with-plugins.sh cluster/hillsboro-storage/elastic/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+hillsboro-storage-logging-mirrormaker:
+  timeout: 1h
+  environment:
+    name: kafka/logging/mirror-maker/hillsboro-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if kafka-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n kafka-system pod -l name=strimzi-cluster-operator
+    - ./build-with-plugins.sh cluster/hillsboro-storage/kafka/logging/mirror-maker | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+chaska-storage-logging:
+  timeout: 2h
+  environment:
+    name: elastic/logging/chaska-storage
+    url: https://logging.fcaus-f-storage.autodata.tech/
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n elastic-system pod elastic-operator-0
+    - ./build-with-plugins.sh cluster/chaska-storage/elastic/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 30
+    - kubectl wait --for=condition=ready --timeout=3m -n logging pod -l elasticsearch.k8s.elastic.co/cluster-name=logging
+    - kubectl wait --for=condition=ready --timeout=3m -n logging pod -l kibana.k8s.elastic.co/name=logging
+    - ./build-with-plugins.sh cluster/chaska-storage/elastic/stage-beats-setup | kubectl apply --server-side -f - 2>&1 | sed /unchanged/d
+    - sleep 30
+    - kubectl wait --for=condition=complete --timeout=3m -n logging job/application-filebeats-setup
+    - kubectl wait --for=condition=complete --timeout=3m -n logging job/access-filebeats-setup
+    - kubectl wait --for=condition=complete --timeout=3m -n logging job/errors-filebeats-setup
+    - ./build-with-plugins.sh cluster/chaska-storage/elastic/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    # Will error if kafka-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n kafka-system pod -l name=strimzi-cluster-operator
+    - ./build-with-plugins.sh cluster/chaska-storage/kafka/logging/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 30
+    # kubectl wait for ready triggers off first container completing, need to use this to wait for zookeeper. Sometimes they require multiple deletions/restarts to startup properly
+    - while [[ $(kubectl get pods -l strimzi.io/name=kafka-logging-zookeeper -n logging -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == *"False"* ]]; do echo "waiting for zookeeper pods. Check status, perform manual deletion as necessary" && sleep 10; done
+    - kubectl wait --for=condition=ready --timeout=15m -n logging pod -l strimzi.io/cluster=kafka-logging
+    - ./build-with-plugins.sh cluster/chaska-storage/kafka/logging/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    # Sleep to validate topics created
+    - sleep 60
+    - ./build-with-plugins.sh cluster/chaska-storage/logstash/stage1| kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+chaska-storage-logging-elastic-update:
+  timeout: 1h
+  environment:
+    name: elastic/logging/chaska-storage
+    url: https://logging.fcaus-f-storage.autodata.tech/
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n elastic-system pod elastic-operator-0
+    - ./build-with-plugins.sh cluster/chaska-storage/elastic/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - ./build-with-plugins.sh cluster/chaska-storage/elastic/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+chaska-storage-logging-mirrormaker:
+  timeout: 1h
+  environment:
+    name: kafka/logging/mirror-maker/chaska-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+        # Will error if kafka-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n kafka-system pod -l name=strimzi-cluster-operator
+    - ./build-with-plugins.sh cluster/chaska-storage/kafka/logging/mirror-maker | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+test-infrastructure-logging:
+  timeout: 2h
+  environment:
+    name: elastic/logging/test-infrastructure
+    url: https://logging.fcaus-te.autodata.tech/
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:test-infrastructure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_TEST_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n elastic-system pod elastic-operator-0
+    - ./build-with-plugins.sh cluster/test/elastic/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 30
+    - kubectl wait --for=condition=ready --timeout=3m -n logging pod -l elasticsearch.k8s.elastic.co/cluster-name=logging
+    - kubectl wait --for=condition=ready --timeout=3m -n logging pod -l kibana.k8s.elastic.co/name=logging
+    - ./build-with-plugins.sh cluster/test/elastic/stage-beats-setup | kubectl apply --server-side -f - 2>&1 | sed /unchanged/d
+    - sleep 30
+    - kubectl wait --for=condition=complete --timeout=3m -n logging job/application-filebeats-setup
+    - kubectl wait --for=condition=complete --timeout=3m -n logging job/access-filebeats-setup
+    - kubectl wait --for=condition=complete --timeout=3m -n logging job/errors-filebeats-setup
+    - ./build-with-plugins.sh cluster/test/elastic/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - ./build-with-plugins.sh cluster/test/kafka-logging/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 30
+    # kubectl wait for ready triggers off first container completing, need to use this to wait for zookeeper. Sometimes they require multiple deletions/restarts to startup properly
+    - while [[ $(kubectl get pods -l strimzi.io/name=kafka-logging-zookeeper -n logging -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == *"False"* ]]; do echo "waiting for zookeeper pods. Check status, perform manual deletion as necessary" && sleep 10; done
+    - kubectl wait --for=condition=ready --timeout=15m -n logging pod -l strimzi.io/cluster=kafka-logging
+    - ./build-with-plugins.sh cluster/test/kafka-logging/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    # Sleep to validate topics created
+    - sleep 60
+    - ./build-with-plugins.sh cluster/test/logstash/stage1| kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+test-infrastructure-logging-mirrormaker:
+  timeout: 1h
+  environment:
+    name: kafka/logging/mirror-maker/test-infrastructure
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:test-infrastructure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_TEST_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if kafka-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n kafka-system pod -l name=strimzi-cluster-operator
+    - ./build-with-plugins.sh cluster/test/kafka-logging/mirror-maker | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+hillsboro-logging-beats:
+  environment:
+    name: elastic/logging/beats/hillsboro
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:hillsboro
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_HILLSBORO_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n elastic-system pod elastic-operator-0
+    - ./build-with-plugins.sh cluster/hillsboro/beats | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+chaska-logging-beats:
+  environment:
+    name: elastic/logging/beats/chaska
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:chaska
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_CHASKA_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n elastic-system pod elastic-operator-0
+    - ./build-with-plugins.sh cluster/chaska/beats | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+hillsboro-storage-logging-beats:
+  environment:
+    name: elastic/logging/beats/hillsboro-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n elastic-system pod elastic-operator-0
+    - ./build-with-plugins.sh cluster/hillsboro-storage/beats | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+chaska-storage-logging-beats:
+  environment:
+    name: elastic/logging/beats/chaska-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n elastic-system pod elastic-operator-0
+    - ./build-with-plugins.sh cluster/chaska-storage/beats | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+undeploy:test-infrastructure-logging:
+  timeout: 2h
+  environment:
+    name: elastic/logging/test-infrastructure
+    url: https://logging.fcaus-te.autodata.tech/
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:test-infrastructure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_TEST_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - ./build-with-plugins.sh cluster/test/logstash/stage1| kubectl delete -f -
+    - ./build-with-plugins.sh cluster/test/kafka-logging/stage2 | kubectl delete -f -
+    # Sleep to validate topics created
+    - sleep 60
+    - ./build-with-plugins.sh cluster/test/kafka-logging/stage1 | kubectl delete -f -
+    - sleep 30
+    - ./build-with-plugins.sh cluster/test/elastic/stage2 | kubectl delete -f -
+    - ./build-with-plugins.sh cluster/test/elastic/stage-beats-setup | kubectl delete -f -
+    - sleep 30
+    - ./build-with-plugins.sh cluster/test/elastic/stage1 | kubectl delete -f -
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+azure-logging:
+  timeout: 2h
+  environment:
+    name: elastic/logging/azure
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:azure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_AZURE_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n elastic-system pod elastic-operator-0
+    - ./build-with-plugins.sh cluster/azure/elastic/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 30
+    - kubectl wait --for=condition=ready --timeout=3m -n logging pod -l elasticsearch.k8s.elastic.co/cluster-name=logging
+    - kubectl wait --for=condition=ready --timeout=3m -n logging pod -l kibana.k8s.elastic.co/name=logging
+    - ./build-with-plugins.sh cluster/azure/elastic/stage-beats-setup | kubectl apply --server-side -f - 2>&1 | sed /unchanged/d
+    - kubectl wait --for=condition=complete --timeout=3m -n logging job/application-filebeats-setup
+    - kubectl wait --for=condition=complete --timeout=3m -n logging job/access-filebeats-setup
+    - kubectl wait --for=condition=complete --timeout=3m -n logging job/errors-filebeats-setup
+    - sleep 30
+    - kubectl wait --for=condition=complete --timeout=3m -n logging job/access-filebeats-setup
+    # Will error if kafka-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n kafka-system pod -l name=strimzi-cluster-operator
+    - ./build-with-plugins.sh cluster/azure/kafka/logging/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 30
+    # kubectl wait for ready triggers off first container completing, need to use this to wait for zookeeper. Sometimes they require multiple deletions/restarts to startup properly
+    - while [[ $(kubectl get pods -l strimzi.io/name=kafka-logging-zookeeper -n logging -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == *"False"* ]]; do echo "waiting for zookeeper pods. Check status, perform manual deletion as necessary" && sleep 10; done
+    - kubectl wait --for=condition=ready --timeout=3m -n logging pod -l strimzi.io/cluster=kafka-logging
+    - ./build-with-plugins.sh cluster/azure/kafka/logging/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    # Sleep to validate topics created
+    - sleep 60
+    - ./build-with-plugins.sh cluster/azure/logstash/stage1| kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+azure-logging-beats:
+  environment:
+    name: elastic/logging/beats/azure
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:azure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_AZURE_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n elastic-system pod elastic-operator-0
+    - ./build-with-plugins.sh cluster/azure/beats | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
