@@ -1,0 +1,11 @@
+# Labels to add to all resources and selectors.
+commonLabels:
+  app.kubernetes.io/instance: akhq
+  app.kubernetes.io/name: akhq
+
+namespace: akhq
+
+resources:
+- namespace.yaml
+- akhq-deploy.yaml
+- akhq-svc.yaml

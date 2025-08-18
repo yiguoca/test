@@ -1,0 +1,19 @@
+namespace: vsphere-csi-test
+resources:
+  - ../../../../groups/vsphere-csi/london-non-prod/vsphere-csi-test
+
+  # evaluating vsphere-csi and rwx pvcs; if we find we will be using
+  # rwx in other environments then we should move this to the
+  # vsphere-csi-test base; and setup ss's for rwo, rwx.
+  #- resources/test-rwx-nodes.yaml
+
+  # these are more specific, mainly used for debugging
+  #- resources/test-access-modes-pvc.yaml
+  #- resources/test-readwrite-pod.yaml
+
+labels:
+- includeTemplates: true
+  includeSelectors: false
+  pairs:
+    app.kubernetes.io/part-of: vsphere-csi
+    app.kubernetes.io/component: test-vsphere-csi-operations

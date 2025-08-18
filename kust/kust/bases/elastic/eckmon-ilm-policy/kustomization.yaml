@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: eckmon
+resources:
+- resources/ilm-application-job.yaml
+
+configMapGenerator:
+- files:
+  - configs/ilm_policy.json
+  - configs/apply_ilm.sh
+  name: es-ilm-setup-configs
+  options:
+    labels:
+      app.kubernetes.io/name: es-ilm-setup-configs
+
+generatorOptions:
+  labels:
+    app.kubernetes.io/part-of: elastic

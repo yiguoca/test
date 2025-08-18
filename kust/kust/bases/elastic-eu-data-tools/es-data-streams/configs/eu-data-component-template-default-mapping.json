@@ -1,0 +1,21 @@
+{
+  "template": {
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date",
+          "format": "date_optional_time||epoch_millis"
+        },
+        "acode": {
+          "type":"text"
+        },
+        "jobId": {
+          "type":"text"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "description": "Mappings for default eu data fields"
+  }
+}

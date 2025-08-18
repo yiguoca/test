@@ -1,0 +1,5 @@
+resources:
+  - deployments.yaml
+  - services.yaml
+  - servicemonitors.yaml
+  - secret.yaml

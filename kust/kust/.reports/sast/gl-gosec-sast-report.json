@@ -1,0 +1,1 @@
+{"version":"14.0.4","vulnerabilities":[],"scan":{"scanner":{"id":"gosec","name":"Gosec","url":"https://github.com/securego/gosec","vendor":{"name":"GitLab"},"version":"2.11.0"},"type":"sast","start_time":"2022-05-31T21:59:20","end_time":"2022-05-31T21:59:21","status":"success"}}

@@ -1,0 +1,14 @@
+namespace: nfs-provisioner
+resources:
+  - namespace.yaml
+helmCharts:
+  # helm install nfs-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
+  #    --set nfs.server=x.x.x.x \
+  #    --set nfs.path=/exported/path
+  - name: nfs-subdir-external-provisioner
+    releaseName: nfs-provisioner
+    repo: https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
+    valuesInLine:
+      nfs.server: x.x.x.x
+      nfs.path: /exported/path
+    version: v4.0.10

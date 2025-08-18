@@ -1,0 +1,80 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+helmCharts:
+  - name: strimzi-kafka-operator
+    # need to set namespace, or running from within GitLab CI will set it to `gitlab-runner`
+    # See https://github.com/helm/helm/issues/11583 for a similar issue (closed but unresolved)
+    namespace: kafka-system
+    releaseName: strimzi-kafka-operator
+    repo: https://strimzi.io/charts/
+    version: 0.45.0
+    includeCrds: true
+    valuesInline:
+      image:
+        imagePullPolicy: IfNotPresent
+      watchAnyNamespace: true
+      operatorNamespaceLabels:
+        photon/tier: infrastructure
+      labels:
+        photon/tier: infrastructure
+      resources:
+        requests:
+          memory: "150Mi"
+          cpu: "100m"
+      logConfiguration: |
+        name = COConfig
+        monitorInterval = 30
+
+        appenders = stdout, stderr
+
+        appender.stdout.type = Console
+        appender.stdout.name = STDOUT
+        appender.stdout.target = SYSTEM_OUT
+        appender.stdout.filter.levelRange.type = LevelRangeFilter
+        appender.stdout.filter.levelRange.minLevel = INFO
+        appender.stdout.filter.levelRange.maxLevel = TRACE
+        appender.stdout.layout.type = PatternLayout
+        appender.stdout.layout.pattern = %d{yyyy-MM-dd HH:mm:ss} %-5p [%t] %c{1}:%L - %m%ex%n
+
+        appender.stderr.type = Console
+        appender.stderr.name = STDERR
+        appender.stderr.target = SYSTEM_ERR
+        appender.stderr.filter.levelRange.type = LevelRangeFilter
+        appender.stderr.filter.levelRange.minLevel = FATAL
+        appender.stderr.filter.levelRange.maxLevel = WARN
+        appender.stderr.layout.type = PatternLayout
+        appender.stderr.layout.pattern = %d{yyyy-MM-dd HH:mm:ss} %-5p [%t] %c{1}:%L - %m%ex%n
+
+        loggers = kafka, zookeepertrustmanager, netty
+
+        rootLogger.level = ${env:STRIMZI_LOG_LEVEL:-INFO}
+        rootLogger.appenderRefs = stdout, stderr
+        rootLogger.appenderRef.stdout.ref = STDOUT
+        rootLogger.appenderRef.stderr.ref = STDERR
+
+        rootLogger.additivity = false
+
+        # Kafka AdminClient logging is a bit noisy at INFO level
+        logger.kafka.name = org.apache.kafka
+        logger.kafka.level = WARN
+        logger.kafka.additivity = false
+
+        # Zookeeper is very verbose even on INFO level -> We set it to WARN by default
+        logger.zookeepertrustmanager.name = org.apache.zookeeper
+        logger.zookeepertrustmanager.level = WARN
+        logger.zookeepertrustmanager.additivity = false
+
+        # Keeps separate level for Netty logging -> to not be changed by the root logger
+        logger.netty.name = io.netty
+        logger.netty.level = INFO
+        logger.netty.additivity = false
+
+
+resources:
+  - resources/
+
+namespace: kafka-system
+
+commonLabels:
+  photon/tier: infrastructure

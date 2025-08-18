@@ -1,0 +1,26 @@
+apiVersion: rabbitmq.com/v1beta1
+kind: Federation
+metadata:
+  name: rabbitmq-federation-upstream-hillsboro-storage-origin
+spec:
+  name: "rabbitmq-federation-upstream-hillsboro-storage-origin"
+  uriSecret:
+    name: rabbitmq-federation-upstream-hillsboro-storage-uri
+  vhost: "ozownssl"
+  ackMode: "on-confirm"
+  rabbitmqClusterReference:
+    name: rabbitmq
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Policy
+metadata:
+  name: etl-exchanges-federation-policy
+spec:
+  definition:
+    federation-upstream: "rabbitmq-federation-upstream-hillsboro-storage-origin"
+  name: "etl-exchanges-federation-policy"
+  applyTo: exchanges
+  pattern: "^etl\\..*"
+  rabbitmqClusterReference:
+    name: rabbitmq
+  vhost: "ozownssl"

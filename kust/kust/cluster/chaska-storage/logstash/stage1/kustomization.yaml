@@ -1,0 +1,10 @@
+resources:
+  - ../../../../bases/logstash
+
+namespace: logging
+
+generators:
+  - generators/piper-elastic-user.yaml
+
+patches:
+  - patches/logging-logstash.yaml

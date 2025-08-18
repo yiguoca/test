@@ -1,0 +1,11 @@
+resources:
+  - resources/
+  - jobs/
+# Note there is a reference to fcaus-wildcard that is not provisioned here.  It can be added with Thycotic integration.
+# For now, you'll have to create it by hand to avoid having it in plain text.
+
+commonLabels:
+  stage: one
+
+generatorOptions:
+  disableNameSuffixHash: true

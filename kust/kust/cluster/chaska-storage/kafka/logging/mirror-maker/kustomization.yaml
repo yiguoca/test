@@ -1,0 +1,14 @@
+resources:
+  - resources/mirror-maker.yaml
+  - resources/hillsboro-storage-kafka.yaml
+
+namespace: logging
+
+configMapGenerator:
+  - name: mirror-maker-2-metrics
+    files:
+      - config/metrics-config.yml
+generatorOptions:
+  disableNameSuffixHash: true
+  labels:
+    app: strimzi

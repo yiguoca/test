@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: logstash
+  labels:
+    app: logstash
+spec:
+  replicas: 3
+  template:
+    metadata:
+      name: logstash
+      labels:
+        app: logstash
+    spec:
+      containers:
+      - name: logstash
+        env:
+        - name: KAFKA_BROKER_HOST
+          value: kafka-logging-kafka-external-bootstrap.logging.svc:9097
+        - name: ES_HOSTS
+          value: "logging-es-http.logging.svc:9200"
+        # - name: ES_USER
+        #   valueFrom:
+        #     secretKeyRef:
+        #       name: piper-elastic-user
+        #       key: username
+        # - name: ES_PASSWORD
+        #   valueFrom:
+        #     secretKeyRef:
+        #       name: piper-elastic-user
+        #       key: password
+        - name: ES_USER 
+          value: "elastic"
+        - name: ES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: logging-es-elastic-user
+              key: elastic
+        volumeMounts:
+        - name: elastic-cert
+          mountPath: /etc/logstash/certificates
+      volumes:
+      - name: elastic-cert
+        secret:
+          secretName: logging-es-http-certs-public

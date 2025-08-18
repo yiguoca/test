@@ -1,0 +1,48 @@
+#!/bin/bash
+# For development purposes, set BASEDIR to the full path of the kustom
+# directory, e.g.  BASEDIR=/home/peterj/kustom go test
+if [ "${BASEDIR}" != "" ]
+then
+  source ${BASEDIR}/plugin/fca.autodata.net/v1/parse-yaml.sh
+else
+  source $(dirname $0)/../parse-yaml.sh
+fi
+
+create_variables $1
+
+set -e
+while IFS= read -r line
+do
+  if [[ $line =~ image: ]]
+  then
+    if [ "${manifestFile}" != "" -o "${baseManifestFile}" != "" ]
+    then
+      NAME=$(cut -d: -f2 <<<$line | tr -d ' ' | rev | cut -d: -f2- | rev)
+      NEWVERSION=$(grep -E "^${NAME}:" ${manifestFile} ${baseManifestFile} | head -1 | rev | cut -d: -f1 | rev)
+      if [ "${NEWVERSION}" != "" ]
+      then
+        if [[ $line =~ ${placeHolder} ]]
+        then
+          line="$(sed -e "s#${NAME}.*#${NAME}:${NEWVERSION}#" <<<"$line")"
+        else
+          if [[ $line =~ image:.*: ]]
+          then
+            # replace old version with new version
+            OLDVERSION=$(rev <<<$line | cut -d: -f1 | rev)
+            line="$(sed -e "s#${OLDVERSION}#${NEWVERSION}#" <<<"$line")"
+          else
+            line="$(sed -e "s#\$#:${NEWVERSION}#" <<<"$line")"
+          fi
+        fi
+      fi
+    fi
+    sed -e "s#: ${placeHolder}#: ${registry}#" <<<"$line"
+    if [[ $line =~ SNAPSHOT ]]
+    then
+      SPACES=$(echo "$line" | sed -E -e 's/^([ -]+)image:.*/\1/' | sed 's/-/ /')
+      echo "${SPACES}imagePullPolicy: Always"
+    fi
+  else
+    echo "$line"
+  fi
+done </dev/stdin

@@ -1,0 +1,10 @@
+resources:
+  - ../../../../bases/hpe-csi/stage1/
+
+generators:
+    - generators/nimble-secret.yaml
+generatorOptions:
+  disableNameSuffixHash: true
+
+commonLabels:
+  stage: one

@@ -1,0 +1,69 @@
+# This is a test that allows us to verify we can mount to a to a PVC backed
+# by vsphere and read/write to it using a pod.
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app.kubernetes.io/name: test-readwrite-pvc
+    app.kubernetes.io/managed-by: test-readwrite
+  name: test-readwrite-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 5M
+  storageClassName: "vsphere-london-non-prod-delete"
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app.kubernetes.io/name: test-readwrite
+  name: test-readwrite
+spec:
+  restartPolicy: Never
+
+  affinity:            
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: storage/vsphere
+            operator: Exists
+
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+              - "lchu-teif-xkn03"
+  containers:
+    - name: test-vsphere-storage
+      image: docker.fcaus-ct-storage.autodata.tech/fcaus/support/gizmo:1.0.0
+      command: ["/bin/sh", "-c"]
+      args:
+        - |
+          echo "[INFO] attempting to create file ..."
+          touch /data-test/message.txt
+          echo "[INFO] attempting to populate file ..."
+          echo "hello world" > /data-test/message.txt
+          echo "[INFO] attempting to read file ..."
+          cat /data-test/message.txt
+          echo "[INFO] completed"
+      volumeMounts:
+        - name: test-pvc
+          mountPath: /data-test
+      resources:
+        requests:
+          memory: "16Mi"
+          cpu: "5m"
+        limits:
+          memory: "32Mi"
+          cpu: "10m"
+  volumes:
+    - name: test-pvc
+      persistentVolumeClaim:
+        claimName: test-readwrite-pvc
+        readOnly: false

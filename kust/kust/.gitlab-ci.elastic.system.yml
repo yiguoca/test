@@ -1,0 +1,132 @@
+hillsboro-elastic-system:
+  environment:
+    name: elastic/system/hillsboro
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:hillsboro
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_HILLSBORO_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/hillsboro/elastic-system/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/hillsboro/elastic-system/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+chaska-elastic-system:
+  environment:
+    name: elastic/system/chaska
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:chaska
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_CHASKA_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/chaska/elastic-system/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/chaska/elastic-system/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+chaska-storage-elastic-system:
+  environment:
+    name: elastic/system/chaska-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/chaska-storage/elastic-system/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/chaska-storage/elastic-system/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+hillsboro-storage-elastic-system:
+  environment:
+    name: elastic/system/hillsboro-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/hillsboro-storage/elastic-system/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/hillsboro-storage/elastic-system/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+azure-elastic-system:
+  environment:
+    name: elastic/system/azure
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:azure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_AZURE_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/azure/elastic-system/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/azure/elastic-system/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+ct-storage-elastic-system:
+  environment:
+    name: elastic/system/continuous-testing-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:continuous-testing-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CT_STORAGE_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/ct-storage/elastic-system/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/ct-storage/elastic-system/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+test-infrastructure-elastic-system:
+  environment:
+    name: elastic/system/test-infrastructure
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:test-infrastructure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_TEST_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/test/elastic-system/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/test/elastic-system/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"

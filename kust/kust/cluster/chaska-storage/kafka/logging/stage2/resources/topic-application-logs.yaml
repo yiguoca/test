@@ -1,0 +1,44 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: chaska-application-logs
+  labels:
+    strimzi.io/cluster: kafka-logging
+spec:
+  partitions: 3
+  replicas: 2
+  config:
+    #48hr
+    retention.ms: 172800000
+    #1GiB
+    segment.bytes: 1073741824
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: hillsboro-application-logs
+  labels:
+    strimzi.io/cluster: kafka-logging
+spec:
+  partitions: 3
+  replicas: 2
+  config:
+    #48hr
+    retention.ms: 172800000
+    #1GiB
+    segment.bytes: 1073741824
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: centralus-azure-application-logs
+  labels:
+    strimzi.io/cluster: kafka-logging
+spec:
+  partitions: 3
+  replicas: 2
+  config:
+    #48hr
+    retention.ms: 172800000
+    #1GiB
+    segment.bytes: 1073741824

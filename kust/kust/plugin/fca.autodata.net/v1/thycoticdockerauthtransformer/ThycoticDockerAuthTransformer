@@ -1,0 +1,28 @@
+#!/bin/bash
+# For development purposes, set BASEDIR to the full path of the kustom
+# directory, e.g.  BASEDIR=/home/peterj/kustom go test
+if [ "${BASEDIR}" != "" ]
+then
+  source ${BASEDIR}/plugin/fca.autodata.net/v1/parse-yaml.sh
+  source ${BASEDIR}/plugin/fca.autodata.net/v1/thycotic.sh
+else
+  source $(dirname $0)/../parse-yaml.sh
+  source $(dirname $0)/../thycotic.sh
+fi
+
+create_variables $1
+
+set -e -o pipefail
+while IFS= read -r line
+do
+  if [[ $line =~ __DOCKERAUTH__ ]]
+  then
+    SECRET_ID=$(echo $line | sed 's .*__DOCKERAUTH__\([[:digit:]]\+\).* \1 ')
+    DOCKER_USERNAME=$(get_secret ${SECRET_ID} username | tr -d '"' | sed 's/&/\\&/g')
+    DOCKER_PASSWORD=$(get_secret ${SECRET_ID} password | tr -d '"' | sed 's/&/\\&/g')
+    AUTH_VALUE=$(echo -n "${DOCKER_USERNAME}:${DOCKER_PASSWORD}"|openssl base64 -A)
+    sed -e 's \(__DOCKERAUTH__\w\+\) '"${AUTH_VALUE}"' ' <<<"$line"
+  else
+    echo "$line"
+  fi
+done </dev/stdin

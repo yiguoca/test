@@ -1,0 +1,19 @@
+resources:
+  - ../../../../bases/vsphere-csi/vsphere-csi-test
+
+patches:
+  - target:
+      kind: StatefulSet
+      name: test-node
+    patch: |
+      - op: replace
+        path: "/spec/volumeClaimTemplates/0/spec/storageClassName"
+        value: "vsphere-london-non-prod-delete"
+
+
+labels:
+- includeTemplates: true
+  includeSelectors: false
+  pairs:
+    app.kubernetes.io/part-of: vsphere-csi
+    app.kubernetes.io/component: test-vsphere-csi-operations

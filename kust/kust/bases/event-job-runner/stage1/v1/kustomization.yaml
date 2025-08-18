@@ -1,0 +1,3 @@
+# CRD is v1 of the API for Kubernetes 1.16+
+resources:
+  - crd.yaml

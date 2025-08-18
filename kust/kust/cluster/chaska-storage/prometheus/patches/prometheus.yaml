@@ -1,0 +1,10 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: k8s
+  namespace: monitoring
+spec:
+  externalUrl: https://prometheus.fcaus-f-storage.autodata.tech
+  podMetadata:
+    labels:
+      app.kubernetes.io/instance: chaska-storage

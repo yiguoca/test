@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: prom2teams
+    env: prod
+  name: prom2teams-prod
+  namespace: monitoring
+spec:
+  ports:
+    - name: web
+      port: 8080
+      targetPort: web
+    - name: metrics
+      port: 9100
+      targetPort: metrics
+  selector:
+    app: prom2teams
+    env: prod
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: prom2teams
+    env: nonprod
+  name: prom2teams
+  namespace: monitoring
+spec:
+  ports:
+    - name: web
+      port: 8080
+      targetPort: web
+    - name: metrics
+      port: 9100
+      targetPort: metrics
+  selector:
+    app: prom2teams
+    env: nonprod

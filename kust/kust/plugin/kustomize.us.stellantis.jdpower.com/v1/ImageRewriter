@@ -1,0 +1,70 @@
+#!/bin/bash
+set -euo pipefail
+
+source "$(dirname "$0")/yq.sh"
+source "$(dirname "$0")/thycotic.sh"
+
+RESOURCE_FILE=$(mktemp -p /tmp)
+cat >"${RESOURCE_FILE}"
+placeHolder=$(${YQ} e .functionConfig.placeHolder "${RESOURCE_FILE}")
+registry=$(${YQ} e .functionConfig.registry "${RESOURCE_FILE}")
+registrySecret=$(${YQ} e .functionConfig.registrySecret "${RESOURCE_FILE}")
+manifestFile=$(${YQ} e .functionConfig.manifestFile "${RESOURCE_FILE}")
+baseManifestFile=$(${YQ} e .functionConfig.baseManifestFile "${RESOURCE_FILE}")
+if [[ "${manifestFile}" = "null" ]]
+then
+  manifestFile=
+fi
+if [[ "${baseManifestFile}" = "null" ]]
+then
+  baseManifestFile=
+fi
+while IFS= read -r line
+do
+  if [[ $line =~ imagePullPolicy: ]]
+  then
+    # remove existing imagePullPolicy
+    line=
+  elif [[ $line =~ image: ]]
+  then
+    if [ "${manifestFile}" != "" ] || [ "${baseManifestFile}" != "" ]
+    then
+      NAME=$(cut -d: -f2 <<<"$line" | tr -d ' ' | rev | cut -d: -f2- | rev)
+      # shellcheck disable=SC2086
+      NEWVERSION=$(grep -E "^${NAME}:" ${manifestFile} ${baseManifestFile} | head -1 | rev | cut -d: -f1 | rev || true)
+      if [ "${NEWVERSION}" != "" ]
+      then
+        if [[ $line =~ ${placeHolder} ]]
+        then
+          # NOTE: / looks like it should be regex, but it's just glob
+          line=${line/${NAME}*/${NAME}}:${NEWVERSION}
+        else
+          if [[ $line =~ image:.*: ]]
+          then
+            # replace old version with new version
+            OLDVERSION=$(rev <<<"$line" | cut -d: -f1 | rev)
+            line=${line/${OLDVERSION}/${NEWVERSION}}
+          else
+            line=${line/$/}:${NEWVERSION}
+          fi
+        fi
+      fi
+    fi
+    if [ "${registrySecret}" != "null" ]
+    then
+      TARGET_REGISTRY=$(get_secret "${registrySecret}" resource | tr -d '"')
+      [[ "${TARGET_REGISTRY}" != */ ]] && TARGET_REGISTRY="${TARGET_REGISTRY}/"
+      [[ "${TARGET_REGISTRY}" != *${placeHolder} ]] && TARGET_REGISTRY="${TARGET_REGISTRY}${placeHolder}"
+      line=${line/: ${placeHolder}/: ${TARGET_REGISTRY}}
+    else
+      line=${line/: ${placeHolder}/: ${registry}}
+    fi
+    if [[ $line =~ SNAPSHOT ]]
+    then
+      SPACES=$(echo "$line" | sed -E -e 's/^([ -]+)image:.*/\1/' | sed 's/-/ /')
+      echo "${SPACES}imagePullPolicy: Always"
+    fi
+  fi
+  echo "$line"
+done <"${RESOURCE_FILE}"
+rm "${RESOURCE_FILE}"

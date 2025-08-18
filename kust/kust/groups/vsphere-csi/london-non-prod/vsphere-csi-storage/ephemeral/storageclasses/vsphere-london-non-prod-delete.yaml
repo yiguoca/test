@@ -1,0 +1,25 @@
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: vsphere-london-non-prod-delete
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "false" #"true" #todo to make default
+provisioner: csi.vsphere.vmware.com
+parameters:
+  # VSphere CSI Driver parameters; documentation:
+  #   https://techdocs.broadcom.com/us/en/vmware-cis/vsphere/container-storage-plugin/3-0/getting-started-with-vmware-vsphere-container-storage-plug-in-3-0/using-vsphere-container-storage-plug-in/provisioning-block-volumes-with-vsphere-container-storage-plug-in/dynamically-provision-a-volume-with-vsphere-container-storage-plug-in.html
+  #   https://github.com/kubernetes-sigs/vsphere-csi-driver/blob/master/example/vanilla-k8s-RWO-filesystem-volumes/
+  #   https://techdocs.broadcom.com/us/en/vmware-cis/vcf/vvs/1-0/tanzu-kubernetes-storage-class-example.html
+
+  # csi.storage.k8s.io/fstype is an optional field which is the filesystem type to be used for the volume. The default value is "ext4".
+  csi.storage.k8s.io/fstype: ext4 #optional
+
+  # storagePolicyName is an optional field which is the name of the SPBM policy to be applied. The newly created persistent volume will have the SPBM policy configured with it.
+  storagepolicyname: Stellantis_Pri_NonProd_Kube_Storage
+
+  # datastoreurl is an optional field which is can be used to specify a specific datastore. It also doesn't support topology-aware provisioning;
+  # below is an example of a datastore URL:
+  # datastoreurl: "ds:///vmfs/volumes/vsan:52cdfa80721ff516-ea1e993113acfc77/"
+reclaimPolicy: Delete
+allowVolumeExpansion: true

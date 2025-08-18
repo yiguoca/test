@@ -1,0 +1,4 @@
+# may cause a race condition - should prefer the underlying targets one at a time.
+resources:
+  - stage1
+  - stage2

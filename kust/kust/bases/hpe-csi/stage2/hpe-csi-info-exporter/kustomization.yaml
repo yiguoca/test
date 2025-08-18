@@ -1,0 +1,8 @@
+resources:
+  - hpe-csi-info-exporter.yaml
+
+namespace: hpe-storage
+
+commonLabels:
+  app.kubernetes.io/part-of: hpe-csi
+  photon/tier: infrastructure

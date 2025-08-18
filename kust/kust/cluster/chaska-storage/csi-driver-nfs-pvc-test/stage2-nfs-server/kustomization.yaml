@@ -1,0 +1,50 @@
+namespace: csi-driver-nfs-pvc-test
+
+resources:
+  - ../../../../bases/csi-driver-nfs-pvc/stage1-nfs-server/
+
+patches:
+  - target:
+      kind: Service
+      name: nfs-server-pvcname
+    patch: |-
+      - op: replace
+        path: "/metadata/labels/app"
+        value: nfs-server-nfstest
+      - op: replace
+        path: "/spec/selector/app"
+        value: nfs-server-nfstest
+      - op: replace
+        path: "/metadata/name"
+        value: nfs-server-nfstest
+  - target:
+      kind: StatefulSet
+      name: nfs-server-pvcname
+    patch: |-
+      - op: replace
+        path: "/metadata/labels/app"
+        value: nfs-server-nfstest
+      - op: replace
+        path: "/metadata/labels/app.kubernetes.io~1name"
+        value: nfs-server-nfstest
+      - op: replace
+        path: "/spec/selector/matchLabels/app"
+        value: nfs-server-nfstest
+      - op: replace
+        path: "/spec/serviceName"
+        value: nfs-server-nfstest
+      - op: replace
+        path: "/spec/template/metadata/labels/app"
+        value: nfs-server-nfstest
+      - op: replace
+        path: "/spec/template/metadata/labels/app.kubernetes.io~1name"
+        value: nfs-server-nfstest
+      - op: replace
+        path: "/spec/volumeClaimTemplates/0/spec/storageClassName"
+        value: hpe-nimble-chaska-prod-delete
+      - op: replace
+        path: "/spec/volumeClaimTemplates/0/spec/resources/requests/storage"
+        value: 1Mi
+      - op: replace
+        path: "/metadata/name"
+        value: nfs-server-nfstest

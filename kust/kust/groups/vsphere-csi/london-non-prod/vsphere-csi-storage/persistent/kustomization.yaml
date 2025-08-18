@@ -1,0 +1,9 @@
+resources:
+  - storageclasses/vsphere-london-non-prod-retain.yaml
+  - volumesnapshotclasses/vsphere-london-non-prod-volume-snapshot-retain.yaml
+
+labels:
+- includeTemplates: true
+  includeSelectors: false
+  pairs:
+    app.kubernetes.io/part-of: vsphere-csi

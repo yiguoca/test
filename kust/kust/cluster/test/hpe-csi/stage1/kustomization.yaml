@@ -1,0 +1,17 @@
+resources:
+  - ../../../../bases/hpe-csi/stage1/
+
+# TODO: When troubleshooting the csi driver these are some ideal components to enable debug logging on.
+# Patches are left here for reference only.
+# patches:
+#   - path: patches/loglevel-debug/hpe-csi-controller.yaml
+#   - path: patches/loglevel-debug/hpe-csi-node.yaml
+
+generators:
+    - generators/nimble-secret.yaml
+    
+generatorOptions:
+  disableNameSuffixHash: true
+
+commonLabels:
+  stage: one

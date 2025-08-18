@@ -1,0 +1,55 @@
+resources:
+  - resources/logging-access-job.yaml
+  - resources/logging-manage-alias-cron.yaml
+
+#Replace the default fields definition for nginx filebeat module
+configMapGenerator:
+
+  - name: data-kb-dashboard
+    namespace: logging
+    files:
+      - config/dashboards/api-performance-super-bowl.json
+
+  - name: data-kb-visualization
+    namespace: logging
+    files:
+      - config/visualizations/avg-requestresponse-size-over-time.json
+      - config/visualizations/avg-responserequest-time-over-time.json
+      - config/visualizations/load-average-request-per-second.json
+      - config/visualizations/load-average-request-time.json
+      - config/visualizations/load-average-response-time.json
+      - config/visualizations/load-total-request-count.json
+      - config/visualizations/requests-per-brand.json
+      - config/visualizations/status-code-ratio.json
+      - config/visualizations/top-10-frequency.json
+      - config/visualizations/top-25-ccode-frequency.json
+
+  - name: data-es-alias
+    namespace: logging
+    files:
+      - config/aliases/7days-access.json
+
+  - name: data-kb-tag
+    namespace: logging
+    files:
+      - config/tags/stellantis.json
+      - config/tags/photon.json
+
+  - name: scripts-es-update
+    namespace: logging
+    files:
+      - config/create-7days-access-alias.sh
+      - config/manage-7days-access-alias.sh
+
+  - name: scripts-kb-update
+    namespace: logging
+    files:
+      - config/import-kb-object.sh
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+labels:
+  - includeSelectors: true
+    pairs:
+      stage: two

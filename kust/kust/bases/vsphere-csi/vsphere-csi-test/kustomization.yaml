@@ -1,0 +1,14 @@
+namespace: vsphere-csi-test
+resources:
+  - resources/namespace.yaml
+  
+  # this creates a statefulset on all the nodes that should 
+  # allow the vsphere-csi to host a PVC and validate it
+  - resources/test-node.yaml
+  
+labels:
+- includeTemplates: true
+  includeSelectors: false
+  pairs:
+    app.kubernetes.io/part-of: vsphere-csi
+    app.kubernetes.io/component: test-vsphere-csi-operations

@@ -1,0 +1,316 @@
+# label the nodes where we want the vsphere compponents to run on; these should be 
+# all the worker nodes in the cluster.
+.vsphere:label:
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  # variables:
+  #   # The secret id for the kubernetes config file to use for the deployment
+  #   #
+  #   # Required: Yes
+  #   KUBECONFIG_SECRET_ID: 
+  #
+  #   # The path to the kubernetes config file to use for the deployment
+  #   #
+  #   # Required: Yes
+  #   KUBECONFIG: 
+
+  #   # If a value supplied, then we enable the labeling of the master nodes as well.
+  #   #
+  #   # Required: No
+  #   # Default: ''
+  #   INCLUDE_MASTER_NODES:
+  before_script:
+    - |
+      if [ -z "$KUBECONFIG_SECRET_ID" ]; then echo "KUBECONFIG_SECRET_ID is not set"; exit 1; fi
+      if [ -z "$KUBECONFIG" ]; then echo "KUBECONFIG is not set"; exit 1; fi
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kustomize version
+    - kubectl auth can-i update nodes
+  script:
+    - |
+      echo "[INFO] attempting to label worker nodes to host vsphere storage .."
+      kubectl label nodes -l '!node-role.kubernetes.io/control-plane' storage/vsphere=true
+
+    # generally you only want to label the worker nodes, but if you want to include the master nodes
+    - |
+      if [ ! -z "$INCLUDE_MASTER_NODES" ]; then
+        echo "[INFO] attempting to label master nodes to host vsphere storage .."
+        kubectl label nodes -l 'node-role.kubernetes.io/control-plane' storage/vsphere=true --overwrite
+      fi
+  after_script:
+    - |
+      echo "[INFO] listing all worker nodes and there respective labels ..."
+      kubectl get nodes -l '!node-role.kubernetes.io/control-plane' -o custom-columns=NAME:.metadata.name,VERSION:.status.nodeInfo.kubeletVersion,LABELS:.metadata.labels
+
+    - |
+      if [ ! -z "$INCLUDE_MASTER_NODES" ]; then 
+        echo "[INFO] listing all master nodes and there respective labels ..."
+        kubectl get nodes -l 'node-role.kubernetes.io/control-plane' -o custom-columns=NAME:.metadata.name,VERSION:.status.nodeInfo.kubeletVersion,LABELS:.metadata.labels
+      fi
+  when: manual
+
+.vsphere:unlabel:
+  extends: .vsphere:label
+  script:
+
+    - |
+      if [ -z "$(kubectl get nodes -l storage/vsphere=true -o jsonpath='{.items[*].metadata.name}' 2> /dev/null)" ]; then
+        echo "[INFO] There are no nodes with the label storage/vsphere=true"
+        exit 0
+      fi
+    - |
+      echo "[INFO] attempting to unlabel nodes to host vsphere storage .."
+      kubectl label nodes -l 'storage/vsphere' storage/vsphere-
+
+#------------------------------------------------------------------------------
+# This will manage the deployment of the vsphere csi components; specifically the following:
+#
+# - vsphere-csi-driver/ - the csi components
+# - vsphere-storage/ - storageclasses, volumesnapshotclasses, etc
+# - vsphere-csi-test/ - the validation tests for the vsphere csi
+.deploy:vsphere-csi:
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  variables:
+    # The secret id for the kubernetes config file to use for the deployment
+    # Required: Yes
+    #KUBECONFIG_SECRET_ID: 
+    
+    # The path to the kubernetes config file to use for the deployment
+    # Required: Yes
+    #KUBECONFIG: 
+
+    # Provides a quick way to set the base path for the vsphere csi deployment; 
+    # this is used to build the paths for the vsphere csi driver, storage, and 
+    # test components.
+    #
+    # Required: No
+    # Default:
+    #CLUSTER_DEPLOYMENT_BASEPATH:
+
+    # The path to the vsphere csi driver kustomization; this is used to build 
+    # the csi driver components
+    #
+    # Required: Yes
+    # Default: $CLUSTER_DEPLOYMENT_BASEPATH/vsphere-csi-driver/
+    CSI_DRIVER_PATH: "$CLUSTER_DEPLOYMENT_BASEPATH/vsphere-csi-driver/" 
+    
+    # The path to the vsphere csi storage kustomization; this is used to build 
+    # the storage classes, volumesnapshotclasses, etc
+    #
+    # Required: Yes
+    # Default: $CLUSTER_DEPLOYMENT_BASEPATH/vsphere-csi-storage/
+    CSI_STORAGE_PATH: "$CLUSTER_DEPLOYMENT_BASEPATH/vsphere-csi-storage/" 
+    
+    # The path to the vsphere csi test kustomization; this is used to build 
+    # the validation tests for the vsphere csi
+    #
+    # Required: Yes
+    # Default: "$CLUSTER_DEPLOYMENT_BASEPATH/vsphere-csi-test/"
+    CSI_TEST_PATH: "$CLUSTER_DEPLOYMENT_BASEPATH/vsphere-csi-test/" 
+
+    # If this is set to a value then we will undeploy the vsphere-csi-test
+    # components after the vsphere-csi has been deployed successfully. This 
+    # is handy in the case where resource utilization is a concern.
+    #
+    # Required: No
+    # Default: '1'
+    UNDEPLOY_TESTS_ON_SUCCESS: "1"
+  
+    # If this is set to a value then some debug statements will be enabled to help 
+    # troubleshoot the the job.
+    #
+    # Required: No
+    # Default: ''
+    #DEBUG:
+
+    # If this is set to a value then the script will require the vsphere cpi has 
+    # been deployed; if it cant detect it will not allow the deployment of 
+    # the csi. If not supplied we can still deploy the csi without the cpi.
+    # 
+    # Required: No
+    # Default: ''
+    # ENABLE_CPI_REQUIRED:
+  before_script:
+    - |
+      if [ -z "$KUBECONFIG_SECRET_ID" ]; then echo "KUBECONFIG_SECRET_ID is not set"; exit 1; fi
+      if [ -z "$KUBECONFIG" ]; then echo "KUBECONFIG is not set"; exit 1; fi
+
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+  script:
+    - ${CI_PROJECT_DIR}/bin/vsphere-csi/deploy-vsphere-csi.sh
+    - ${CI_PROJECT_DIR}/bin/vsphere-csi/deploy-vsphere-csi-test.sh
+
+    # If we got to this stage successfully then we can simply undeploy the vsphere-csi-test
+    - |
+      if [[ ! -z "${UNDEPLOY_TESTS_ON_SUCCESS}" ]]; then
+        "${CI_PROJECT_DIR}/bin/vsphere-csi/undeploy-vsphere-csi-test.sh"
+      fi
+  when: manual
+
+.undeploy:vsphere-csi:
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  extends: .deploy:vsphere-csi
+  variables:
+    # If this is set to a value then we will exit with an error if there are 
+    # any PVs that have a storageclass with "vsphere" in it.
+  
+    # Required: No
+    # Default: '1'
+    ERROR_ON_VSPHERE_PVC: "1"
+  
+  #   # If this is set to a value then some debug statements will be enabled to help 
+  #   # troubleshoot the the job.
+  #   #
+  #   # Required: No
+  #   # Default: ''
+  #   #DEBUG:
+  script:
+    - ${CI_PROJECT_DIR}/bin/vsphere-csi/undeploy-vsphere-csi-test.sh
+    - ${CI_PROJECT_DIR}/bin/vsphere-csi/undeploy-vsphere-csi.sh
+  when: manual
+
+
+#-----------------------------------------------------------------------------
+# Cluster: fcaus-ct-storage
+
+.base:vsphere:fcaus-ct-storage:
+  variables:
+    KUBECONFIG_SECRET_ID: $STELLANTIS_CT_STORAGE_SECRET_ID
+    CLUSTER_DEPLOYMENT_BASEPATH: "${CI_PROJECT_DIR}/cluster/ct-storage/vsphere-csi"
+  tags:
+    - "dc:london"
+    - "cluster:ctkube" # "cluster:fcaus-ct-storage"
+    - "du:stellantis-us"
+
+ct-storage-vsphere-label:
+  environment:
+    name: storage/vsphere-label/continuous-testing-storage
+  stage: deploy:continuous-testing-storage
+  extends: 
+    - .vsphere:label
+    - .base:vsphere:fcaus-ct-storage
+
+undeploy:ct-storage-vsphere-label:
+  environment:
+    name: storage/vsphere-label/continuous-testing-storage
+  stage: undeploy:continuous-testing-storage
+  extends:
+    - .vsphere:unlabel
+    - .base:vsphere:fcaus-ct-storage
+
+ct-storage-vsphere-csi:
+  environment:
+    name: storage/vsphere-csi/continuous-testing-storage
+  stage: deploy:continuous-testing-storage
+  extends:
+    - .deploy:vsphere-csi
+    - .base:vsphere:fcaus-ct-storage
+
+undeploy:ct-storage-vsphere-csi:
+  environment:
+    name: storage/vsphere-csi/continuous-testing-storage
+  stage: undeploy:continuous-testing-storage
+  extends: 
+    - .undeploy:vsphere-csi
+    - .base:vsphere:fcaus-ct-storage
+
+#-----------------------------------------------------------------------------
+# Cluster: fcaus-ct
+
+.base:vsphere:fcaus-ct:
+  variables:
+    KUBECONFIG_SECRET_ID: $FCAUS_CT_SECRET_ID
+    CLUSTER_DEPLOYMENT_BASEPATH: "${CI_PROJECT_DIR}/cluster/ctkube/vsphere-csi"
+  tags:
+    - "dc:london"
+    - "cluster:ctkube" # "cluster:fcaus-ct"
+    - "du:stellantis-us"
+
+ctkube-vsphere-label:
+  environment:
+    name: storage/vsphere-label/continuous-testing
+  stage: deploy:continuous-testing
+  extends: 
+    - .vsphere:label
+    - .base:vsphere:fcaus-ct
+
+undeploy:ctkube-vsphere-label:
+  environment:
+    name: storage/vsphere-label/continuous-testing
+  stage: undeploy:continuous-testing
+  extends:
+    - .vsphere:unlabel
+    - .base:vsphere:fcaus-ct
+
+ctkube-vsphere-csi:
+  environment:
+    name: storage/vsphere-csi/continuous-testing
+  stage: deploy:continuous-testing
+  extends:
+    - .deploy:vsphere-csi
+    - .base:vsphere:fcaus-ct
+
+undeploy:ctkube-vsphere-csi:
+  environment:
+    name: storage/vsphere-csi/continuous-testing
+  stage: undeploy:continuous-testing
+  extends: 
+    - .undeploy:vsphere-csi
+    - .base:vsphere:fcaus-ct
+
+#-----------------------------------------------------------------------------
+# Cluster: fcaus-te
+
+.base:vsphere:test-infrastructure:
+  variables:
+    KUBECONFIG_SECRET_ID: $STELLANTIS_TEST_DEPLOYER_KUBECONFIG_SECRET_ID
+    CLUSTER_DEPLOYMENT_BASEPATH: "${CI_PROJECT_DIR}/cluster/test/vsphere-csi"
+    DEBUG: "1"
+  tags:
+    - "dc:london"
+    - "cluster:ctkube" #"cluster:fcaus-te"
+    - "du:stellantis-us"
+
+test-infrastructure-vsphere-label:
+  environment:
+    name: storage/vsphere-label/test-infrastructure
+  stage: deploy:test-infrastructure
+  extends: 
+    - .vsphere:label
+    - .base:vsphere:test-infrastructure
+
+undeploy:test-infrastructure-vsphere-label:
+  environment:
+    name: storage/vsphere-label/test-infrastructure
+  stage: undeploy:test-infrastructure
+  extends:
+    - .vsphere:unlabel
+    - .base:vsphere:test-infrastructure
+
+test-infrastructure-vsphere-csi:
+  environment:
+    name: storage/vsphere-csi/test-infrastructure
+  stage: deploy:test-infrastructure
+  extends:
+    - .deploy:vsphere-csi
+    - .base:vsphere:test-infrastructure
+
+undeploy:test-infrastructure-vsphere-csi:
+  environment:
+    name: storage/vsphere-csi/test-infrastructure
+  stage: undeploy:test-infrastructure
+  extends: 
+    - .undeploy:vsphere-csi
+    - .base:vsphere:test-infrastructure
+  variables:
+    # We dont want to error on undeploying the vsphere-csi if there are still PVCs that are 
+    # using the vsphere storageclass because in the fcaus-te there are some PVCs that are 
+    # created by the team outside of the vsphere-csi deployment via pipelines.
+    ERROR_ON_VSPHERE_PVC: ""

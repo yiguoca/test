@@ -1,0 +1,10 @@
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: elastic-root-ca-issuer
+  namespace: cert-manager
+spec:
+  ca:
+    secretName: elastic-root-secret
+

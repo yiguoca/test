@@ -1,0 +1,5 @@
+resources:
+  - ../../../../../bases/kafka-strimzi/stage1/
+  - resources/kafka-logging-cluster.yaml
+
+namespace: logging

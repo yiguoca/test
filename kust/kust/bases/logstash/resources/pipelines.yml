@@ -1,0 +1,8 @@
+- pipeline.id: access-logs
+  path.config: "pipelines/pipeline-access-logs.conf"
+- pipeline.id: errors
+  path.config: "pipelines/pipeline-errors.conf"
+- pipeline.id: application-logs
+  path.config: "pipelines/pipeline-application-logs.conf"
+# - pipeline.id: dead-letter-queue
+  # path.config: "pipelines/pipeline-dead-letter.conf"

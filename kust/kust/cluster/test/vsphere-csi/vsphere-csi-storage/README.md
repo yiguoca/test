@@ -1,0 +1,1 @@
+Defines and manages all the storage classes (storageclass, snapshotgroupclass, volumesnapshotclass etc) that utilize the [vsphere-csi](../vsphere-csi/) as it backing storage implementation. We are utilizing/expanding on the [london-non-prod group definition](/groups/vsphere-csi/london-non-prod/vsphere-csi-storage/) to work within the london test infrastructure cluster.

@@ -1,0 +1,15 @@
+namespace: csi-driver-nfs-system
+resources:
+  - namespace.yaml
+helmCharts:
+  # helm install nfs-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
+  #    --set nfs.server=x.x.x.x \
+  #    --set nfs.path=/exported/path
+  - name: csi-driver-nfs
+    releaseName: csi-driver-nfs
+    repo: https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
+    valuesInLine:
+      version: v4.0.10
+      namespace: csi-driver-nfs-system
+
+

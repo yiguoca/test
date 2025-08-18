@@ -1,0 +1,33 @@
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vsphere-cloud-config
+  namespace: kube-system
+data:
+  vsphere.conf: |
+    # Global properties in this section will be used for all specified vCenters unless overriden in VirtualCenter section.
+    global:
+      port: 443
+      
+      # set insecure-flag to true if the vCenter uses a self-signed cert
+      insecureFlag: true
+
+      # settings for using k8s secret
+      secretName: vsphere-cloud-london-nonprod-secret
+      secretNamespace: kube-system
+
+    # vcenter section
+    vcenter:
+      lops-prif-vcsa1.autodatacorp.org:
+        server: lops-prif-vcsa1.autodatacorp.org
+        datacenters:
+          - "London"
+          
+        secretName: vsphere-cloud-london-nonprod-secret
+        secretNamespace: kube-system
+
+    # labels for regions and zones
+    labels:
+      region: k8s-region
+      zone: k8s-zone

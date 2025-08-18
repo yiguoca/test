@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: monitoring
+spec:
+  template:
+    spec:
+      containers:
+        - name: grafana
+          volumeMounts:
+            - mountPath: /grafana-dashboard-definitions/0/fca-common-dashboards
+              name: fca-common-dashboards
+            - mountPath: /grafana-dashboard-definitions/hpe_storage/photon-hpe-storage-dashboards
+              name: photon-hpe-storage-dashboards
+      volumes:
+        - name: fca-common-dashboards
+          configMap:
+            name: fca-common-dashboards
+        - name: photon-hpe-storage-dashboards
+          configMap:
+            name: photon-hpe-storage-dashboards

@@ -1,0 +1,73 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kibana-import-object-script
+  namespace: logging
+data:
+  curl-script.sh: |
+    #!/bin/sh
+
+    function import_dashboards {
+      echo "Importing dashboards..."
+      until curl -k -v --user ${ELASTIC_USER}:${ELASTIC_PASSWORD} ${KIBANA_HOST}/api/kibana/dashboards/import -H 'kbn-xsrf: true' -H 'Content-Type: application/json' -d @/kibana/dashboards/exported-dashboards.json; do sleep 5; done
+      if [[ $(echo "$?") == "0" ]]; then
+        printf "\n########## Imported dashboards successfully! #############################\n"
+      else
+        printf "\n########## Failure while importing dashboards #############\n"
+      fi
+    }
+    function import_indices {
+      echo "Importing indices..."
+      until curl -k -v --user ${ELASTIC_USER}:${ELASTIC_PASSWORD} ${KIBANA_HOST}/api/saved_objects/_import -H 'kbn-xsrf: true' --form file=@/kibana/indices/exported-indices.ndjson; do sleep 5; done
+      if [[ $(echo "$?") == "0" ]]; then
+        printf "\n########## Imported indices successfully! #############################\n"
+      else
+        printf "\n########## Failure while importing searches #############\n"
+      fi
+    }
+    import_dashboards
+    import_indices
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: saved-object-import-pod
+  namespace: logging
+spec:
+  containers:
+  - image: curlimages/curl:latest
+    name: saved-object-import-pod
+    env:
+    - name: KIBANA_HOST
+      value: "https://logging.fcaus-te.autodata.tech"
+    - name: ELASTIC_USER
+      value: "elastic"
+    - name: ELASTIC_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: logging-es-elastic-user
+          key: elastic
+    command: ["/bin/sh","/kibana/script/curl-script.sh"]
+    resources: {}
+    volumeMounts:
+    - name: kibana-import-object-script
+      mountPath: /kibana/script
+    - name: kibana-dashboards
+      mountPath: /kibana/dashboards
+    - name: kibana-indices
+      mountPath: /kibana/indices
+  restartPolicy: Never
+  volumes:
+  - name: kibana-import-object-script
+    configMap:
+      name: kibana-import-object-script
+      defaultMode: 0777
+  - name: kibana-dashboards
+    configMap:
+      name: kibana-dashboards
+      defaultMode: 0777
+  - name: kibana-indices
+    configMap:
+      name: kibana-indices
+      defaultMode: 0777

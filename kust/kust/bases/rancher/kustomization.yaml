@@ -1,0 +1,9 @@
+resources:
+  - rbac/role-templates/cluster-logs.yaml
+  - rbac/role-templates/cluster-port-forward.yaml
+  - rbac/role-templates/cluster-read-only.yaml
+  - rbac/role-templates/nagios-reader.yaml
+  - rbac/cluster-role-binding/asc-chrysler-dev.yaml
+  - rbac/cluster-role-binding/asc-chrysler-devqa.yaml
+  - rbac/cluster-role-binding/asc-chrysler-qa.yaml
+  - rbac/cluster-role-binding/devops-fca-du.yaml

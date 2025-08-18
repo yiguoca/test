@@ -1,0 +1,22 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: hpe-array-exporter
+  namespace: hpe-storage
+  labels:
+    photon/tier: infrastructure
+    array: nimble-chaska-prod
+spec:
+  template:
+    metadata:
+      labels:
+        array: nimble-chaska-prod
+    spec:
+      volumes:
+        - name: storage-system-config
+          secret:
+            # Specify the name of a Secret in the same namespace as this
+            # deployment providing storage array access information:
+            # "address" (or "backend"), "username", and "password".
+            secretName: nimble-chaska-prod

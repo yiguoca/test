@@ -1,0 +1,567 @@
+#-------------------------------------------------------------------------------
+# cluster: fcaus-f
+#-------------------------------------------------------------------------------
+
+chaska-nimble-csi:
+  environment:
+    name: storage/nimble-csi/chaska
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:chaska
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_CHASKA_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/chaska/hpe-csi/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/chaska/hpe-csi/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis-us"
+
+undeploy:chaska-nimble-csi:
+  environment:
+    name: storage/nimble-csi/chaska
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:chaska
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_CHASKA_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/chaska/hpe-csi/stage2 | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/chaska/hpe-csi/stage1 | kubectl delete -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis-us"
+
+#-------------------------------------------------------------------------------
+# cluster: fcaus-f-storage
+#-------------------------------------------------------------------------------
+
+chaska-storage-nimble-csi:
+  environment:
+    name: storage/nimble-csi/chaska-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/chaska-storage/hpe-csi/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/chaska-storage/hpe-csi/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/chaska-storage/hpe-csi/stage3 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis-us"
+
+undeploy:chaska-storage-nimble-csi:
+  environment:
+    name: storage/nimble-csi/chaska-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/chaska-storage/hpe-csi/stage3 | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/chaska-storage/hpe-csi/stage2 | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/chaska-storage/hpe-csi/stage1 | kubectl delete -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis-us"
+
+chaska-storage-csi-snapshotter:
+  environment:
+    name: storage/csi-snapshotter/chaska-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/chaska-storage/csi-snapshotter | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis-us"
+
+undeploy:chaska-storage-csi-snapshotter:
+  environment:
+    name: storage/csi-snapshotter/chaska-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/chaska-storage/csi-snapshotter | kubectl delete -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis-us"
+
+test:chaska-storage-nimble-csi:
+  environment:
+    name: test/storage/nimble-csi/chaska-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: test-deploy
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/chaska-storage/hpe-csi/test | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - kubectl wait --for=condition=complete --timeout=3m -n test-hpe-cli job/test-pod
+    - kubectl -n test-hpe-cli get pvc
+    - kubectl get pv | grep test-hpe-cli/test-pvc
+    - kubectl -n test-hpe-cli get pod -o wide
+    - kubectl -n test-hpe-cli get job
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis-us"
+
+undeploy:test:chaska-storage-nimble-csi:
+  environment:
+    name: test/storage/nimble-csi/chaska-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: test-undeploy
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/chaska-storage/hpe-csi/test | kubectl delete -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis-us"
+
+#-------------------------------------------------------------------------------
+# cluster: fcaus-ct-storage
+#-------------------------------------------------------------------------------
+
+ct-storage-nimble-csi:
+  environment:
+    name: storage/nimble-csi/continuous-testing-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:continuous-testing-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CT_STORAGE_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/ct-storage/hpe-csi/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/ct-storage/hpe-csi/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/ct-storage/hpe-csi/stage3 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis-us"
+    - "cluster:ct-storage"
+
+undeploy:ct-storage-nimble-csi:
+  environment:
+    name: storage/nimble-csi/continuous-testing-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:continuous-testing-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CT_STORAGE_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/ct-storage/hpe-csi/stage3 | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/ct-storage/hpe-csi/stage2 | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/ct-storage/hpe-csi/stage1 | kubectl delete -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis-us"
+    - "cluster:ct-storage"
+
+ct-storage-csi-snapshotter:
+  environment:
+    name: storage/csi-napshotter/continuous-testing-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:continuous-testing-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CT_STORAGE_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/ct-storage/csi-snapshotter | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis-us"
+    - "cluster:ct-storage"
+
+undeploy:ct-storage-csi-snapshotter:
+  environment:
+    name: storage/csi-napshotter/continuous-testing-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:continuous-testing-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CT_STORAGE_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/ct-storage/csi-snapshotter | kubectl delete -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis-us"
+    - "cluster:ct-storage"
+
+#-------------------------------------------------------------------------------
+# cluster: fcaus-ct
+#-------------------------------------------------------------------------------
+
+ctkube-nimble-csi:
+  environment:
+    name: storage/nimble-csi/continuous-testing
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:continuous-testing
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_CT_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/ctkube/hpe-csi/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/ctkube/hpe-csi/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis-us"
+    - "cluster:ctkube"
+
+undeploy:ctkube-nimble-csi:
+  environment:
+    name: storage/nimble-csi/continuous-testing
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:continuous-testing
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_CT_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/ctkube/hpe-csi/stage2 | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/ctkube/hpe-csi/stage1 | kubectl delete -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis-us"
+    - "cluster:ctkube"
+
+#-------------------------------------------------------------------------------
+# cluster: fcaus-p
+#-------------------------------------------------------------------------------
+
+hillsboro-nimble-csi:
+  environment:
+    name: storage/nimble-csi/hillsboro
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:hillsboro
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_HILLSBORO_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/hillsboro/hpe-csi/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/hillsboro/hpe-csi/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis-us"
+
+undeploy:hillsboro-nimble-csi:
+  environment:
+    name: storage/nimble-csi/hillsboro
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:hillsboro
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_HILLSBORO_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/hillsboro/hpe-csi/stage2 | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/hillsboro/hpe-csi/stage1 | kubectl delete -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis-us"
+
+#-------------------------------------------------------------------------------
+# cluster: fcaus-p-storage
+#-------------------------------------------------------------------------------
+
+hillsboro-storage-nimble-csi:
+  environment:
+    name: storage/nimble-csi/hillsboro-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/hillsboro-storage/hpe-csi/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/hillsboro-storage/hpe-csi/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/hillsboro-storage/hpe-csi/stage3 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis-us"
+
+undeploy:hillsboro-storage-nimble-csi:
+  environment:
+    name: storage/nimble-csi/hillsboro-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/hillsboro-storage/hpe-csi/stage3 | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/hillsboro-storage/hpe-csi/stage2 | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/hillsboro-storage/hpe-csi/stage1 | kubectl delete -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis-us"
+
+hillsboro-storage-csi-snapshotter:
+  environment:
+    name: storage/csi-snapshotter/hillsboro-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/hillsboro-storage/csi-snapshotter | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis-us"
+
+undeploy:hillsboro-storage-csi-snapshotter:
+  environment:
+    name: storage/csi-snapshotter/hillsboro-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/hillsboro-storage/csi-snapshotter | kubectl delete -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis-us"
+
+test:hillsboro-storage-nimble-csi:
+  environment:
+    name: test/storage/nimble-csi/hillsboro-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: test-deploy
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/hillsboro-storage/hpe-csi/test | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - kubectl wait --for=condition=complete --timeout=3m -n test-hpe-cli job/test-pod
+    - kubectl -n test-hpe-cli get pvc
+    - kubectl get pv | grep test-hpe-cli/test-pvc
+    - kubectl -n test-hpe-cli get pod -o wide
+    - kubectl -n test-hpe-cli get job
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis-us"
+
+undeploy:test:hillsboro-storage-nimble-csi:
+  environment:
+    name: test/storage/nimble-csi/hillsboro-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: test-undeploy
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/hillsboro-storage/hpe-csi/test | kubectl delete -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis-us"
+
+#-------------------------------------------------------------------------------
+# Cluster: fcaus-test
+#-------------------------------------------------------------------------------
+
+test-infrastructure-nimble-csi:
+  environment:
+    name: storage/nimble-csi/test-infrastructure
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:test-infrastructure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_TEST_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/test/hpe-csi/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/test/hpe-csi/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis-us"
+
+undeploy:test-infrastructure-nimble-csi:
+  environment:
+    name: storage/nimble-csi/test-infrastructure
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:test-infrastructure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_TEST_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/test/hpe-csi/stage2 | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/test/hpe-csi/stage1 | kubectl delete -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis-us"
+
+test-infrastructure-csi-snapshotter:
+  environment:
+    name: storage/csi-snapshotter/test-infrastructure
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:test-infrastructure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_TEST_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/test/csi-snapshotter | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis-us"
+
+undeploy:test-infrastructure-csi-snapshotter:
+  environment:
+    name: storage/csi-snapshotter/test-infrastructure
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: undeploy:test-infrastructure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_TEST_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/test/csi-snapshotter | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis-us"
+
+
+test:test-infrastructure-nimble-csi:
+  environment:
+    name: test/storage/nimble-csi/test-infrastructure
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: test-deploy
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_TEST_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/test/hpe-csi/test | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - kubectl wait --for=condition=complete --timeout=3m -n test-hpe-cli job/test-pod
+    - kubectl -n test-hpe-cli get pvc
+    - kubectl get pv | grep test-hpe-cli/test-pvc
+    - kubectl -n test-hpe-cli get pod -o wide
+    - kubectl -n test-hpe-cli get job
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis-us"
+
+undeploy:test:test-infrastructure-nimble-csi:
+  environment:
+    name: test/storage/nimble-csi/test-infrastructure
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: test-undeploy
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_TEST_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/test/hpe-csi/test | kubectl delete -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis-us"

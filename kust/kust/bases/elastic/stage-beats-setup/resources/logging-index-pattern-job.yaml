@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: logging-index-pattern-job
+  namespace: logging
+  labels:
+    photon/tier: infrastructure
+    app.kubernetes.io/instance: logging-index-pattern-job
+    app.kubernetes.io/name: logging-index-pattern
+    app.kubernetes.io/part-of: logging
+spec:
+  template:
+    spec:
+      containers:
+      - name: logging-index-pattern-job
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          curl --location --request POST 'https://$(KB_HOST)/api/index_patterns/index_pattern' --header 'kbn-xsrf: true' -u $KB_USER:$KB_PASSWORD --header 'Content-Type: application/json' --data-raw '{"index_pattern": {"title":"access*","id":"access", "timeFieldName": "@timestamp"}}';
+          curl --location --request POST 'https://$(KB_HOST)/api/index_patterns/index_pattern' --header 'kbn-xsrf: true' -u $KB_USER:$KB_PASSWORD --header 'Content-Type: application/json' --data-raw '{"index_pattern": {"title":"application*","id":"application", "timeFieldName": "@timestamp"}}';
+          curl --location --request POST 'https://$(KB_HOST)/api/index_patterns/index_pattern' --header 'kbn-xsrf: true' -u $KB_USER:$KB_PASSWORD --header 'Content-Type: application/json' --data-raw '{"index_pattern": {"title":"errors*","id":"errors", "timeFieldName": "@timestamp"}}';
+          curl --location --request POST 'https://$(KB_HOST)/api/index_patterns/default' --header 'kbn-xsrf: true' -u $KB_USER:$KB_PASSWORD --header 'Content-Type: application/json' --data-raw '{"index_pattern_id": "access", "force":"true"}';
+        image: curlimages/curl:7.72.0
+      restartPolicy: Never
+  backoffLimit: 0

@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: ct-storage-kafka
+subsets:
+  - addresses:
+      - ip: 172.16.132.94
+      - ip: 172.16.132.95
+      - ip: 172.16.132.96
+      - ip: 172.16.132.89
+      - ip: 172.16.132.90
+    ports:
+      - port: 30030
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ct-storage-kafka
+spec:
+  ports:
+    - protocol: TCP
+      port: 30030
+      targetPort: 30030
+
+

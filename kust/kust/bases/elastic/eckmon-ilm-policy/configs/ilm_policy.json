@@ -1,0 +1,525 @@
+{
+  ".alerts-ilm-policy" : {
+    "policy" : {
+      "phases" : {
+        "hot" : {
+          "min_age" : "0ms",
+          "actions" : {
+            "rollover" : {
+              "max_primary_shard_size" : "50gb",
+              "max_age" : "30d"
+            }
+          }
+        }
+      }
+    }
+  },
+  ".deprecation-indexing-ilm-policy" : {
+    "policy" : {
+      "phases" : {
+        "hot" : {
+          "min_age" : "0ms",
+          "actions" : {
+            "rollover" : {
+              "max_primary_shard_size" : "10gb",
+              "max_age" : "14d"
+            }
+          }
+        }
+      }
+    }
+  },
+  ".fleet-actions-results-ilm-policy" : {
+    "policy" : {
+      "phases" : {
+        "hot" : {
+          "min_age" : "0ms",
+          "actions" : {
+            "rollover" : {
+              "max_size" : "300gb",
+              "max_age" : "30d"
+            }
+          }
+        },
+        "delete" : {
+          "min_age" : "90d",
+          "actions" : {
+            "delete" : {
+              "delete_searchable_snapshot" : true
+            }
+          }
+        }
+      },
+      "_meta" : {
+        "managed" : true,
+        "description" : "default policy for fleet action results indices"
+      }
+    }
+  },
+  "180-days-default" : {
+    "policy" : {
+      "phases" : {
+        "warm" : {
+          "min_age" : "2d",
+          "actions" : {
+            "shrink" : {
+              "number_of_shards" : 1
+            },
+            "forcemerge" : {
+              "max_num_segments" : 1
+            }
+          }
+        },
+        "cold" : {
+          "min_age" : "30d",
+          "actions" : { }
+        },
+        "hot" : {
+          "min_age" : "0ms",
+          "actions" : {
+            "rollover" : {
+              "max_primary_shard_size" : "50gb",
+              "max_age" : "30d"
+            }
+          }
+        },
+        "delete" : {
+          "min_age" : "180d",
+          "actions" : {
+            "delete" : {
+              "delete_searchable_snapshot" : true
+            }
+          }
+        }
+      },
+      "_meta" : {
+        "managed" : true,
+        "description" : "built-in ILM policy using the hot, warm, and cold phases with a retention of 180 days"
+      }
+    }
+  },
+  "30-days-default" : {
+    "policy" : {
+      "phases" : {
+        "warm" : {
+          "min_age" : "2d",
+          "actions" : {
+            "shrink" : {
+              "number_of_shards" : 1
+            },
+            "forcemerge" : {
+              "max_num_segments" : 1
+            }
+          }
+        },
+        "hot" : {
+          "min_age" : "0ms",
+          "actions" : {
+            "rollover" : {
+              "max_primary_shard_size" : "50gb",
+              "max_age" : "30d"
+            }
+          }
+        },
+        "delete" : {
+          "min_age" : "30d",
+          "actions" : {
+            "delete" : {
+              "delete_searchable_snapshot" : true
+            }
+          }
+        }
+      },
+      "_meta" : {
+        "managed" : true,
+        "description" : "built-in ILM policy using the hot and warm phases with a retention of 30 days"
+      }
+    }
+  },
+  "365-days-default" : {
+    "policy" : {
+      "phases" : {
+        "warm" : {
+          "min_age" : "2d",
+          "actions" : {
+            "shrink" : {
+              "number_of_shards" : 1
+            },
+            "forcemerge" : {
+              "max_num_segments" : 1
+            }
+          }
+        },
+        "cold" : {
+          "min_age" : "30d",
+          "actions" : { }
+        },
+        "hot" : {
+          "min_age" : "0ms",
+          "actions" : {
+            "rollover" : {
+              "max_primary_shard_size" : "50gb",
+              "max_age" : "30d"
+            }
+          }
+        },
+        "delete" : {
+          "min_age" : "365d",
+          "actions" : {
+            "delete" : {
+              "delete_searchable_snapshot" : true
+            }
+          }
+        }
+      },
+      "_meta" : {
+        "managed" : true,
+        "description" : "built-in ILM policy using the hot, warm, and cold phases with a retention of 365 days"
+      }
+    }
+  },
+  "7-days-default" : {
+    "policy" : {
+      "phases" : {
+        "warm" : {
+          "min_age" : "2d",
+          "actions" : {
+            "shrink" : {
+              "number_of_shards" : 1
+            },
+            "forcemerge" : {
+              "max_num_segments" : 1
+            }
+          }
+        },
+        "hot" : {
+          "min_age" : "0ms",
+          "actions" : {
+            "rollover" : {
+              "max_primary_shard_size" : "50gb",
+              "max_age" : "7d"
+            }
+          }
+        },
+        "delete" : {
+          "min_age" : "7d",
+          "actions" : {
+            "delete" : {
+              "delete_searchable_snapshot" : true
+            }
+          }
+        }
+      },
+      "_meta" : {
+        "managed" : true,
+        "description" : "built-in ILM policy using the hot and warm phases with a retention of 7 days"
+      }
+    }
+  },
+  "90-days-default" : {
+    "policy" : {
+      "phases" : {
+        "warm" : {
+          "min_age" : "2d",
+          "actions" : {
+            "shrink" : {
+              "number_of_shards" : 1
+            },
+            "forcemerge" : {
+              "max_num_segments" : 1
+            }
+          }
+        },
+        "cold" : {
+          "min_age" : "30d",
+          "actions" : { }
+        },
+        "hot" : {
+          "min_age" : "0ms",
+          "actions" : {
+            "rollover" : {
+              "max_primary_shard_size" : "50gb",
+              "max_age" : "30d"
+            }
+          }
+        },
+        "delete" : {
+          "min_age" : "90d",
+          "actions" : {
+            "delete" : {
+              "delete_searchable_snapshot" : true
+            }
+          }
+        }
+      },
+      "_meta" : {
+        "managed" : true,
+        "description" : "built-in ILM policy using the hot, warm, and cold phases with a retention of 90 days"
+      }
+    }
+  },
+  "filebeat" : {
+    "policy" : {
+      "phases" : {
+        "warm" : {
+          "min_age" : "30d",
+          "actions" : {
+            "readonly" : { },
+            "allocate" : {
+              "number_of_replicas" : 0,
+              "include" : { },
+              "exclude" : { },
+              "require" : { }
+            },
+            "set_priority" : {
+              "priority" : 50
+            },
+            "shrink" : {
+              "number_of_shards" : 1
+            }
+          }
+        },
+        "hot" : {
+          "min_age" : "0ms",
+          "actions" : {
+            "rollover" : {
+              "max_size" : "10gb",
+              "max_primary_shard_size" : "2gb",
+              "max_age" : "7d"
+            }
+          }
+        },
+        "delete" : {
+          "min_age" : "60d",
+          "actions" : {
+            "delete" : {
+              "delete_searchable_snapshot" : true
+            }
+          }
+        }
+      }
+    }
+  },
+  "ilm-history-ilm-policy" : {
+    "policy" : {
+      "phases" : {
+        "hot" : {
+          "min_age" : "0ms",
+          "actions" : {
+            "rollover" : {
+              "max_primary_shard_size" : "50gb",
+              "max_age" : "30d"
+            }
+          }
+        },
+        "delete" : {
+          "min_age" : "90d",
+          "actions" : {
+            "delete" : {
+              "delete_searchable_snapshot" : true
+            }
+          }
+        }
+      },
+      "_meta" : {
+        "managed" : true,
+        "description" : "default policy for the ILM history indices"
+      }
+    }
+  },
+  "kibana-event-log-policy" : {
+    "policy" : {
+      "phases" : {
+        "hot" : {
+          "min_age" : "0ms",
+          "actions" : {
+            "rollover" : {
+              "max_size" : "50gb",
+              "max_age" : "30d"
+            }
+          }
+        },
+        "delete" : {
+          "min_age" : "90d",
+          "actions" : {
+            "delete" : {
+              "delete_searchable_snapshot" : true
+            }
+          }
+        }
+      }
+    }
+  },
+  "kibana-reporting" : {
+    "policy" : {
+      "phases" : {
+        "hot" : {
+          "min_age" : "0ms",
+          "actions" : { }
+        }
+      }
+    }
+  },
+  "logs" : {
+    "policy" : {
+      "phases" : {
+        "hot" : {
+          "min_age" : "0ms",
+          "actions" : {
+            "rollover" : {
+              "max_primary_shard_size" : "50gb",
+              "max_age" : "30d"
+            }
+          }
+        }
+      },
+      "_meta" : {
+        "managed" : true,
+        "description" : "default policy for the logs index template installed by x-pack"
+      }
+    }
+  },
+  "metricbeat" : {
+    "policy" : {
+      "phases" : {
+        "warm" : {
+          "min_age" : "30d",
+          "actions" : {
+            "readonly" : { },
+            "allocate" : {
+              "number_of_replicas" : 0,
+              "include" : { },
+              "exclude" : { },
+              "require" : { }
+            },
+            "set_priority" : {
+              "priority" : 50
+            },
+            "shrink" : {
+              "number_of_shards" : 1
+            }
+          }
+        },
+        "hot" : {
+          "min_age" : "0ms",
+          "actions" : {
+            "rollover" : {
+              "max_size" : "10gb",
+              "max_primary_shard_size" : "2gb",
+              "max_age" : "7d"
+            }
+          }
+        },
+        "delete" : {
+          "min_age" : "60d",
+          "actions" : {
+            "delete" : {
+              "delete_searchable_snapshot" : true
+            }
+          }
+        }
+      }
+    }
+  },
+  "metrics" : {
+    "policy" : {
+      "phases" : {
+        "hot" : {
+          "min_age" : "0ms",
+          "actions" : {
+            "rollover" : {
+              "max_primary_shard_size" : "50gb",
+              "max_age" : "30d"
+            }
+          }
+        }
+      },
+      "_meta" : {
+        "managed" : true,
+        "description" : "default policy for the metrics index template installed by x-pack"
+      }
+    }
+  },
+  "ml-size-based-ilm-policy" : {
+    "policy" : {
+      "phases" : {
+        "hot" : {
+          "min_age" : "0ms",
+          "actions" : {
+            "rollover" : {
+              "max_primary_shard_size" : "50gb"
+            }
+          }
+        }
+      },
+      "_meta" : {
+        "managed" : true,
+        "description" : "default policy for machine learning state and stats indices"
+      }
+    }
+  },
+  "slm-history-ilm-policy" : {
+    "policy" : {
+      "phases" : {
+        "hot" : {
+          "min_age" : "0ms",
+          "actions" : {
+            "rollover" : {
+              "max_primary_shard_size" : "50gb",
+              "max_age" : "30d"
+            }
+          }
+        },
+        "delete" : {
+          "min_age" : "90d",
+          "actions" : {
+            "delete" : {
+              "delete_searchable_snapshot" : true
+            }
+          }
+        }
+      },
+      "_meta" : {
+        "managed" : true,
+        "description" : "default policy for the SLM history indices"
+      }
+    }
+  },
+  "synthetics" : {
+    "policy" : {
+      "phases" : {
+        "hot" : {
+          "min_age" : "0ms",
+          "actions" : {
+            "rollover" : {
+              "max_primary_shard_size" : "50gb",
+              "max_age" : "30d"
+            }
+          }
+        }
+      },
+      "_meta" : {
+        "managed" : true,
+        "description" : "default policy for the synthetics index template installed by x-pack"
+      }
+    }
+  },
+  "watch-history-ilm-policy" : {
+    "policy" : {
+      "phases" : {
+        "delete" : {
+          "min_age" : "7d",
+          "actions" : {
+            "delete" : {
+              "delete_searchable_snapshot" : true
+            }
+          }
+        }
+      },
+      "_meta" : {
+        "managed" : true,
+        "description" : "default policy for the watcher history indices"
+      }
+    }
+  }
+}

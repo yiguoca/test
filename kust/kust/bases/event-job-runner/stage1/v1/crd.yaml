@@ -1,0 +1,62 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: eventrunners.eventjobrunner.autodatacorp.org
+spec:
+  group: eventjobrunner.autodatacorp.org
+  preserveUnknownFields: false
+  scope: Namespaced
+  versions:
+    - name: v1
+      additionalPrinterColumns:
+        - jsonPath: .spec.triggerEvent
+          name: triggerEvent
+          type: string
+        - jsonPath: .status.queuedJobs
+          name: queuedJobs
+          type: integer
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                triggerEvent:
+                  type: string
+                failedJobsHistoryLimit:
+                  type: integer
+                  default: 3
+                successfulJobsHistoryLimit:
+                  type: integer
+                  default: 3
+                concurrencyLimit:
+                  type: integer
+                  default: 1
+                vars:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      key:
+                        type: string
+                      optional:
+                        type: boolean
+                jobTemplate:
+                  x-kubernetes-preserve-unknown-fields: true
+                  type: object
+      subresources:
+        status: {}
+  names:
+    plural: eventrunners
+    singular: eventrunner
+    kind: EventRunner
+    shortNames:
+      - ejr
+      - ejrs
+  conversion:
+    strategy: None

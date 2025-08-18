@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: vsphere-cloud-controller-manager
+  namespace: kube-system
+spec:
+  template:
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+            # the original include node-role.kubernetes.io/master I assume for backwards compatibility
+            # but we get a warning in the logs so patching that out.
+            # - matchExpressions:
+            #     - key: node-role.kubernetes.io/master
+            #       operator: Exists
+      tolerations:
+        - key: node.cloudprovider.kubernetes.io/uninitialized
+          value: "true"
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+          operator: Exists
+        - key: node-role.kubernetes.io/control-plane
+          effect: NoSchedule
+          operator: Exists
+        - key: node.kubernetes.io/not-ready
+          effect: NoSchedule
+          operator: Exists
+        # some of the stellantis us clusters have this taint spelling instead
+        - key: node-role.kubernetes.io/controlplane
+          effect: NoSchedule
+          operator: Exists
+        # we noticed some of our masters also have these taints
+        - key: node-role.kubernetes.io/etcd
+          effect: NoExecute
+          operator: Exists

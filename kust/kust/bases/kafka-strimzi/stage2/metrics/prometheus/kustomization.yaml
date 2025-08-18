@@ -1,0 +1,7 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - kafka-rules.yaml
+  - prometheus.yaml
+  - prometheus-rules.yaml
+  - strimzi-pod-monitor.yaml

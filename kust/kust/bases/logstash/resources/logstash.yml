@@ -1,0 +1,8 @@
+http.host: 0.0.0.0
+monitoring.enabled: false
+monitoring.elasticsearch.hosts: ["${ES_HOSTS}"]
+monitoring.elasticsearch.username: "${ES_USER}"
+monitoring.elasticsearch.password: => "${ES_PASSWORD}"
+pipeline.ecs_compatibility: disabled
+# dead_letter_queue.enable: true
+# path.dead_letter_queue: "/usr/share/logstash/data/dead_letter_queue"

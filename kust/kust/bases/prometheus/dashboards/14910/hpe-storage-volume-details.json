@@ -1,0 +1,846 @@
+{
+    "__requires": [
+      {
+        "type": "grafana",
+        "id": "grafana",
+        "name": "Grafana",
+        "version": "8.0.5"
+      },
+      {
+        "type": "panel",
+        "id": "heatmap",
+        "name": "Heatmap",
+        "version": ""
+      },
+      {
+        "type": "datasource",
+        "id": "prometheus",
+        "name": "Prometheus",
+        "version": "1.0.0"
+      },
+      {
+        "type": "panel",
+        "id": "stat",
+        "name": "Stat",
+        "version": ""
+      },
+      {
+        "type": "panel",
+        "id": "timeseries",
+        "name": "Time series",
+        "version": ""
+      }
+    ],
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": "-- Grafana --",
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "type": "dashboard"
+        }
+      ]
+    },
+    "description": "Provides a drill-down overview of a volume.",
+    "editable": true,
+    "gnetId": 14910,
+    "graphTooltip": 0,
+    "id": null,
+    "iteration": 1630369217677,
+    "links": [
+      {
+        "asDropdown": false,
+        "icon": "external link",
+        "includeVars": false,
+        "keepTime": true,
+        "tags": [
+          "HPE Storage Arrays"
+        ],
+        "targetBlank": false,
+        "title": "HPE Storage Arrays",
+        "tooltip": "",
+        "type": "dashboards",
+        "url": ""
+      },
+      {
+        "asDropdown": false,
+        "icon": "dashboard",
+        "includeVars": true,
+        "keepTime": true,
+        "tags": [
+          "HPE Storage Pools"
+        ],
+        "targetBlank": false,
+        "title": "HPE Storage Pools",
+        "tooltip": "",
+        "type": "dashboards",
+        "url": ""
+      },
+      {
+        "asDropdown": false,
+        "icon": "dashboard",
+        "includeVars": true,
+        "keepTime": true,
+        "tags": [
+          "HPE Storage Volumes"
+        ],
+        "targetBlank": false,
+        "title": "HPE Storage Volumes",
+        "tooltip": "",
+        "type": "dashboards",
+        "url": ""
+      }
+    ],
+    "panels": [
+      {
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
+        "gridPos": {
+          "h": 6,
+          "w": 5,
+          "x": 0,
+          "y": 0
+        },
+        "id": 11,
+        "options": {
+          "content": "|  |  |\n| ----------- | -------------- |\n| Volume | ${volume} |\n| Volume Name | ${volume_name} |\n| Namespace | ${pvc_namespace} |\n| Name | ${pvc_name} |\n| Storage Class | ${pvc_storageclass} | ",
+          "mode": "markdown"
+        },
+        "pluginVersion": "8.5.5",
+        "title": "Volume Information",
+        "type": "text"
+      },
+      {
+        "collapsed": false,
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 6
+        },
+        "id": 13,
+        "panels": [],
+        "type": "row"
+      },
+      {
+        "datasource": "prometheus",
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 2,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "bytes"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 7
+        },
+        "id": 2,
+        "options": {
+          "legend": {
+            "calcs": [
+              "last"
+            ],
+            "displayMode": "list",
+            "placement": "bottom"
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "targets": [
+          {
+            "exemplar": true,
+            "expr": "hpe_volume_size_bytes{array=\"$array\", volume=\"$volume\",storagepool=\"$pool\"}",
+            "interval": "",
+            "legendFormat": "Size",
+            "refId": "A"
+          },
+          {
+            "exemplar": true,
+            "expr": "hpe_volume_used_bytes{array=\"$array\", volume=\"$volume\",storagepool=\"$pool\"}",
+            "hide": false,
+            "interval": "",
+            "legendFormat": "Used",
+            "refId": "B"
+          },
+          {
+            "exemplar": true,
+            "expr": "hpe_volume_snapshot_used_bytes{array=\"$array\", volume=\"$volume\",storagepool=\"$pool\"}",
+            "hide": false,
+            "interval": "",
+            "legendFormat": "Snapshot Used",
+            "refId": "C"
+          }
+        ],
+        "title": "Volume Capacity",
+        "type": "timeseries"
+      },
+      {
+        "datasource": "prometheus",
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            },
+            "unit": "binBps"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 6,
+          "x": 12,
+          "y": 7
+        },
+        "id": 8,
+        "options": {
+          "colorMode": "none",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "max"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "text": {},
+          "textMode": "auto"
+        },
+        "pluginVersion": "8.5.5",
+        "targets": [
+          {
+            "exemplar": true,
+            "expr": "hpe_volume_read_bytes_per_second_avg5m{array=\"$array\", volume=\"$volume\",storagepool=\"$pool\"}",
+            "interval": "",
+            "legendFormat": "Max Read Throughput",
+            "refId": "A"
+          }
+        ],
+        "title": "Max Read Throughput (5m avg)",
+        "type": "stat"
+      },
+      {
+        "datasource": "prometheus",
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "percentage",
+              "steps": [
+                {
+                  "color": "semi-dark-red",
+                  "value": null
+                }
+              ]
+            },
+            "unit": "binBps"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 6,
+          "x": 18,
+          "y": 7
+        },
+        "id": 7,
+        "options": {
+          "colorMode": "none",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "max"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "text": {},
+          "textMode": "auto"
+        },
+        "pluginVersion": "8.5.5",
+        "targets": [
+          {
+            "exemplar": true,
+            "expr": "hpe_volume_write_bytes_per_second_avg5m{array=\"$array\", volume=\"$volume\",storagepool=\"$pool\"}",
+            "interval": "",
+            "legendFormat": "Max Write Throughput",
+            "refId": "A"
+          }
+        ],
+        "title": "Max Write Throughput (5m avg)",
+        "type": "stat"
+      },
+      {
+        "datasource": "prometheus",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "never",
+              "spanNulls": true,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "short"
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Latency"
+              },
+              "properties": [
+                {
+                  "id": "unit",
+                  "value": "s"
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 15
+        },
+        "id": 4,
+        "options": {
+          "legend": {
+            "calcs": [
+              "max"
+            ],
+            "displayMode": "list",
+            "placement": "bottom"
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "pluginVersion": "8.0.5",
+        "targets": [
+          {
+            "exemplar": true,
+            "expr": "hpe_volume_reads_per_second_avg5m{array=\"$array\", volume=\"$volume\",storagepool=\"$pool\"}",
+            "interval": "",
+            "legendFormat": "IOPS",
+            "refId": "A"
+          },
+          {
+            "exemplar": true,
+            "expr": "hpe_volume_seconds_per_read_avg5m{array=\"$array\", volume=\"$volume\",storagepool=\"$pool\"}",
+            "hide": false,
+            "interval": "",
+            "legendFormat": "Latency",
+            "refId": "B"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Volume Read Performance (5m avg)",
+        "type": "timeseries"
+      },
+      {
+        "datasource": "prometheus",
+        "description": "",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "never",
+              "spanNulls": true,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "short"
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "IOPS"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "semi-dark-red",
+                    "mode": "fixed"
+                  }
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Latency"
+              },
+              "properties": [
+                {
+                  "id": "unit",
+                  "value": "s"
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 15
+        },
+        "id": 5,
+        "options": {
+          "legend": {
+            "calcs": [
+              "max"
+            ],
+            "displayMode": "list",
+            "placement": "bottom"
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "pluginVersion": "8.0.5",
+        "targets": [
+          {
+            "exemplar": true,
+            "expr": "hpe_volume_writes_per_second_avg5m{array=\"$array\", volume=\"$volume\",storagepool=\"$pool\"}",
+            "interval": "",
+            "legendFormat": "IOPS",
+            "refId": "A"
+          },
+          {
+            "exemplar": true,
+            "expr": "hpe_volume_seconds_per_write_avg5m{array=\"$array\", volume=\"$volume\",storagepool=\"$pool\"}",
+            "hide": false,
+            "interval": "",
+            "legendFormat": "Latency",
+            "refId": "B"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Volume Write Performance (5m avg)",
+        "type": "timeseries"
+      },
+      {
+        "cards": {
+          "cardPadding": null,
+          "cardRound": null
+        },
+        "color": {
+          "cardColor": "#b4ff00",
+          "colorScale": "sqrt",
+          "colorScheme": "interpolateOrRd",
+          "exponent": 0.5,
+          "mode": "spectrum"
+        },
+        "dataFormat": "timeseries",
+        "datasource": "prometheus",
+        "gridPos": {
+          "h": 7,
+          "w": 24,
+          "x": 0,
+          "y": 23
+        },
+        "heatmap": {},
+        "hideZeroBuckets": true,
+        "highlightCards": true,
+        "id": 9,
+        "legend": {
+          "show": true
+        },
+        "pluginVersion": "8.0.5",
+        "reverseYBuckets": false,
+        "targets": [
+          {
+            "exemplar": true,
+            "expr": "hpe_volume_seconds_per_write_avg5m{array=\"$array\", volume=\"$volume\",storagepool=\"$pool\"}",
+            "interval": "",
+            "legendFormat": "Write",
+            "refId": "A"
+          },
+          {
+            "exemplar": true,
+            "expr": "hpe_volume_seconds_per_read_avg5m{array=\"$array\", volume=\"$volume\",storagepool=\"$pool\"}",
+            "hide": false,
+            "interval": "",
+            "legendFormat": "Read",
+            "refId": "B"
+          }
+        ],
+        "timeFrom": null,
+        "timeShift": null,
+        "title": "Volume Latency Heatmap (5m avg)",
+        "tooltip": {
+          "show": true,
+          "showHistogram": true
+        },
+        "tooltipDecimals": null,
+        "type": "heatmap",
+        "xAxis": {
+          "show": true
+        },
+        "xBucketNumber": 100,
+        "xBucketSize": "",
+        "yAxis": {
+          "decimals": 0,
+          "format": "s",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true,
+          "splitFactor": null
+        },
+        "yBucketBound": "auto",
+        "yBucketNumber": null,
+        "yBucketSize": null
+      }
+    ],
+    "refresh": "",
+    "schemaVersion": 36,
+    "style": "dark",
+    "tags": [
+      "HPE Storage Volume Details"
+    ],
+    "templating": {
+      "list": [
+        {
+          "current": {
+            "selected": true,
+            "text": "",
+            "value": ""
+          },
+          "datasource": "prometheus",
+          "definition": "label_values(array)",
+          "description": "Storage array to locate volume details.",
+          "hide": 0,
+          "includeAll": false,
+          "label": "Array",
+          "multi": false,
+          "name": "array",
+          "options": [],
+          "query": {
+            "query": "label_values(array)",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 0,
+          "type": "query"
+        },
+        {
+          "current": {
+            "selected": false,
+            "text": "default",
+            "value": "default"
+          },
+          "description": "Storage pool to locate volume details",
+          "hide": 0,
+          "label": "Pool",
+          "name": "pool",
+          "options": [
+            {
+              "selected": true,
+              "text": "default",
+              "value": "default"
+            }
+          ],
+          "query": "default",
+          "skipUrlSync": false,
+          "type": "textbox"
+        },
+        {
+          "current": {
+            "selected": false,
+            "text": "",
+            "value": ""
+          },
+          "datasource": "prometheus",
+          "definition": "label_values(hpe_volume_used_bytes{pool=\"$pool\", array=\"$array\"}, volume_name)",
+          "description": "Volume name for display",
+          "hide": 0,
+          "includeAll": false,
+          "label": "Volume Name",
+          "multi": false,
+          "name": "volume_name",
+          "options": [],
+          "query": {
+            "query": "label_values(hpe_volume_used_bytes{pool=\"$pool\", array=\"$array\"}, volume_name)",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 0,
+          "type": "query"
+        },
+        {
+          "allValue": null,
+          "current": {},
+          "datasource": "prometheus",
+          "definition": "label_values(hpe_volume_used_bytes{pool=\"$pool\", array=\"$array\", volume_name=\"$volume_name\"}, volume)",
+          "description": "Locate storage volume details",
+          "error": null,
+          "hide": 2,
+          "includeAll": false,
+          "label": "Volume",
+          "multi": false,
+          "name": "volume",
+          "options": [],
+          "query": {
+            "query": "label_values(hpe_volume_used_bytes{pool=\"$pool\", array=\"$array\", volume_name=\"$volume_name\"}, volume)",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 0,
+          "type": "query"
+        },
+        {
+          "current": {
+            "selected": false,
+            "text": "",
+            "value": ""
+          },
+          "datasource": "prometheus",
+          "definition": "label_values(hpestoragecsi_volume_info{pv=\"$volume_name\"}, pvc_namespace)",
+          "description": "Volume namespace for display",
+          "hide": 2,
+          "includeAll": false,
+          "label": "Namespace",
+          "multi": false,
+          "name": "pvc_namespace",
+          "options": [],
+          "query": {
+            "query": "label_values(hpestoragecsi_volume_info{pv=\"$volume_name\"}, pvc_namespace)",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 0,
+          "type": "query"
+        },
+        {
+          "current": {
+            "selected": false,
+            "text": "",
+            "value": ""
+          },
+          "datasource": "prometheus",
+          "definition": "label_values(hpestoragecsi_volume_info{pv=\"$volume_name\"}, pvc_name)",
+          "description": "Volume name for display",
+          "hide": 2,
+          "includeAll": false,
+          "label": "Persistent Volume Claim",
+          "multi": false,
+          "name": "pvc_name",
+          "options": [],
+          "query": {
+            "query": "label_values(hpestoragecsi_volume_info{pv=\"$volume_name\"}, pvc_name)",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 0,
+          "type": "query"
+        },
+        {
+          "current": {
+            "selected": false,
+            "text": "",
+            "value": ""
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "definition": "label_values(hpestoragecsi_volume_info{pv=\"$volume_name\"}, storage_class)",
+          "description": "Volume storage class for display",
+          "hide": 2,
+          "includeAll": false,
+          "label": "Storage Class",
+          "multi": false,
+          "name": "pvc_storageclass",
+          "options": [],
+          "query": {
+            "query": "label_values(hpestoragecsi_volume_info{pv=\"$volume_name\"}, storage_class)",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 0,
+          "type": "query"
+        }
+      ]
+    },
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "",
+    "title": "HPE Storage Volume Details",
+    "uid": "LT7Nnk7nk",
+    "version": 7,
+    "weekStart": ""
+  }

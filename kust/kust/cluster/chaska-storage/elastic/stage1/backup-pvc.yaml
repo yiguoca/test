@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: elastic-backup-pvc
+  namespace: inventory
+spec:
+  storageClassName: hpe-nimble-chaska-prod-retain-nfs
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 50Gi

@@ -1,0 +1,43 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: prom2teams
+    env: prod
+  name: prom2teams-prod
+  namespace: monitoring
+spec:
+  endpoints:
+    - honorLabels: true
+      interval: 30s
+      port: metrics
+      scheme: http
+  selector:
+    matchLabels:
+      app: prom2teams
+      env: prod
+  namespaceSelector:
+    matchNames:
+      - monitoring
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: prom2teams
+    env: nonprod
+  name: prom2teams
+  namespace: monitoring
+spec:
+  endpoints:
+    - honorLabels: true
+      interval: 30s
+      port: metrics
+      scheme: http
+  selector:
+    matchLabels:
+      app: prom2teams
+      env: nonprod
+  namespaceSelector:
+    matchNames:
+      - monitoring

@@ -1,0 +1,14 @@
+resources:
+  - storageclass.yaml
+  - ./hpe-array-exporter/nimble-london-non-prod-exporter/
+  - ./hpe-array-exporter/nimble-london-prod-exporter/
+  - hpe-csi-info-exporter/
+
+  # TODO: Files below are intentionally commented out and left here for reference only. If we want to setup snapshots in a cluster we have a few components that need to be created.
+  # Documentation in the system-architecture-docs references the cases we need the different types of classes. These comments and files will remain to support the documentation.
+  # - volume-snapshot-class.yaml
+  # - volume-group-class.yaml
+  # - snapshot-group-class.yaml
+
+commonLabels:
+  stage: two

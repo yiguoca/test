@@ -1,0 +1,73 @@
+# Currently templates do not support date match expressions for aliases (see https://github.com/elastic/elasticsearch/issues/75651 )
+# and ILM is not updating the aliases that are associated with indices it rolls for example:
+#
+#  We could have an alias called "today"; and the expression would be "<access-{now/d}-8>".
+#  Lets assume today is 8/2/2023, once the alias is created it would map to index "access-2023.08.02-00001",
+#  on the next day the new index is created "access-2023.08.03-00001", you would expect the the following:
+#    "<access-{now/d}-8>" = "access-2023.08.03"
+#  but what you actually get is the following:
+#    "<access-{now/d}-8>" = "access-2023.08.02"
+#  the next day would be the following:
+#    "<access-{now/d}-8>" = "access-2023.08.02"
+#
+# We also discovered if you create an alias with "<access-{now/d}-8>" & "<access-{now/d-1}-8>" (lets 48hrs);
+# using the starting date of "access-2023.08.02-00001" you would get the following:
+#    "h48s" = "access-2023.08.02", "access-2023.08.01"
+# Now if the date rolls over you would get the following:
+#    "h48s" = "access-2023.08.02", "access-2023.08.01"
+# But you would expect:
+#    "h48s" = "access-2023.08.03", "access-2023.08.02"
+#
+# Since index templates right now are not honoring date math for aliases, and the aliases is not self managing
+# (ie static); the easiest way to fix this is to remove the index and recreate it.
+#
+# Note: templates will auto add the index to the alias for you, so its not strictly static in a sense, but it
+# seems to act this way outside templates.
+#
+# Since we dont know when an index will be created, it needs to occur pretty often so to avoid constantly
+# recreating we should be able to do a simple test:
+#   1 - do we have an index for today?
+#   2 - if the answer is YES in #1, does the index exist already in the alias?
+#   3 - if the answer is NO in #2, lets drop the alias and recreate it
+#
+# The check can happen at a pretty small interval since it wont be placing that much load on the system, lets
+# say once every 5-15 minutes.
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: logging-manage-alias-cron
+  namespace: logging
+  labels:
+    photon/tier: infrastructure
+    app.kubernetes.io/instance: logging-manage-alias-cron
+    app.kubernetes.io/name: logging-access
+    app.kubernetes.io/part-of: logging
+spec:
+  schedule: "*/5 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: manage-access-aliases
+              image: fcaus/support/gizmo:1.0.0
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  bash /elastic/script/manage-7days-access-alias.sh
+              volumeMounts:
+                - name: scripts-es-update
+                  mountPath: /elastic/script
+                - name: alias-config
+                  mountPath: /usr/share/aliases
+          volumes:
+            - name: scripts-es-update
+              configMap:
+                name: scripts-es-update
+                defaultMode: 0777
+
+            - name: alias-config
+              configMap:
+                name: data-es-alias

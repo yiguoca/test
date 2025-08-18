@@ -1,0 +1,15 @@
+- op: add
+  path: /spec/template/spec/containers/0/env
+  value:
+    - name: KB_HOST
+      value: "logging.fcaus-te.autodata.tech"
+    - name: KB_USER
+      valueFrom:
+        secretKeyRef:
+          name: photon-elastic-user
+          key: username
+    - name: KB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: photon-elastic-user
+          key: password

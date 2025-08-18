@@ -1,0 +1,5 @@
+resources:
+  - ../../../../bases/elastic
+
+commonLabels:
+  stage: one

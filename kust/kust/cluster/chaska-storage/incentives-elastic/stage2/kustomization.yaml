@@ -1,0 +1,30 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: incentives-elastic
+
+resources:
+  - elasticsearch.yaml
+  - kibana.yaml
+  - ingress.yaml
+
+configMapGenerator:
+  - name: incentives-master-jvm-options
+    namespace: incentives-elastic
+    files:
+      - config/incentives.master.heap.jvm.options
+  - name: incentives-data-jvm-options
+    namespace: incentives-elastic
+    files:
+      - config/incentives.data.heap.jvm.options
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+patchesJson6902:
+- target:
+    group: rbac.authorization.k8s.io
+    version: v1
+    kind: ClusterRole
+    name: prometheus
+  path: patches/set-cluster-role.yaml

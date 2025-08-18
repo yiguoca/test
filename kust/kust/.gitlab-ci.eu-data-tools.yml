@@ -1,0 +1,475 @@
+#-------------------------------------------------------------------------------
+# TEIF
+
+test:eu-data-tools:deploy:
+  timeout: 2h
+  environment:
+    name: eu-data-tools/test-infrastructure
+    url: https://eu-data-es.fcaus-te.autodata.tech/
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:test-infrastructure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_TEST_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/test/eu-data-tools/init | kubectl apply -f - 2>&1 | sed /unchanged/d
+
+    # deploying elastic:
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=3m -n elastic-system pod -l app.kubernetes.io/name=elastic-operator
+    # Will error if elastic root ca issuer does not exist, this is because we do not allow eu-data tools to deploy
+    # bases/elastic/... because that is used for entire systems and we dont want to impact other hosted application; we assume
+    # such shared resources as cert issuers exist.
+    - kubectl wait --for=condition=ready --timeout=3m -n cert-manager clusterissuer.cert-manager.io/elastic-root-ca-issuer
+
+    - ./build-with-plugins.sh cluster/test/eu-data-tools/elastic | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 30
+    - kubectl wait --for=condition=ready --timeout=3m -n eu-data-tools pod -l elasticsearch.k8s.elastic.co/cluster-name=eu-data
+    - kubectl wait --for=condition=ready --timeout=3m -n eu-data-tools pod -l common.k8s.elastic.co/type=kibana
+    # just because kibana is "ready"; it does not mean the service is ready, so it throws a 503; so instead we are going
+    # to wait a 3 minutes before proceeding to setting up the elastic views
+    - sleep 180
+    - ./build-with-plugins.sh cluster/test/eu-data-tools/elastic-setup | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - kubectl wait --for=condition=complete --timeout=3m -n eu-data-tools job/es-data-streams-setup-job
+    - kubectl wait --for=condition=complete --timeout=3m -n eu-data-tools job/es-redundancy-setup-job
+    - kubectl wait --for=condition=complete --timeout=3m -n eu-data-tools job/kb-data-views-setup-job
+
+    # deploying kafka:
+    # Will error if kafka-system does not exist
+    - kubectl wait --for=condition=ready --timeout=3m -n kafka-system pod -l strimzi.io/kind=cluster-operator
+    - ./build-with-plugins.sh cluster/test/eu-data-tools/kafka | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 30
+    # kubectl wait for ready triggers off first container completing, need to use this to wait for zookeeper. Sometimes they require multiple deletions/restarts to startup properly
+    - while [[ $(kubectl get pods -l strimzi.io/name=kafka-eu-zookeeper -n eu-data-tools -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == *"False"* ]]; do echo "waiting for zookeeper pods. Check status, perform manual deletion as necessary" && sleep 10; done
+    - kubectl wait --for=condition=ready --timeout=3m -n eu-data-tools pod -l strimzi.io/cluster=kafka-eu
+    - ./build-with-plugins.sh cluster/test/eu-data-tools/kafka-akhq | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - kubectl wait --for=condition=ready --timeout=3m -n eu-data-tools pod -l app.kubernetes.io/name=akhq
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+test:eu-data-tools:undeploy:
+  extends: test:eu-data-tools:deploy
+  stage: undeploy:test-infrastructure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_TEST_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+
+    # undeploy elastic
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=3m -n elastic-system pod elastic-operator-0
+    - ./build-with-plugins.sh cluster/test/eu-data-tools/elastic-setup | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - ./build-with-plugins.sh cluster/test/eu-data-tools/elastic | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 60
+
+    # undeploy kafka
+    # Will error if kafka-system does not exist
+    - kubectl wait --for=condition=ready --timeout=3m -n kafka-system pod -l name=strimzi-cluster-operator
+    - ./build-with-plugins.sh cluster/test/eu-data-tools/kafka-akhq | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - ./build-with-plugins.sh cluster/test/eu-data-tools/kafka | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 60
+
+    - ./build-with-plugins.sh cluster/test/eu-data-tools/init | kubectl delete -f - 2>&1 | sed /unchanged/d
+
+#-------------------------------------------------------------------------------
+# CT-Kube
+
+ctkube:eu-data-tools:deploy:
+  timeout: 2h
+  environment:
+    name: eu-data-tools/continuous-testing
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:continuous-testing
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_CT_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/ctkube/eu-data-tools/init | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - ./build-with-plugins.sh cluster/ctkube/eu-data-tools/kafka | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - ./dobby.sh deploy eu-data-tools
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+ctkube:eu-data-tools:undeploy:
+  extends: ctkube:eu-data-tools:deploy
+  stage: undeploy:continuous-testing
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_CT_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # TODO Will error if any pods are running from stage apps, those should be undeployed
+    # via kustom/ project before executing this job
+    - ./build-with-plugins.sh cluster/ctkube/eu-data-tools/kafka | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - ./build-with-plugins.sh cluster/ctkube/eu-data-tools/init | kubectl delete -f - 2>&1 | sed /unchanged/d
+
+#-------------------------------------------------------------------------------
+# CT Storage
+ct-storage:eu-data-tools:deploy:
+  timeout: 2h
+  environment:
+    name: eu-data-tools/continuous-testing-storage
+    url: https://eu-data-es.fcaus-te.autodata.tech/
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:continuous-testing-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CT_STORAGE_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/ct-storage/eu-data-tools/init | kubectl apply -f - 2>&1 | sed /unchanged/d
+
+    # deploying elastic:
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=3m -n elastic-system pod -l app.kubernetes.io/name=elastic-operator
+    # Will error if elastic root ca issuer does not exist, this is because we do not allow eu-data tools to deploy
+    # bases/elastic/... because that is used for entire systems and we dont want to impact other hosted application; we assume
+    # such shared resources as cert issuers exist.
+    - kubectl wait --for=condition=ready --timeout=3m -n cert-manager clusterissuer.cert-manager.io/elastic-root-ca-issuer
+
+    - ./build-with-plugins.sh cluster/ct-storage/eu-data-tools/elastic | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 60
+    - kubectl wait --for=condition=ready --timeout=3m -n eu-data-tools pod -l elasticsearch.k8s.elastic.co/cluster-name=eu-data
+    - kubectl wait --for=condition=ready --timeout=3m -n eu-data-tools pod -l common.k8s.elastic.co/type=kibana
+    # just because kibana is "ready"; it does not mean the service is ready, so it throws a 503; so instead we are going
+    # to wait a 3 minutes before proceeding to setting up the elastic views
+    - sleep 180
+    - ./build-with-plugins.sh cluster/ct-storage/eu-data-tools/elastic-setup | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - kubectl wait --for=condition=complete --timeout=3m -n eu-data-tools job/es-data-streams-setup-job
+    - kubectl wait --for=condition=complete --timeout=3m -n eu-data-tools job/es-redundancy-setup-job
+    - kubectl wait --for=condition=complete --timeout=3m -n eu-data-tools job/kb-data-views-setup-job
+
+    # deploying kafka:
+    # Will error if kafka-system does not exist
+    - kubectl wait --for=condition=ready --timeout=3m -n kafka-system pod -l name=strimzi-cluster-operator
+    - ./build-with-plugins.sh cluster/ct-storage/eu-data-tools/kafka | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 30
+    # kubectl wait for ready triggers off first container completing, need to use this to wait for zookeeper. Sometimes they require multiple deletions/restarts to startup properly
+    - while [[ $(kubectl get pods -l strimzi.io/name=kafka-eu-zookeeper -n eu-data-tools -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == *"False"* ]]; do echo "waiting for zookeeper pods. Check status, perform manual deletion as necessary" && sleep 10; done
+    - kubectl wait --for=condition=ready --timeout=3m -n eu-data-tools pod -l strimzi.io/cluster=kafka-eu
+    - ./build-with-plugins.sh cluster/ct-storage/eu-data-tools/kafka-akhq | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - kubectl wait --for=condition=ready --timeout=3m -n eu-data-tools pod -l app.kubernetes.io/name=akhq
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+ct-storage:eu-data-tools:undeploy:
+  extends: ct-storage:eu-data-tools:deploy
+  stage: undeploy:continuous-testing-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CT_STORAGE_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # undeploy elastic
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=3m -n elastic-system pod elastic-operator-0
+    - ./build-with-plugins.sh cluster/ct-storage/eu-data-tools/elastic-setup | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - ./build-with-plugins.sh cluster/ct-storage/eu-data-tools/elastic | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 30
+
+    # undeploy kafka
+    # Will error if kafka-system does not exist
+    - kubectl wait --for=condition=ready --timeout=3m -n kafka-system pod -l name=strimzi-cluster-operator
+    - ./build-with-plugins.sh cluster/ct-storage/eu-data-tools/kafka-akhq | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - ./build-with-plugins.sh cluster/ct-storage/eu-data-tools/kafka | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 60
+
+    - ./build-with-plugins.sh cluster/ct-storage/eu-data-tools/init | kubectl delete -f - 2>&1 | sed /unchanged/d
+
+#-------------------------------------------------------------------------------
+# Chaska
+
+chaska:eu-data-tools:deploy:
+  timeout: 2h
+  environment:
+    name: eu-data-tools/continuous-testing
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:chaska
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_CHASKA_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/chaska/eu-data-tools/init | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - ./build-with-plugins.sh cluster/chaska/eu-data-tools/bootstrap | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - ./dobby.sh deploy eu-data-tools
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+chaska:eu-data-tools:undeploy:
+  extends: ctkube:eu-data-tools:deploy
+  stage: undeploy:chaska
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_CHASKA_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # TODO Will error if any pods are running from stage apps, those should be undeployed
+    # via kustom/ project before executing this job
+    - ./build-with-plugins.sh cluster/chaska/eu-data-tools/bootstrap | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - ./build-with-plugins.sh cluster/chaska/eu-data-tools/init | kubectl delete -f - 2>&1 | sed /unchanged/d
+
+#-------------------------------------------------------------------------------
+# Chaska Storage
+chaska-storage:eu-data-tools:deploy:
+  timeout: 2h
+  environment:
+    name: eu-data-tools/chaska-storage
+    url: https://eu-data-es.fcaus-f-storage.autodata.tech/
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/chaska-storage/eu-data-tools/init | kubectl apply -f - 2>&1 | sed /unchanged/d
+
+    # deploying elastic:
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=3m -n elastic-system pod -l app.kubernetes.io/name=elastic-operator
+    # Will error if elastic root ca issuer does not exist, this is because we do not allow eu-data tools to deploy
+    # bases/elastic/... because that is used for entire systems and we dont want to impact other hosted application; we assume
+    # such shared resources as cert issuers exist.
+    - kubectl wait --for=condition=ready --timeout=3m -n cert-manager clusterissuer.cert-manager.io/elastic-root-ca-issuer
+
+    - ./build-with-plugins.sh cluster/chaska-storage/eu-data-tools/elastic | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 60
+    - kubectl wait --for=condition=ready --timeout=3m -n eu-data-tools pod -l elasticsearch.k8s.elastic.co/cluster-name=eu-data
+    - kubectl wait --for=condition=ready --timeout=3m -n eu-data-tools pod -l common.k8s.elastic.co/type=kibana
+    # just because kibana is "ready"; it does not mean the service is ready, so it throws a 503; so instead we are going
+    # to wait a 3 minutes before proceeding to setting up the elastic views
+    - sleep 180
+    - ./build-with-plugins.sh cluster/chaska-storage/eu-data-tools/elastic-setup | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - kubectl wait --for=condition=complete --timeout=3m -n eu-data-tools job/es-data-streams-setup-job
+    - kubectl wait --for=condition=complete --timeout=3m -n eu-data-tools job/es-redundancy-setup-job
+    - kubectl wait --for=condition=complete --timeout=3m -n eu-data-tools job/kb-data-views-setup-job
+
+    # deploying kafka:
+    # Will error if kafka-system does not exist
+    - kubectl wait --for=condition=ready --timeout=3m -n kafka-system pod -l name=strimzi-cluster-operator
+    - ./build-with-plugins.sh cluster/chaska-storage/eu-data-tools/kafka | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 30
+    # kubectl wait for ready triggers off first container completing, need to use this to wait for zookeeper. Sometimes they require multiple deletions/restarts to startup properly
+    - while [[ $(kubectl get pods -l strimzi.io/name=kafka-eu-zookeeper -n eu-data-tools -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == *"False"* ]]; do echo "waiting for zookeeper pods. Check status, perform manual deletion as necessary" && sleep 10; done
+    - kubectl wait --for=condition=ready --timeout=3m -n eu-data-tools pod -l strimzi.io/cluster=kafka-eu
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+chaska-storage:eu-data-tools:undeploy:
+  extends: chaska-storage:eu-data-tools:deploy
+  stage: undeploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # undeploy elastic
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=3m -n elastic-system pod elastic-operator-0
+    - ./build-with-plugins.sh cluster/chaska-storage/eu-data-tools/elastic-setup | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - ./build-with-plugins.sh cluster/chaska-storage/eu-data-tools/elastic | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 30
+
+    # undeploy kafka
+    # Will error if kafka-system does not exist
+    - kubectl wait --for=condition=ready --timeout=3m -n kafka-system pod -l name=strimzi-cluster-operator
+    - ./build-with-plugins.sh cluster/chaska-storage/eu-data-tools/kafka | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 60
+
+    - ./build-with-plugins.sh cluster/chaska-storage/eu-data-tools/init | kubectl delete -f - 2>&1 | sed /unchanged/d
+
+chaska-storage:eu-data-tools:akhq:deploy:
+  timeout: 2h
+  environment:
+    name: eu-data-tools/chaska-storage
+    url: https://eu-data-es.fcaus-f-storage.autodata.tech/
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+
+    - ./build-with-plugins.sh cluster/chaska-storage/eu-data-tools/kafka-akhq | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - kubectl wait --for=condition=ready --timeout=3m -n eu-data-tools pod -l app.kubernetes.io/name=akhq
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+chaska-storage:eu-data-tools:akhq:undeploy:
+  timeout: 2h
+  extends: chaska-storage:eu-data-tools:akhq:deploy
+  needs: []
+  stage: undeploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+
+    - ./build-with-plugins.sh cluster/chaska-storage/eu-data-tools/kafka-akhq | kubectl delete -f - 2>&1 | sed /unchanged/d
+
+#-------------------------------------------------------------------------------
+# Hillsboro
+
+hillsboro:eu-data-tools:deploy:
+  timeout: 2h
+  environment:
+    name: eu-data-tools/continuous-testing
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:hillsboro
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_HILLSBORO_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/hillsboro/eu-data-tools/init | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - ./build-with-plugins.sh cluster/hillsboro/eu-data-tools/bootstrap | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - ./dobby.sh deploy eu-data-tools
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+hillsboro:eu-data-tools:undeploy:
+  extends: ctkube:eu-data-tools:deploy
+  stage: undeploy:hillsboro
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_HILLSBORO_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # TODO Will error if any pods are running from stage apps, those should be undeployed
+    # via kustom/ project before executing this job
+    - ./build-with-plugins.sh cluster/hillsboro/eu-data-tools/bootstrap | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - ./build-with-plugins.sh cluster/hillsboro/eu-data-tools/init | kubectl delete -f - 2>&1 | sed /unchanged/d
+
+#-------------------------------------------------------------------------------
+# Hillsboro Storage
+hillsboro-storage:eu-data-tools:deploy:
+  timeout: 2h
+  environment:
+    name: eu-data-tools/hillsboro-storage
+    url: https://eu-data-es.fcaus-f-storage.autodata.tech/
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/hillsboro-storage/eu-data-tools/init | kubectl apply -f - 2>&1 | sed /unchanged/d
+
+    # deploying elastic:
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=3m -n elastic-system pod -l app.kubernetes.io/name=elastic-operator
+    # Will error if elastic root ca issuer does not exist, this is because we do not allow eu-data tools to deploy
+    # bases/elastic/... because that is used for entire systems and we dont want to impact other hosted application; we assume
+    # such shared resources as cert issuers exist.
+    - kubectl wait --for=condition=ready --timeout=3m -n cert-manager clusterissuer.cert-manager.io/elastic-root-ca-issuer
+
+    - ./build-with-plugins.sh cluster/hillsboro-storage/eu-data-tools/elastic | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 60
+    - kubectl wait --for=condition=ready --timeout=3m -n eu-data-tools pod -l elasticsearch.k8s.elastic.co/cluster-name=eu-data
+    - kubectl wait --for=condition=ready --timeout=3m -n eu-data-tools pod -l common.k8s.elastic.co/type=kibana
+    # just because kibana is "ready"; it does not mean the service is ready, so it throws a 503; so instead we are going
+    # to wait a 3 minutes before proceeding to setting up the elastic views
+    - sleep 180
+    - ./build-with-plugins.sh cluster/hillsboro-storage/eu-data-tools/elastic-setup | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - kubectl wait --for=condition=complete --timeout=3m -n eu-data-tools job/es-data-streams-setup-job
+    - kubectl wait --for=condition=complete --timeout=3m -n eu-data-tools job/es-redundancy-setup-job
+    - kubectl wait --for=condition=complete --timeout=3m -n eu-data-tools job/kb-data-views-setup-job
+
+    # deploying kafka:
+    # Will error if kafka-system does not exist
+    - kubectl wait --for=condition=ready --timeout=3m -n kafka-system pod -l name=strimzi-cluster-operator
+    - ./build-with-plugins.sh cluster/hillsboro-storage/eu-data-tools/kafka | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 30
+    # kubectl wait for ready triggers off first container completing, need to use this to wait for zookeeper. Sometimes they require multiple deletions/restarts to startup properly
+    - while [[ $(kubectl get pods -l strimzi.io/name=kafka-eu-zookeeper -n eu-data-tools -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == *"False"* ]]; do echo "waiting for zookeeper pods. Check status, perform manual deletion as necessary" && sleep 10; done
+    - kubectl wait --for=condition=ready --timeout=3m -n eu-data-tools pod -l strimzi.io/cluster=kafka-eu
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+hillsboro-storage:eu-data-tools:undeploy:
+  extends: hillsboro-storage:eu-data-tools:deploy
+  stage: undeploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # undeploy elastic
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=3m -n elastic-system pod elastic-operator-0
+    - ./build-with-plugins.sh cluster/hillsboro-storage/eu-data-tools/elastic-setup | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - ./build-with-plugins.sh cluster/hillsboro-storage/eu-data-tools/elastic | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 30
+
+    # undeploy kafka
+    # Will error if kafka-system does not exist
+    - kubectl wait --for=condition=ready --timeout=3m -n kafka-system pod -l name=strimzi-cluster-operator
+    - ./build-with-plugins.sh cluster/hillsboro-storage/eu-data-tools/kafka | kubectl delete -f - 2>&1 | sed /unchanged/d
+    - sleep 60
+
+    - ./build-with-plugins.sh cluster/hillsboro-storage/eu-data-tools/init | kubectl delete -f - 2>&1 | sed /unchanged/d
+
+hillsboro-storage:eu-data-tools:akhq:deploy:
+  timeout: 2h
+  environment:
+    name: eu-data-tools/chaska-storage
+    url: https://eu-data-es.fcaus-f-storage.autodata.tech/
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+
+    - ./build-with-plugins.sh cluster/hillsboro-storage/eu-data-tools/kafka-akhq | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - kubectl wait --for=condition=ready --timeout=3m -n eu-data-tools pod -l app.kubernetes.io/name=akhq
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+hillsboro-storage:eu-data-tools:akhq:undeploy:
+  timeout: 2h
+  extends: hillsboro-storage:eu-data-tools:akhq:deploy
+  needs: []
+  stage: undeploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+
+    - ./build-with-plugins.sh cluster/hillsboro-storage/eu-data-tools/kafka-akhq | kubectl delete -f - 2>&1 | sed /unchanged/d

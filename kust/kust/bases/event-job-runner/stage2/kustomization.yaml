@@ -1,0 +1,5 @@
+resources:
+  - compositecontroller.yaml
+  - deployment.yaml
+  - namespace.yaml
+  - service.yaml

@@ -1,0 +1,40 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+#  helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+#  helm repo update
+#
+#  helm template ingress-nginx ingress-nginx/ingress-nginx --namespace=ingress-nginx --version=2.0.3
+helmCharts:
+  - name: ingress-nginx
+    namespace: ingress-nginx
+    releaseName: ingress-nginx
+    repo: https://kubernetes.github.io/ingress-nginx
+    valuesInLine:
+      controller:
+        admissionWebhooks:
+          enabled: false
+        allowSnippetAnnotations: true
+        image:
+          pullPolicy: IfNotPresent
+        ingressClassResource:
+          default: true
+        livenessProbe:
+          initialDelaySeconds: 100
+        name: nginx-ingress-controller
+        resources:
+          limits:
+            cpu: 4000m
+        watchIngressWithoutClass: true
+    version: 4.9.1
+resources:
+- namespace
+- configmap
+- secret
+
+patches:
+- path: configmap/patches/ingress-nginx-controller.yaml
+  target:
+    kind: ConfigMap
+    name: ingress-nginx-nginx-ingress-controller
+

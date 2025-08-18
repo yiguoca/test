@@ -1,0 +1,28 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-bootstrap
+spec:
+  ports:
+  - name: tcp-external
+    protocol: TCP
+    port: 31030
+    targetPort: tcp-external
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: kafka-bootstrap
+subsets:
+  - addresses:
+      - ip: 172.16.132.94
+      - ip: 172.16.132.95
+      - ip: 172.16.132.96
+      - ip: 172.16.132.89
+      - ip: 172.16.132.90
+    ports:
+      - name: tcp-external
+        port: 31030
+        protocol: TCP

@@ -1,0 +1,140 @@
+#https://strimzi.io/docs/operators/0.30.0/full/configuring#proc-config-kafka-str
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: kafka-eu
+  labels:
+    app.kubernetes.io/name: kafka-eu
+spec:
+  kafka:
+    version: 3.0.0
+    replicas: 3
+    logging: 
+      type: inline
+      loggers:
+        kafka.root.logger.level: "INFO"
+        log4j.logger.kafka.controller: "INFO"
+        log4j.logger.state.change.logger: "INFO"
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 200m
+      limits:
+        cpu: 1
+        memory: 2.5Gi
+    #jvmOptions:
+    listeners:
+      - name: plain
+        port: 9095
+        type: internal
+        tls: false
+      - name: tls
+        port: 9096
+        type: internal
+        tls: true
+        authentication:
+          type: tls
+      - name: external
+        port: 9097
+        type: nodeport
+        tls: false
+        configuration:
+          bootstrap:
+            nodePort: 31030
+          brokers:
+          - broker: 0
+            nodePort: 31021
+          - broker: 1
+            nodePort: 31022
+          - broker: 2
+            nodePort: 31023
+    config:
+        offsets.topic.replication.factor: 3
+        transaction.state.log.replication.factor: 3
+        transaction.state.log.min.isr: 2
+        message.max.bytes: 10485760
+        default.replication.factor: 3
+        log.message.format.version: "3.0"
+        inter.broker.protocol.version: "3.0"
+    storage:
+      type: jbod
+      volumes:
+      - id: 0
+        type: persistent-claim
+        size: 5Gi
+        deleteClaim: true #false
+        class: hpe-nimble-chaska-prod-retain
+
+    metricsConfig:
+      type: jmxPrometheusExporter
+      valueFrom:
+        configMapKeyRef:
+          name: kafka-metrics
+          key: kafka-metrics-config.yaml
+
+    template:
+      pod:
+        affinity:
+          podAntiAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              - labelSelector:
+                  matchExpressions:
+                    - key: app.kubernetes.io/name
+                      operator: In
+                      values:
+                        - kafka
+                topologyKey: kubernetes.io/hostname
+
+  zookeeper:
+    replicas: 3
+    logging: 
+      type: inline
+      loggers:
+        zookeeper.root.logger: "INFO"
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 200m
+      limits:
+        memory: 1Gi
+        cpu: 1
+    #jvmOptions:
+    #  -Xms: 1024m
+    #  -Xmx: 1024m
+    storage:
+      type: persistent-claim
+      size: 5Gi
+      deleteClaim: true #false
+      class: hpe-nimble-chaska-prod-retain
+    metricsConfig:
+      type: jmxPrometheusExporter
+      valueFrom:
+        configMapKeyRef:
+          name: kafka-metrics
+          key: zookeeper-metrics-config.yaml
+    template:
+      pod:
+        affinity:
+          podAntiAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              - labelSelector:
+                  matchExpressions:
+                    - key: app.kubernetes.io/name
+                      operator: In
+                      values:
+                        - zookeeper
+                topologyKey: kubernetes.io/hostname
+  entityOperator:
+    topicOperator: {}
+      #resources:
+      #  requests:
+      #  limits:
+      #jvmOptions:
+    userOperator: {}
+      #resources:
+      #  requests:
+      #  limits:
+      #jvmOptions:
+  kafkaExporter:
+    topicRegex: ".*"
+    groupRegex: ".*"

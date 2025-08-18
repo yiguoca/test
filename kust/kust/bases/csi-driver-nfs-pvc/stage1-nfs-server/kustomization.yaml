@@ -1,0 +1,4 @@
+# depends on bases/csi-driver-nfs/stage1-driver
+
+resources:
+  - nfs-server.yaml

@@ -1,0 +1,3 @@
+# legacy v1beta1 version of the CRD that should keep working until 1.22
+resources:
+  - crd.yaml

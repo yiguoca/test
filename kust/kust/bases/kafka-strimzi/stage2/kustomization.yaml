@@ -1,0 +1,4 @@
+resources:
+  - metrics/prometheus/
+
+namespace: monitoring

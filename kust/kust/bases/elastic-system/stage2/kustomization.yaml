@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+helmCharts:
+  - name: eck-operator
+    namespace: elastic-system
+    releaseName: elastic-operator
+    repo: https://helm.elastic.co
+    valuesInline:
+      installCRDs: false
+    version: 2.5.0
+
+configMapGenerator:
+  - name: elastic-operator-override-eck
+    namespace: elastic-system
+    literals:
+      - ENABLE_LEADER_ELECTION=false
+
+patches:
+  # patch elastic-operator StatefulSet to include configuration from elastic-operator-override-eck ConfigMap
+  - target:
+      kind: StatefulSet
+      name: elastic-operator
+      namespace: elastic-system
+    patch: |
+      - op: add
+        path: "/spec/template/spec/containers/0/envFrom"
+        value:
+          - configMapRef:
+              name: elastic-operator-override-eck

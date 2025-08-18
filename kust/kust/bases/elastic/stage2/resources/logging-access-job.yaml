@@ -1,0 +1,139 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: logging-access-job
+  namespace: logging
+  labels:
+    photon/tier: infrastructure
+    app.kubernetes.io/instance: logging-access-job
+    app.kubernetes.io/name: logging-access
+    app.kubernetes.io/part-of: logging
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      # We are utilizing 'initContainers' so that these operations happen in the
+      # correct sequential order since there is reliance on other content to
+      # exist before the next step.
+      #
+      # Due to using initContainers, to search logs you will need to do:
+      #   kubectl logs -f <podName> -c <container name>
+      #   ex: kubectl logs -f logging-access-job-9npd7 -c create-access-aliases
+      #
+      # The order of operations matter:
+      #
+      #   1 - we need to craete the alias our index pattern will be using
+      #   2 - we need to create the index pattern that our visualizations &
+      #       dashboards will be using
+      #   3 - we can not create our visualizations that our dashboards will be
+      #       referencing
+      #   4 - import the dashboard
+      initContainers:
+
+      # we are using a script since there is more complexity in the alias
+      # definition.
+      - name: es-create-access-aliases
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          bash /elastic/script/create-7days-access-alias.sh
+        image: fcaus/support/gizmo:1.0.0
+        volumeMounts:
+          - name: scripts-es-update
+            mountPath: /elastic/script
+          - name: alias-config
+            mountPath: /usr/share/aliases
+
+      # we want to create the index pattern(s) for each alias we create so that
+      # kibana can access it. Note we want to make the 7days-access logs the
+      # default just for easy of lookup/speed.
+      - name: kb-create-index-pattern
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          curl --insecure --location --request POST "${KB_PROTOCOL:-https}://${KB_HOST}:${KB_PORT:-5601}/api/index_patterns/index_pattern?override=true" --header 'kbn-xsrf: true' -u $KB_USER:$KB_PASSWORD --header 'Content-Type: application/json' --data-raw '{"override": true, "index_pattern": {"title":"7days-access","id":"7days-access", "timeFieldName": "@timestamp"}}';
+          curl --insecure --location --request POST "${KB_PROTOCOL:-https}://${KB_HOST}:${KB_PORT:-5601}/api/index_patterns/default" --header 'kbn-xsrf: true' -u $KB_USER:$KB_PASSWORD --header 'Content-Type: application/json' --data-raw '{"index_pattern_id": "7days-access", "force":"true"}';
+        image: fcaus/support/gizmo:1.0.0
+
+      # import the visualizations we use in our dashboards/reports.
+      - name: kb-import-tag
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          bash /kibana/script/import-kb-object.sh "tag" "/usr/share/tag/stellantis.json" "stellantis";
+          bash /kibana/script/import-kb-object.sh "tag" "/usr/share/tag/photon.json" "photon";
+        image: fcaus/support/gizmo:1.0.0
+        volumeMounts:
+          - name: scripts-kb-update
+            mountPath: /kibana/script
+          - name: tag-config
+            mountPath: /usr/share/tag
+
+      # import the visualizations we use in our dashboards/reports.
+      - name: kb-import-visualizations
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          bash /kibana/script/import-kb-object.sh "visualization" "/usr/share/visualization/avg-requestresponse-size-over-time.json" "avg-requestresponse-size-over-time";
+          bash /kibana/script/import-kb-object.sh "visualization" "/usr/share/visualization/avg-responserequest-time-over-time.json" "avg-responserequest-time-over-time";
+          bash /kibana/script/import-kb-object.sh "visualization" "/usr/share/visualization/load-average-request-per-second.json" "load-average-request-per-second";
+          bash /kibana/script/import-kb-object.sh "visualization" "/usr/share/visualization/load-average-request-time.json" "load-average-request-time";
+          bash /kibana/script/import-kb-object.sh "visualization" "/usr/share/visualization/load-average-response-time.json" "load-average-response-time";
+          bash /kibana/script/import-kb-object.sh "visualization" "/usr/share/visualization/load-total-request-count.json" "load-total-request-count";
+          bash /kibana/script/import-kb-object.sh "visualization" "/usr/share/visualization/requests-per-brand.json" "requests-per-brand";
+          bash /kibana/script/import-kb-object.sh "visualization" "/usr/share/visualization/status-code-ratio.json" "status-code-ratio";
+          bash /kibana/script/import-kb-object.sh "visualization" "/usr/share/visualization/top-10-frequency.json" "top-10-frequency";
+          bash /kibana/script/import-kb-object.sh "visualization" "/usr/share/visualization/top-25-ccode-frequency.json" "top-25-ccode-frequency";
+        image: fcaus/support/gizmo:1.0.0
+        volumeMounts:
+          - name: scripts-kb-update
+            mountPath: /kibana/script
+          - name: visualization-config
+            mountPath: /usr/share/visualization
+
+      # import the visualizations we use in our dashboards/reports.
+      - name: kb-import-dashboards
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          bash /kibana/script/import-kb-object.sh "dashboard" "/usr/share/dashboard/api-performance-super-bowl.json" "api-performance-super-bowl";
+        image: fcaus/support/gizmo:1.0.0
+        volumeMounts:
+          - name: scripts-kb-update
+            mountPath: /kibana/script
+          - name: dashboard-config
+            mountPath: /usr/share/dashboard
+
+      # job syntax requires 'containers' to be defined.
+      containers:
+      - name: completed
+        command: ["sh", "-c", "echo 'completed.'"]
+        image: busybox
+
+      volumes:
+        - name: scripts-es-update
+          configMap:
+            name: scripts-es-update
+            defaultMode: 0777
+        - name: scripts-kb-update
+          configMap:
+            name: scripts-kb-update
+            defaultMode: 0777
+
+        - name: alias-config
+          configMap:
+            name: data-es-alias
+
+        - name: dashboard-config
+          configMap:
+            name: data-kb-dashboard
+
+        - name: visualization-config
+          configMap:
+            name: data-kb-visualization
+
+        - name: tag-config
+          configMap:
+            name: data-kb-tag

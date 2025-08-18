@@ -1,0 +1,23 @@
+resources:
+  - logstash.yaml
+
+configMapGenerator:
+  - name: logstash-config
+    files:
+      - resources/logstash.yml
+      - resources/pipelines.yml
+  - name: logstash-pipeline
+    files:
+      - config/pipeline-access-logs.conf
+      - config/pipeline-errors.conf
+      - config/pipeline-application-logs.conf
+      # - config/pipeline-dead-letter.conf
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+commonLabels:
+  app.kubernetes.io/instance: logging-logstash
+  app.kubernetes.io/name: logstash
+  app.kubernetes.io/part-of: logging
+  photon/tier: infrastructure

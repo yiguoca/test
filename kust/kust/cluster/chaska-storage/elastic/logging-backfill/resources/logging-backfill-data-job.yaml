@@ -1,0 +1,52 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: logging-backfill-data-job
+  namespace: logging
+  labels:
+    app.kubernetes.io/instance: logging-backfill-data-job
+    app.kubernetes.io/name: logging-backfill-data
+    app.kubernetes.io/part-of: logging
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+
+      #import access logs from Aug 21, 2023
+      - name: es-dump-2023-08-21
+        command: ["/bin/sh", "-c"]
+        args:
+          - bash /elastic/script/elasticdump-reindex.sh
+        image: docker.fcaus-f-storage.autodata.tech/fcaus/support/elasticdump:1.0.0
+        volumeMounts:
+          - name: scripts-es-dump
+            mountPath: /elastic/script
+        env:
+          - name: SOURCE
+            value: https://logging-es.fcaus-p-storage.autodata.tech/access-2023.08.21-000201
+          - name: TARGET
+            value: https://logging-es.fcaus-f-storage.autodata.tech/access-2023.08.21-000199
+          - name: LIMIT
+            value: "1000"
+          #- name: ADDITIONAL_ARGS
+          #  value: "--offset=12345"
+          - name: ES_USERNAME
+            valueFrom:
+              secretKeyRef:
+                key: username
+                name: photon-elastic-user
+          - name: ES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: password
+                name: photon-elastic-user
+
+      #-------------------------------------------------------------------------
+      volumes:
+        - name: scripts-es-dump
+          configMap:
+            name: scripts-es-dump
+            defaultMode: 0777

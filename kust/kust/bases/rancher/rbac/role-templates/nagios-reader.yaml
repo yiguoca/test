@@ -1,0 +1,67 @@
+apiVersion: management.cattle.io/v3
+builtin: false
+context: cluster
+description: ''
+displayName: nagios-reader
+external: false
+hidden: false
+kind: RoleTemplate
+metadata:
+  annotations:
+    cleanup.cattle.io/rtUpgradeCluster: 'true'
+    lifecycle.cattle.io/create.mgmt-auth-roletemplate-lifecycle: 'true'
+  finalizers:
+    - controller.cattle.io/mgmt-auth-roletemplate-lifecycle
+  generateName: rt-
+  labels:
+    cattle.io/creator: kustom-infrastructure
+  name: rt-nagios-reader
+rules:
+  - apiGroups:
+      - ''
+    resources:
+      - namespaces
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ''
+    resources:
+      - node
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ''
+    resources:
+      - pod
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ''
+    resources:
+      - pods
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ''
+    resources:
+      - nodepools
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ''
+    resources:
+      - nodes
+    verbs:
+      - get
+      - list
+      - watch

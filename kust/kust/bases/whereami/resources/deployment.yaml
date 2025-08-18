@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: whereami
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: whereami
+  template:
+    metadata:
+      labels:
+        app: whereami
+    spec:
+      containers:
+      - image: git.autodatacorp.org:5555/fcaus/support/whereami:v0.2.2
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+        name: whereami
+        ports:
+        - containerPort: 8000
+          name: http
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+      imagePullSecrets:
+      - name: whereami-pull-secret

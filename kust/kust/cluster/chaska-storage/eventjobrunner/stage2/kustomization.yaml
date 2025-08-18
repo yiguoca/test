@@ -1,0 +1,25 @@
+resources:
+  - ../../../../bases/event-job-runner/stage2
+  - ../../resources/amqp-credentials
+
+namespace: eventjobrunner
+
+generators:
+  - docker-secret.yaml
+
+transformers:
+  - image-rewriter.yaml
+
+# Shared CloudAMQP requires us to have a unique queue name per cluster.
+patches:
+  - target:
+      kind: Deployment
+      name: eventjobrunner-controller
+      version: v1
+      group: apps
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value:
+          name: "EJR_AMQP_QUEUE"
+          value: "chaska-storage-event-job-runner-registered"

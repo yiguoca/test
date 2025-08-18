@@ -1,0 +1,20 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: eu-data-tools
+resources:
+  - resources/service.yaml
+  - resources/ingress.yaml
+
+generators:
+  - generators/secret.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true
+  labels:
+    app.kubernetes.io/part-of: amqp
+
+labels:
+- pairs:
+    app.kubernetes.io/part-of: amqp
+    photon/tier: app
+    stage: amqp

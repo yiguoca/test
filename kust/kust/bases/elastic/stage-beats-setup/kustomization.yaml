@@ -1,0 +1,40 @@
+resources:
+  - resources/filebeat-rbac.yaml
+  - resources/logging-access-setup-job.yaml
+  - resources/logging-application-setup-job.yaml
+  - resources/logging-errors-setup-job.yaml
+  - resources/logging-index-pattern-job.yaml
+  # - resources/logging-dead-letter-setup-job.yaml
+
+#Replace the default fields definition for nginx filebeat module
+configMapGenerator:
+  - name: field-config
+    namespace: logging
+    files:
+      - config/logging-fields.yaml
+  - name: access-ilm
+    namespace: logging
+    files:
+      - config/access-ilm.json
+  - name: application-ilm
+    namespace: logging
+    files:
+      - config/application-ilm.json
+  - name: errors-ilm
+    namespace: logging
+    files:
+      - config/errors-ilm.json
+  # - name: dead-letter-ilm
+  #   namespace: logging
+  #   files:
+  #     - config/dead-letter-ilm.json
+  - name: filebeat-config
+    namespace: logging
+    files:
+      - config/access-filebeat.yml
+      - config/application-filebeat.yml
+      - config/errors-filebeat.yml
+      # - config/dead-letter-filebeat.yml
+
+generatorOptions:
+  disableNameSuffixHash: true

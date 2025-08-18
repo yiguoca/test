@@ -1,0 +1,192 @@
+#-------------------------------------------------------------------------------
+# Data Center: Chaska
+
+chaska-monitoring:
+  environment:
+    name: monitoring/chaska
+    url: https://grafana.fcaus-f.autodata.tech
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+    - job: test-prometheus
+  stage: deploy:chaska
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_CHASKA_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    #- kubectl config set-context --namespace=monitoring --current
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - bin/deploy-monitoring.sh chaska extras
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+chaska-storage-monitoring:
+  environment:
+    name: monitoring/chaska-storage
+    url: https://grafana.fcaus-f-storage.autodata.tech/
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+    - job: test-prometheus
+  stage: deploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - bin/deploy-monitoring.sh chaska-storage extras
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+#-------------------------------------------------------------------------------
+# Data Center: London
+
+ctkube-monitoring:
+  environment:
+    name: monitoring/continuous-testing
+    url: https://grafana.fcaus-ct.autodata.tech
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+    - job: test-prometheus
+  stage: deploy:continuous-testing
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_CT_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - bin/deploy-monitoring.sh ctkube
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+ct-storage-monitoring:
+  environment:
+    name: monitoring/continuous-testing-storage
+    url: https://grafana.fcaus-ct-storage.autodata.tech
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+    - job: test-prometheus
+  stage: deploy:continuous-testing-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CT_STORAGE_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - bin/deploy-monitoring.sh ct-storage
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+test-monitoring:
+  environment:
+    name: monitoring/test-infrastructure
+    url: https://grafana.fcaus-te.autodata.tech
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+    - job: test-prometheus
+  stage: deploy:test-infrastructure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_TEST_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - bin/deploy-monitoring.sh test
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+undeploy:test-monitoring:
+  environment:
+    name: monitoring/test-infrastructure
+    url: https://grafana.fcaus-te.autodata.tech
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+    - job: test-prometheus
+  stage: undeploy:test-infrastructure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_TEST_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - bin/undeploy-monitoring.sh test
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+#-------------------------------------------------------------------------------
+# Data Center: Hillsboro
+
+hillsboro-monitoring:
+  environment:
+    name: monitoring/hillsboro
+    url: https://grafana.fcaus-p.autodata.tech
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+    - job: test-prometheus
+  stage: deploy:hillsboro
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_HILLSBORO_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - bin/deploy-monitoring.sh hillsboro extras
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+hillsboro-storage-monitoring:
+  environment:
+    name: monitoring/hillsboro-storage
+    url: https://grafana.fcaus-p-storage.autodata.tech
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+      - job: validate-syntax
+      - job: test-prometheus
+  stage: deploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - bin/deploy-monitoring.sh hillsboro-storage extras
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+#-------------------------------------------------------------------------------
+# Azure
+
+azure-monitoring:
+  environment:
+    name: monitoring/azure
+    url: http://fca-us-tech-azure.ascchus.com/grafana/
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+    - job: test-prometheus
+  stage: deploy:azure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_AZURE_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - bin/deploy-monitoring.sh azure extras
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"

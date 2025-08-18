@@ -1,0 +1,16 @@
+---
+apiVersion: fca.autodata.net/v1
+kind: ThycoticDockerConfigSecretGenerator
+metadata:
+  name: myregistrykey
+  namespace: logging
+secrets: 6158
+---
+apiVersion: fca.autodata.net/v1
+kind: ThycoticSecretGenerator
+metadata:
+  name: photon-elastic-user
+  namespace: logging
+secret: 7544
+username_key: username
+password_key: password

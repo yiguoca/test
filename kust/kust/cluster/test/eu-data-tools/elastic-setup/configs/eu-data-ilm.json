@@ -1,0 +1,43 @@
+{
+    "policy": {
+        "phases": {
+            "hot": {
+                "actions": {
+                    "rollover" : {
+                        "max_primary_shard_size": "5GB",
+                        "max_age": "3h"
+                    },
+                    "set_priority": {
+                        "priority": 100
+                    }
+                }
+            },
+            "warm": {
+                "min_age": "8h",
+                "actions": {
+                    "shrink" : {
+                        "number_of_shards": "1"
+                    },
+                    "forcemerge" : {
+                        "max_num_segments": "1"
+                    },
+                    "set_priority": {
+                        "priority": 50
+                    }
+                }
+            },
+            "delete": {
+                "min_age": "2d",
+                "actions": {
+                    "delete": {}
+                }
+            }
+        },
+        "_meta": {
+            "version": "1.0.0",
+            "description": "Rollover index to retain eu data at full resolution for 3 hours and shrink for remaining 2 days.",
+            "author": "J.D. Power",
+            "managed": false
+        }
+    }
+}

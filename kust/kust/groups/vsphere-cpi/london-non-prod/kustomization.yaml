@@ -1,0 +1,53 @@
+resources:
+  - ../../../bases/vsphere-cpi/
+
+#--------------------------------------------------------------------------------
+# generate secret for non production vCenter London credentials
+# we could 
+generators:
+  - generators/vsphere-cloud-secret.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+patches:
+
+  # We want to patch our secret with the appropriate metadata labeling. Because 
+  # this helmChart still uses /app and /component we are labeling it with both 
+  # patterns.
+  - target:
+       kind: Secret
+       name: vsphere-cloud-london-nonprod-secret
+    patch: |-
+      - op: add
+        path: /metadata/labels
+        value:
+          component: cloud-controller-manager
+          vsphere-cpi-infra: secret
+
+          app.kubernetes.io/name: vsphere-cloud-london-nonprod-secret
+          app.kubernetes.io/app: vsphere-cpi
+          app.kubernetes.io/component: cloud-controller-manager
+
+  # this is cleanup, we dont need this old secret anymore and keeping it around 
+  # will cause confusion. Further using generates mean you can't merge so mind 
+  # as well delete the old secret that is just an example provided by vsphere-cloud-controller-manager.yaml
+  - target:
+      kind: Secret
+      name: vsphere-cloud-secret
+    patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: vsphere-cloud-secret
+
+#--------------------------------------------------------------------------------
+  # override the vsphere-cloud-config ConfigMap with our own values
+  - path: patches/vsphere-cloud-config-patch.yaml
+
+labels:
+- includeTemplates: true
+  includeSelectors: false
+  pairs:
+    app.kubernetes.io/part-of: vsphere-cpi

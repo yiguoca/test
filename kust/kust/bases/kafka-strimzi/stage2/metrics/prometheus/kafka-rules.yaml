@@ -1,0 +1,21 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    role: alert-rules
+    app: kafka
+  name: kakfa-rules
+spec:
+  groups:
+  - name: kafka
+    rules:
+    - alert: KafkaDown
+      expr: sum(kafka_build_info) < 1
+      for: 0m
+      labels:
+        severity: critical
+      annotations:
+        summary: kafka down (instance {{ $labels.instance }})
+        description: "Less than 1 node running in Kafka cluster\n  VALUE = {{ $value }}\n  LABELS = {{ $labels }}"
+

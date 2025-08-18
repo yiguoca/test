@@ -1,0 +1,82 @@
+chaska-storage-incentives-elastic:
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n elastic-system pod elastic-operator-0
+    - ./build-with-plugins.sh cluster/chaska-storage/incentives-elastic/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/chaska-storage/incentives-elastic/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+hillsboro-storage-incentives-elastic:
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n elastic-system pod elastic-operator-0
+    - ./build-with-plugins.sh cluster/hillsboro-storage/incentives-elastic/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/hillsboro-storage/incentives-elastic/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+azure-incentives-elastic:
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:azure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_AZURE_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n elastic-system pod elastic-operator-0
+    - ./build-with-plugins.sh cluster/azure/incentives-elastic/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/azure/incentives-elastic/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+ct-storage-incentives-elastic:
+  environment:
+    name: ct-storage-incentives-elastic
+    url: https://incentives.fcaus-ct-storage.autodata.tech
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:continuous-testing-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CT_STORAGE_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if elastic-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n elastic-system pod elastic-operator-0
+    - ./build-with-plugins.sh cluster/ct-storage/incentives-elastic/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    - sleep 5
+    - ./build-with-plugins.sh cluster/ct-storage/incentives-elastic/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"

@@ -1,0 +1,13 @@
+apiVersion: fca.autodata.net/v1.1
+kind: ThycoticNimbleSecretGenerator
+metadata:
+  name: nimble
+  namespace: kube-system
+secret: 1234
+username_key: username
+password_key: password
+resource_key: backend
+service_name: nimble-csp-svc
+service_port: 8080
+#optionally backend can be provided if no resource_key defined or no overlapping with resource_key
+#backend: 172.16.128.133

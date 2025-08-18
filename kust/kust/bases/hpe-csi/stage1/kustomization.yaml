@@ -1,0 +1,35 @@
+#  helm repo add hpe-storage https://hpe-storage.github.io/co-deployments/
+#  helm repo update
+#
+#  helm template hpe-csi-driver hpe-storage/hpe-csi-driver -n hpe-storage [-f hpe-csi-driver/values.yaml] --version 2.2.0
+helmCharts:
+  - name: hpe-csi-driver
+    releaseName: hpe-csi
+    repo: https://hpe-storage.github.io/co-deployments/
+    version: v2.4.0
+    namespace: hpe-storage
+    includeCRDs: true
+    valuesInLine:
+      disable:
+        nimble: false
+        primera: true
+        alletra6000: true
+        alletra9000: true
+      logLevel: info
+      controller:
+        labels:
+          app.kubernetes.io/instance: nimble-csp
+          app.kubernetes.io/name: nimble
+      csp:
+        labels:
+          app.kubernetes.io/instance: nimble-csp
+          app.kubernetes.io/name: nimble
+
+resources:
+  - namespace.yaml
+
+namespace: hpe-storage
+
+commonLabels:
+  app.kubernetes.io/part-of: hpe-csi
+  photon/tier: infrastructure

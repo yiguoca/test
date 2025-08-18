@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: whereami
+  name: whereami
+spec:
+  endpoints:
+  - honorLabels: true
+    interval: 30s
+    port: http
+    scheme: http
+  selector:
+    matchLabels:
+      app: whereami
+  namespaceSelector:
+    matchNames:
+    - monitoring

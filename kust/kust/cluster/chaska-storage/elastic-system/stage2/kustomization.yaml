@@ -1,0 +1,5 @@
+resources:
+  - ../../../../bases/elastic-system/stage2
+
+commonLabels:
+  stage: two

@@ -1,0 +1,32 @@
+#!/bin/bash
+# For development purposes, set BASEDIR to the full path of the kustom
+# directory, e.g.  BASEDIR=~/git/fcaus/support/kustom
+if [ "${BASEDIR}" != "" ]
+then
+  source ${BASEDIR}/plugin/fca.autodata.net/v1/parse-yaml.sh
+  source ${BASEDIR}/plugin/fca.autodata.net/v1/thycotic.sh
+else
+  source $(dirname $0)/../parse-yaml.sh
+  source $(dirname $0)/../thycotic.sh
+fi
+
+create_variables $1
+
+
+PROTOCOL="${protocol:-amqp}"
+THYCOTIC_USERNAME=$(get_secret ${secret} username password | tr -d '"')
+THYCOTIC_PASSWORD=$(get_secret ${secret} password password | tr -d '"')
+FEDERATION_UPSTREAM="${host:-}"
+amqpPort="${ports_amqp:-5672}"
+# if the vhost is set and not a slash, add a slash to the beginning
+if [ "${vhost}" != "" ] && [ "${vhost}" != "/" ]
+then
+  vhost="/${vhost}"
+fi
+
+echo "apiVersion: v1"
+echo "kind: Secret"
+echo "metadata:"
+echo "  name: ${metadata_name}"
+echo "data:"
+echo "  uri: $(echo -n "${PROTOCOL}://${THYCOTIC_USERNAME}:${THYCOTIC_PASSWORD}@${FEDERATION_UPSTREAM}:${amqpPort}${vhost}" | openssl base64 -A)"

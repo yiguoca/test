@@ -1,0 +1,111 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: nfs-server-pvcname
+  labels:
+    app: nfs-server-pvcname
+spec:
+  type: ClusterIP  # use "LoadBalancer" to get a public ip
+  selector:
+    app: nfs-server-pvcname
+  ports:
+    - name: tcp-2049
+      port: 2049
+      protocol: TCP
+    - name: udp-111
+      port: 111
+      protocol: UDP
+---
+#--------------STATEFULSET
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: nfs-server-pvcname
+    app.kubernetes.io/name: nfs-server-pvcname
+  name: nfs-server-pvcname
+spec:
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
+  podManagementPolicy: Parallel
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: nfs-server-pvcname
+  serviceName: nfs-server-pvcname
+  template:
+    metadata:
+      labels:
+        app: nfs-server-pvcname
+        app.kubernetes.io/name: nfs-server-pvcname
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: storage/vsphere
+                operator: In
+                values:
+                - "true"
+            - matchExpressions:
+              - key: "kubernetest.io/os"
+                operator: In
+                values:
+                - "linux"
+      containers:
+      - image: itsthenetwork/nfs-server-alpine:latest
+        imagePullPolicy: Always
+        name: nfs-server
+        securityContext:
+          privileged: true
+        ports:
+        - name: tcp-2049
+          containerPort: 2049
+          protocol: TCP
+        - name: udp-111
+          containerPort: 111
+          protocol: UDP
+        # resource limits unverified, borrowed from existing Ganesha fileservers
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: "1"
+            memory: 2Gi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        env:
+        - name: SHARED_DIRECTORY
+          value: "/exports"
+        volumeMounts:
+        - mountPath: /exports
+          name: nfs-server-pvc
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 60
+  updateStrategy:
+    rollingUpdate:
+      partition: 0
+    type: RollingUpdate
+  volumeClaimTemplates:
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      name: nfs-server-pvc
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          # placeholder below: storage must be consistent across nfs-server, RWX pv, and RWX pvc
+          storage: 1Mi
+      # placeholder below: replace with cluster-specific storageClassName. "Retain" reccommended.
+      storageClassName: storage-class
+        

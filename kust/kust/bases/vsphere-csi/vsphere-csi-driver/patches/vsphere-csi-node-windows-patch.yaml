@@ -1,0 +1,21 @@
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: vsphere-csi-node-windows
+  namespace: vmware-system-csi
+spec:
+  template:
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: storage/vsphere
+                  operator: In
+                  values:
+                    - "true"
+                - key:  kubernetes.io/os
+                  operator: In
+                  values:
+                    - "windows"

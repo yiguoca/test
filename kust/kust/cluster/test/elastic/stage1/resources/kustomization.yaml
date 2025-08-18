@@ -1,0 +1,4 @@
+resources:
+  - certs/eckmon.yaml
+  - certs/logging.yaml
+  - secrets/logging-elastic-users.yaml

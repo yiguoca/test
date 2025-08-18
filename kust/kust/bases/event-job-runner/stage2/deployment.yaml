@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eventjobrunner-controller
+  namespace: eventjobrunner
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: eventjobrunner-controller
+  template:
+    metadata:
+      labels:
+        app: eventjobrunner-controller
+    spec:
+      containers:
+        - name: event-job-runner
+          image: fcaus/event-job-runner:v1.1.1
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: EJR_RESYNCPERIODSECONDS
+              value: "15"
+            - name: EJR_AMQP_HOST
+              valueFrom:
+                secretKeyRef:
+                  key: rabbitmq-host
+                  name: rabbitmq-credentials
+            - name: EJR_AMQP_PORT
+              valueFrom:
+                secretKeyRef:
+                  key: rabbitmq-port
+                  name: rabbitmq-credentials
+            - name: EJR_AMQP_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  key: rabbitmq-user
+                  name: rabbitmq-credentials
+            - name: EJR_AMQP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: rabbitmq-password
+                  name: rabbitmq-credentials
+            - name: EJR_AMQP_VHOST
+              valueFrom:
+                secretKeyRef:
+                  key: rabbitmq-vhost
+                  name: rabbitmq-credentials
+          resources:
+            limits:
+              cpu: 100m
+              memory: 96Mi
+            requests:
+              cpu: 5m
+              memory: 48Mi
+      imagePullSecrets:
+        - name: myregistrykey

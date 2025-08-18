@@ -1,0 +1,7 @@
+.*
+*.iml
+!.gitignore
+!.gitlab-ci*.yml
+manifests
+.out
+!.reports/

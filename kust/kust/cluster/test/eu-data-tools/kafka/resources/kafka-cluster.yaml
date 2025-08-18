@@ -1,0 +1,101 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: kafka-eu
+  labels:
+    app.kubernetes.io/name: kafka-eu
+spec:
+  kafka:
+    version: 3.0.0
+    replicas: 1 #3
+    listeners:
+      - name: plain
+        port: 9095
+        type: internal
+        tls: false
+      - name: tls
+        port: 9096
+        type: internal
+        tls: true
+        authentication:
+          type: tls
+      - name: external
+        port: 9097
+        type: nodeport
+        tls: false
+        configuration:
+          bootstrap:
+            nodePort: 30050
+          brokers:
+          - broker: 0
+            nodePort: 30051
+          - broker: 1
+            nodePort: 30052
+          - broker: 2
+            nodePort: 30053
+    config:
+        offsets.topic.replication.factor: 3
+        transaction.state.log.replication.factor: 3
+        transaction.state.log.min.isr: 2
+        message.max.bytes: 10485760
+        default.replication.factor: 3
+    storage:
+      type: jbod
+      volumes:
+      - id: 0
+        type: persistent-claim
+        size: 5Gi
+        deleteClaim: false
+        class: hpe-nimble-london-non-prod-delete
+
+    metricsConfig:
+      type: jmxPrometheusExporter
+      valueFrom:
+        configMapKeyRef:
+          name: kafka-metrics
+          key: kafka-metrics-config.yaml
+
+    template:
+      pod:
+        affinity:
+          podAntiAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              - labelSelector:
+                  matchExpressions:
+                    - key: app.kubernetes.io/name
+                      operator: In
+                      values:
+                        - kafka
+                topologyKey: kubernetes.io/hostname
+
+  zookeeper:
+    replicas: 1 #3
+    storage:
+      type: persistent-claim
+      size: 5Gi
+      deleteClaim: false
+      class: hpe-nimble-london-non-prod-delete
+    metricsConfig:
+      type: jmxPrometheusExporter
+      valueFrom:
+        configMapKeyRef:
+          name: kafka-metrics
+          key: zookeeper-metrics-config.yaml
+    template:
+      pod:
+        affinity:
+          podAntiAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              - labelSelector:
+                  matchExpressions:
+                    - key: app.kubernetes.io/name
+                      operator: In
+                      values:
+                        - zookeeper
+                topologyKey: kubernetes.io/hostname
+  entityOperator:
+    topicOperator: {}
+    userOperator: {}
+  kafkaExporter:
+    topicRegex: ".*"
+    groupRegex: ".*"

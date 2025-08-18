@@ -1,0 +1,94 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: grafana-datasources
+  namespace: monitoring
+stringData:
+  datasources.yaml: |
+    {
+        "apiVersion": 1,
+        "datasources": [{
+                "access": "proxy",
+                "editable": false,
+                "name": "prometheus",
+                "orgId": 1,
+                "type": "prometheus",
+                "url": "http://prometheus-test.monitoring.svc:9090",
+                "version": 1
+            }, {
+                "access": "proxy",
+                "database": "[access-]YYYY.MM.DD[-*]",
+                "jsonData": {
+                    "esVersion": "7.10.0",
+                    "interval": "Daily",
+                    "maxConcurrentShardRequests": 10,
+                    "timeField": "@timestamp",
+                    "tlsSkipVerify": true
+                },
+                "name": "Elastic Access Chaska",
+                "orgId": 1,
+                "type": "elasticsearch",
+                "url": "https://logging-es.fcaus-f-storage.autodata.tech",
+                "basicAuth": true,
+                "basicAuthUser": "__SECRET__7544:username",
+                "secureJsonData": {
+                    "basicAuthPassword": "__SECRET__7544:password"
+                }
+            }, {
+                "access": "proxy",
+                "database": "[access-]YYYY.MM.DD[-*]",
+                "jsonData": {
+                    "esVersion": "7.10.0",
+                    "interval": "Daily",
+                    "maxConcurrentShardRequests": 10,
+                    "timeField": "@timestamp",
+                    "tlsSkipVerify": true
+                },
+                "name": "Elastic Access Hillsboro",
+                "orgId": 1,
+                "type": "elasticsearch",
+                "url": "https://logging-es.fcaus-p-storage.autodata.tech",
+                "basicAuth": true,
+                "basicAuthUser": "__SECRET__7544:username",
+                "secureJsonData": {
+                    "basicAuthPassword": "__SECRET__7544:password"
+                }
+            }, {
+                "access": "proxy",
+                "database": "7days-access",
+                "jsonData": {
+                    "esVersion": "7.10.0",
+                    "maxConcurrentShardRequests": 10,
+                    "timeField": "@timestamp",
+                    "tlsSkipVerify": true
+                },
+                "name": "Elastic Access Chaska - Last 7 Days",
+                "orgId": 1,
+                "type": "elasticsearch",
+                "url": "https://logging-es.fcaus-f-storage.autodata.tech",
+                "basicAuth": true,
+                "basicAuthUser": "__SECRET__7544:username",
+                "secureJsonData": {
+                    "basicAuthPassword": "__SECRET__7544:password"
+                }
+            }, {
+                "access": "proxy",
+                "database": "7days-access",
+                "jsonData": {
+                    "esVersion": "7.10.0",
+                    "maxConcurrentShardRequests": 10,
+                    "timeField": "@timestamp",
+                    "tlsSkipVerify": true
+                },
+                "name": "Elastic Access Hillsboro - Last 7 Days",
+                "orgId": 1,
+                "type": "elasticsearch",
+                "url": "https://logging-es.fcaus-p-storage.autodata.tech",
+                "basicAuth": true,
+                "basicAuthUser": "__SECRET__7544:username",
+                "secureJsonData": {
+                    "basicAuthPassword": "__SECRET__7544:password"
+                }
+            }
+        ]
+    }

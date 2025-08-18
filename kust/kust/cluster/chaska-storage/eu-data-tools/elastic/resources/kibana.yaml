@@ -1,0 +1,57 @@
+---
+apiVersion: kibana.k8s.elastic.co/v1
+kind: Kibana
+metadata:
+  name: eu-data
+spec:
+  version: 8.13.4
+  podTemplate:
+    spec:
+      containers:
+        - name: kibana
+          env:
+            - name: NODE_OPTIONS
+              value: --max-old-space-size=2048
+          resources:
+            requests:
+              memory: 1Gi
+              cpu: 0.5
+            limits:
+              memory: 2.5Gi
+  count: 1
+  config:
+    #override default so kib loads more info on options
+    kibana.autocompleteTerminateAfter: "2000000"
+    server.publicBaseUrl: "https://eu-data.fcaus-f-storage.autodata.tech"
+    csp.strict: false
+  elasticsearchRef:
+    name: eu-data
+    namespace: eu-data-tools
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kibana
+  labels:
+    app: kibana
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/server-snippet: |
+      proxy_ssl_verify off;
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: eu-data.fcaus-f-storage.autodata.tech
+      http:
+        paths:
+          - pathType: ImplementationSpecific
+            backend:
+              service:
+                name: eu-data-kb-http
+                port:
+                  number: 5601
+  tls:
+    - secretName: fcaus-wildcard
+      hosts:
+        - eu-data.fcaus-f-storage.autodata.tech

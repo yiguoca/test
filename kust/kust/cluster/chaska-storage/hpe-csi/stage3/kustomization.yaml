@@ -1,0 +1,7 @@
+resources:
+  - volume-snapshot-class.yaml
+  - volume-group-class.yaml
+  - snapshot-group-class.yaml
+
+commonLabels:
+  stage: three

@@ -1,0 +1,75 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: es-ilm-setup-job
+  labels:
+    app.kubernetes.io/instance: es-ilm-setup-job
+    app.kubernetes.io/name: es-ilm-setup
+    app.kubernetes.io/component: elasticsearch
+spec:
+  template:
+    spec:
+      initContainers:
+      - name: prerequisite
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          echo "validate elasticsearch can be reached"
+          curl --location --request GET "https://$ELASTICSEARCH_HOST/" --header 'kbn-xsrf: true' --cacert $SSL_CERT_FILE -u $ELASTICSEARCH_USERNAME:$ELASTICSEARCH_PASSWORD --header 'Accept: application/json'
+
+        image: curlimages/curl:7.72.0
+        env:
+          - name: SSL_CERT_FILE
+            value: /usr/share/certs/ca.crt
+          - name: ELASTICSEARCH_USERNAME
+            value: elastic
+          - name: ELASTICSEARCH_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: eckmon-es-elastic-user
+                key: elastic
+          - name: ELASTICSEARCH_HOST
+            value: eckmon-es-http.eckmon.svc:9200
+        volumeMounts:
+          - name: elastic-certs
+            mountPath: /usr/share/certs/
+
+      containers:
+      - name: setup
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          apt update
+          apt install jq curl -y
+          cp /usr/share/configs/apply_ilm.sh /tmp/apply_ilm.sh
+          chmod +x /tmp/apply_ilm.sh
+          cd /tmp
+          ./apply_ilm.sh
+        image: ubuntu
+        env:
+          - name: SSL_CERT_FILE
+            value: /usr/share/certs/ca.crt
+          - name: ELASTICSEARCH_USERNAME
+            value: elastic
+          - name: ELASTICSEARCH_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: eckmon-es-elastic-user
+                key: elastic
+          - name: ELASTICSEARCH_HOST
+            value: eckmon-es-http.eckmon.svc:9200
+        volumeMounts:
+          - name: ilm-setup-configs
+            mountPath: /usr/share/configs/
+          - name: elastic-certs
+            mountPath: /usr/share/certs/
+
+      volumes:
+        - name: ilm-setup-configs
+          configMap:
+            name: es-ilm-setup-configs
+        - name: elastic-certs
+          secret:
+            secretName: eckmon-es-cert
+      restartPolicy: Never
+  backoffLimit: 0

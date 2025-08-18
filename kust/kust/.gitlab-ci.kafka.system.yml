@@ -1,0 +1,84 @@
+azure-kafka-system:
+  environment:
+    name: kafka/system/azure
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:azure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $FCAUS_AZURE_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/azure/kafka/system | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+hillsboro-storage-kafka-system:
+  environment:
+    name: kafka/system/hillsboro-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/hillsboro-storage/kafka/system | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+    - "du:stellantis"
+
+chaska-storage-kafka-system:
+  environment:
+    name: kafka/system/chaska-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/chaska-storage/kafka/system | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+    - "du:stellantis"
+
+ct-storage-kafka-system:
+  environment:
+    name: kafka/system/continuous-testing-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:continuous-testing-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CT_STORAGE_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/ct-storage/kafka/system | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"
+
+test-infrastructure-kafka-system:
+  environment:
+    name: kafka/system/testing-infrastructure
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs: []
+  stage: deploy:test-infrastructure
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_TEST_DEPLOYER_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/test/kafka-logging/system | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"
+    - "du:stellantis"

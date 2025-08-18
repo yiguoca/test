@@ -1,0 +1,157 @@
+{
+    "__requires": [
+      {
+        "type": "grafana",
+        "id": "grafana",
+        "name": "Grafana",
+        "version": "8.0.5"
+      },
+      {
+        "type": "datasource",
+        "id": "prometheus",
+        "name": "Prometheus",
+        "version": "1.0.0"
+      },
+      {
+        "type": "panel",
+        "id": "stat",
+        "name": "Stat",
+        "version": ""
+      }
+    ],
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": "-- Grafana --",
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "type": "dashboard"
+        }
+      ]
+    },
+    "description": "Enumerates HPE storage arrays with a clickable singlestat to drill down to storage pools.",
+    "editable": true,
+    "gnetId": 14836,
+    "graphTooltip": 0,
+    "id": null,
+    "iteration": 1630369173110,
+    "links": [],
+    "panels": [
+      {
+        "datasource": "prometheus",
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "fixedColor": "green",
+              "mode": "fixed"
+            },
+            "links": [
+              {
+                "title": "My Link",
+                "url": "d/MQVBAqMnk?var-array=${__field.labels.array}&${__url_time_range}"
+              }
+            ],
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "bytes"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 3,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "id": 2,
+        "links": [],
+        "options": {
+          "colorMode": "none",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "text": {},
+          "textMode": "name"
+        },
+        "pluginVersion": "8.0.5",
+        "repeat": "array",
+        "repeatDirection": "v",
+        "targets": [
+          {
+            "exemplar": true,
+            "expr": "sum(hpe_storagepool_used_bytes{array=\"${array}\"}) by (array)",
+            "interval": "",
+            "legendFormat": "{{array}}",
+            "refId": "A"
+          }
+        ],
+        "transformations": [],
+        "type": "stat"
+      }
+    ],
+    "refresh": "",
+    "schemaVersion": 30,
+    "style": "dark",
+    "tags": [
+      "HPE Storage Arrays",
+      "Start Here"
+    ],
+    "templating": {
+      "list": [
+        {
+          "allValue": "All",
+          "current": {},
+          "datasource": "prometheus",
+          "definition": "label_values(array)",
+          "description": null,
+          "error": null,
+          "hide": 0,
+          "includeAll": true,
+          "label": "Array",
+          "multi": false,
+          "name": "array",
+          "options": [],
+          "query": {
+            "query": "label_values(array)",
+            "refId": "StandardVariableQuery"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 0,
+          "type": "query"
+        }
+      ]
+    },
+    "time": {
+      "from": "now-7d",
+      "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "",
+    "title": "HPE Storage Arrays",
+    "uid": "bdFK5qMnk",
+    "version": 55
+  }

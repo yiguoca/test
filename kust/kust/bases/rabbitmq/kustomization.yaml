@@ -1,0 +1,11 @@
+resources:
+  - resources/service.yaml
+  - resources/statefulSet.yaml
+  - resources/serviceMonitor.yaml
+
+namespace: rabbitmq
+
+configMapGenerator:
+  - name: rabbit-config
+    files:
+      - resources/enabled_plugins

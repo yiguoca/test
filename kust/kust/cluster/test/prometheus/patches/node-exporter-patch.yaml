@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    app.kubernetes.io/name: node-exporter
+  name: node-exporter
+  namespace: monitoring
+spec:
+  template:
+    spec:
+      containers:
+        - name: node-exporter
+          resources:
+            limits:
+              cpu: 250m
+            requests:
+              cpu: 102m
+        - name: kube-rbac-proxy
+          resources:
+            limits:
+              cpu: 20m

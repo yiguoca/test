@@ -1,0 +1,114 @@
+chaska-storage-kafka-ephemeral:
+  environment:
+    name: kafka/ephemeral/chaska-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if kafka-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n kafka-system pod -l name=strimzi-cluster-operator
+    - ./build-with-plugins.sh cluster/chaska-storage/strimzi/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    # Strimzi operator can take a long time to notice the request for cluster resources.
+    - sleep 30
+    # Wait for kafka strimzi operator to recognize and start building the cluster
+    - kubectl wait --for=condition=ready --timeout=3m -n kafka kafkas.kafka.strimzi.io fcaus-f-storage
+    # kubectl wait for ready triggers off first container completing, need to use this to wait for zookeeper. Sometimes they require multiple deletions/restarts to startup properly
+    - while [[ $(kubectl get pods -l strimzi.io/name=fcaus-f-storage-zookeeper -n kafka -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == *"False"* ]]; do echo "waiting for zookeeper pods. Check status, perform manual deletion as necessary" && sleep 10; done
+    - kubectl wait --for=condition=ready --timeout=3m -n kafka pod -l strimzi.io/cluster=fcaus-f-storage
+    - ./build-with-plugins.sh cluster/chaska-storage/strimzi/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+
+chaska-storage-kafka-ephemeral-mirror-maker:
+  environment:
+    name: kafka/ephemeral/mirror-maker/chaska-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:chaska-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CHASKA_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/chaska-storage/strimzi/mirror-maker | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:chaska"
+
+hillsboro-storage-kafka-ephemeral:
+  environment:
+    name: kafka/ephemeral/hillsboro-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if kafka-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n kafka-system pod -l name=strimzi-cluster-operator
+    - ./build-with-plugins.sh cluster/hillsboro-storage/strimzi/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    # Strimzi operator can take a long time to notice the request for cluster resources.
+    - sleep 30
+    # Wait for kafka strimzi operator to recognize and start building the cluster
+    - kubectl wait --for=condition=ready --timeout=3m -n kafka kafkas.kafka.strimzi.io fcaus-f-storage
+    # kubectl wait for ready triggers off first container completing, need to use this to wait for zookeeper. Sometimes they require multiple deletions/restarts to startup properly
+    - while [[ $(kubectl get pods -l strimzi.io/name=fcaus-p-storage-zookeeper -n kafka -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == *"False"* ]]; do echo "waiting for zookeeper pods. Check status, perform manual deletion as necessary" && sleep 10; done
+    - kubectl wait --for=condition=ready --timeout=3m -n kafka pod -l strimzi.io/cluster=fcaus-p-storage
+    - ./build-with-plugins.sh cluster/hillsboro-storage/strimzi/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+
+hillsboro-storage-kafka-ephemeral-mirror-maker:
+  environment:
+    name: kafka/ephemeral/mirror-maker/hillsboro-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:hillsboro-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_HILLSBORO_STORAGE_KUBECONFIG_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    - ./build-with-plugins.sh cluster/hillsboro-storage/strimzi/mirror-maker | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:hillsboro"
+
+ct-storage-kafka-ephemeral:
+  environment:
+    name: kafka/ephemeral/continuous-testing-storage
+  image: $CI_REGISTRY/fcaus/support/kustom-docker:$KUSTOM_DOCKER_VERSION
+  needs:
+    - job: validate-syntax
+  stage: deploy:continuous-testing-storage
+  script:
+    - mkdir -p $(dirname $KUBECONFIG)
+    - thycotic get --secret.id $STELLANTIS_CT_STORAGE_SECRET_ID field kubernetes-config config-file >$KUBECONFIG
+    - kubectl version --client=true
+    - kubectl auth can-i get pods
+    # Will error if kafka-system does not exist
+    - kubectl wait --for=condition=ready --timeout=5s -n kafka-system pod -l name=strimzi-cluster-operator
+    - ./build-with-plugins.sh cluster/ct-storage/strimzi/stage1 | kubectl apply -f - 2>&1 | sed /unchanged/d
+    # Strimzi operator can take a long time to notice the request for cluster resources.
+    - sleep 30
+    # Wait for kafka strimzi operator to recognize and start building the cluster
+    - kubectl wait --for=condition=ready --timeout=3m -n kafka kafkas.kafka.strimzi.io ct-storage
+    # kubectl wait for ready triggers off first container completing, need to use this to wait for zookeeper. Sometimes they require multiple deletions/restarts to startup properly
+    - while [[ $(kubectl get pods -l strimzi.io/name=ct-storage-zookeeper -n kafka -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') == *"False"* ]]; do echo "waiting for zookeeper pods. Check status, perform manual deletion as necessary" && sleep 10; done
+    - kubectl wait --for=condition=ready --timeout=3m -n kafka pod -l strimzi.io/cluster=ct-storage
+    - ./build-with-plugins.sh cluster/ct-storage/strimzi/stage2 | kubectl apply -f - 2>&1 | sed /unchanged/d
+  when: manual
+  tags:
+    - "dc:london"

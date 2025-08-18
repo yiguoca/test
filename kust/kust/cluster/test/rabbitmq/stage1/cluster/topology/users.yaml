@@ -1,0 +1,27 @@
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: User
+metadata:
+  name: rabbitmq-credentials
+spec:
+  tags:
+    - policymaker
+    - monitoring
+  rabbitmqClusterReference:
+    name: rabbitmq-te
+  importCredentialsSecret:
+    name: rabbitmq-credentials
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Permission
+metadata:
+  name: rabbitmq-credentials-test-permissions
+spec:
+  vhost: /
+  user: "test"
+  permissions:
+    configure: ".*"
+    read: ".*"
+    write: ".*"
+  rabbitmqClusterReference:
+    name: rabbitmq-te

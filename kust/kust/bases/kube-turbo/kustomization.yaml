@@ -1,0 +1,55 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+helmGlobals:
+  chartHome: charts
+
+helmCharts:
+  - name: kubeturbo
+    releaseName: kubeturbo
+    valuesInline:
+      roleName: turbo-cluster-reader
+      image:
+        tag: 8.7.6
+      serverMeta:
+        turboServer: https://ccoc-prif-trb1.autodatacorp.org
+        version: "8.7.6"
+      targetConfig:
+        targetName: kubernetes-fcaus-te
+      restAPIConfig:
+        turbonomicCredentialsSecretName: turbonomic-credentials
+      HANodeConfig:
+        nodeRoles: "\"master\", \"worker\""
+      resources:
+        limits:
+          # cpu: 4 - Per pre-requisites to avoid throttling do not set a CPU limit
+          memory: 4Gi
+        requests:
+          cpu: 1
+          memory: 1Gi
+      # Below assigns nodes to skip cpu frequency job scan --cpufreq-job-exclude-node-labels={{ .Values.args.busyboxExcludeNodeLabels }}
+      # See https://www.ibm.com/docs/en/tarm/8.14.2?topic=references-node-cpu-frequency-container-image
+      # args:
+      #   busyboxExcludeNodeLabels: "node-role.kubernetes.io/master=true"
+
+resources:
+  - resources/namespace.yaml
+  - resources/turbo-create-jobs-role.yaml
+
+generators:
+  - generator/turbonomic-credentials.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+namespace: turbo-system
+
+labels:
+  - includeSelectors: true
+    pairs:
+      app.kubernetes.io/part-of: turbonomics
+      app.kubernetes.io/managed-by: Kustomize
+      app.kubernetes.io/name: turbo-system
+      app.kubernetes.io/component: kube-turbo
+      app.kubernetes.io/instance: kubeturbo
+      photon/tier: infrastructure

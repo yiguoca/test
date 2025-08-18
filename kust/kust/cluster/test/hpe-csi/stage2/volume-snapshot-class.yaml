@@ -1,0 +1,54 @@
+# TODO: This file is not referenced by kustomization and intentionally left here for reference only. If we want to setup snapshots in a cluster we have a few components that need to be created.
+# Documentation in the system-architecture-docs references the cases we need the different types of classes. These comments and files will remain to support the documentation.
+
+# A few different approaches to setting up volume snapshot definitions. 
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
+metadata:
+  name: hpe-nimble-snapshot-delete
+driver: csi.hpe.com
+deletionPolicy: Delete
+parameters:
+  #https://scod.hpedev.io/container_storage_provider/hpe_alletra_6000/index.html#volumesnapshotclass_parameters
+  #writable: "false"
+  #online: "false"
+  description: "Snapshot created by the HPE CSI Driver"
+  csi.storage.k8s.io/snapshotter-secret-name: nimble
+  csi.storage.k8s.io/snapshotter-secret-namespace: hpe-storage
+  csi.storage.k8s.io/snapshotter-list-secret-name: nimble
+  csi.storage.k8s.io/snapshotter-list-secret-namespace: hpe-storage
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
+metadata:
+  name: hpe-nimble-snapshot-retain
+driver: csi.hpe.com
+deletionPolicy: Retain
+parameters:
+  #https://scod.hpedev.io/container_storage_provider/hpe_alletra_6000/index.html#volumesnapshotclass_parameters
+  #writable: "false"
+  #online: "false"
+  description: "Snapshot created by the HPE CSI Driver (Retain)"
+  csi.storage.k8s.io/snapshotter-secret-name: nimble
+  csi.storage.k8s.io/snapshotter-secret-namespace: hpe-storage
+  csi.storage.k8s.io/snapshotter-list-secret-name: nimble
+  csi.storage.k8s.io/snapshotter-list-secret-namespace: hpe-storage
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
+metadata:
+  name: hpe-nimble-snapshot-restorepoint
+  annotations:
+    snapshot.storage.kubernetes.io/is-default-class: "true"
+driver: csi.hpe.com
+deletionPolicy: Retain
+parameters:
+  #https://scod.hpedev.io/container_storage_provider/hpe_alletra_6000/index.html#volumesnapshotclass_parameters
+  #writable: false
+  online: "true" # if snapshot does not remain online we need Infrastructure team to enable it on the array.
+  description: "S.US Test Infrastructure Kubernetes Snapshot Restore Point"
+  csi.storage.k8s.io/snapshotter-secret-name: nimble
+  csi.storage.k8s.io/snapshotter-secret-namespace: hpe-storage
+  csi.storage.k8s.io/snapshotter-list-secret-name: nimble
+  csi.storage.k8s.io/snapshotter-list-secret-namespace: hpe-storage

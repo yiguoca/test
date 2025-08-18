@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+namespace: rabbitmq-system
+kind: Kustomization
+resources:
+- namespace.yaml
+helmCharts:
+- includeCRDs: true
+  name: rabbitmq-cluster-operator
+  namespace: rabbitmq-system
+  releaseName: rabbitmq-cluster-operator-release
+  repo: https://charts.bitnami.com/bitnami
+  valuesInline:
+    global:
+      imagePullSecrets:
+      - docker-hub-pull-secret
+    useCertManager: true
+  version: v2.5.0
+generators:
+- generators/docker-hub-pull-secret.yaml
+
+labels:
+- pairs:
+    photon/tier: infrastructure

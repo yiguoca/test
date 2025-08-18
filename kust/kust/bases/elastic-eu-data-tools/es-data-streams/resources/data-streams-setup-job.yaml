@@ -1,0 +1,63 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: es-data-streams-setup-job
+  labels:
+    app.kubernetes.io/instance: es-data-streams-setup-job
+    app.kubernetes.io/name: es-data-streams-setup
+    app.kubernetes.io/component: elasticsearch
+spec:
+  template:
+    spec:
+      initContainers:
+      - name: prerequisite
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          echo "validate elasticsearch can be reached"
+          curl --location --request GET "https://$ELASTICSEARCH_HOST/" --header 'kbn-xsrf: true' --cacert $SSL_CERT_FILE -u $ELASTICSEARCH_USERNAME:$ELASTICSEARCH_PASSWORD --header 'Accept: application/json'
+
+          echo "configure injest-pipelines"
+          curl --location --request PUT "https://$ELASTICSEARCH_HOST/_ingest/pipeline/add-timestamp" --header 'kbn-xsrf: true' --cacert $SSL_CERT_FILE -u $ELASTICSEARCH_USERNAME:$ELASTICSEARCH_PASSWORD --header 'Content-Type: application/json' --data @/usr/share/configs/add-timestamp-injest-pipeline.json
+        image: curlimages/curl:7.72.0
+        env:
+          - name: SSL_CERT_FILE
+            value: /usr/share/certs/tls.crt
+        volumeMounts:
+          - name: injest-pipeline-configs
+            mountPath: /usr/share/configs/
+          - name: elastic-certs
+            mountPath: /usr/share/certs/
+
+      containers:
+      - name: setup
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          curl --location --request PUT https://$ELASTICSEARCH_HOST/_ilm/policy/eu-data-lifecycle-policy --header 'kbn-xsrf: true' --cacert $SSL_CERT_FILE -u $ELASTICSEARCH_USERNAME:$ELASTICSEARCH_PASSWORD --header 'Content-Type: application/json' --data @/usr/share/configs/eu-data-ilm.json
+          curl --location --request PUT https://$ELASTICSEARCH_HOST/_component_template/eu-default-mappings --header 'kbn-xsrf: true' --cacert $SSL_CERT_FILE -u $ELASTICSEARCH_USERNAME:$ELASTICSEARCH_PASSWORD --header 'Content-Type: application/json' --data @/usr/share/configs/eu-data-component-template-default-mapping.json
+          curl --location --request PUT https://$ELASTICSEARCH_HOST/_component_template/eu-data-settings --header 'kbn-xsrf: true' --cacert $SSL_CERT_FILE -u $ELASTICSEARCH_USERNAME:$ELASTICSEARCH_PASSWORD --header 'Content-Type: application/json' --data @/usr/share/configs/eu-data-component-template-settings.json
+          curl --location --request PUT https://$ELASTICSEARCH_HOST/_index_template/pre-published-template --header 'kbn-xsrf: true' --cacert $SSL_CERT_FILE -u $ELASTICSEARCH_USERNAME:$ELASTICSEARCH_PASSWORD --header 'Content-Type: application/json' --data @/usr/share/configs/pre-published-data-stream-index-template.json
+          curl --location --request PUT https://$ELASTICSEARCH_HOST/_index_template/published-template --header 'kbn-xsrf: true' --cacert $SSL_CERT_FILE -u $ELASTICSEARCH_USERNAME:$ELASTICSEARCH_PASSWORD --header 'Content-Type: application/json' --data @/usr/share/configs/published-data-stream-index-template.json
+        image: curlimages/curl:7.72.0
+        env:
+          - name: SSL_CERT_FILE
+            value: /usr/share/certs/tls.crt
+        volumeMounts:
+          - name: data-stream-configs
+            mountPath: /usr/share/configs/
+          - name: elastic-certs
+            mountPath: /usr/share/certs/
+
+      volumes:
+        - name: injest-pipeline-configs
+          configMap:
+            name: es-injest-pipeline-configs
+        - name: data-stream-configs
+          configMap:
+            name: es-data-stream-configs
+        - name: elastic-certs
+          secret:
+            secretName: eu-data-es-cert
+      restartPolicy: Never
+  backoffLimit: 0

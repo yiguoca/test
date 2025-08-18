@@ -1,0 +1,22 @@
+resources:
+  - ../../../../../../bases/hpe-csi/stage2/hpe-array-exporter/
+
+patches:
+  - path: patches/hpe-array-exporter-service.yaml
+  - path: patches/hpe-array-exporter-deployment.yaml
+  - target:
+      kind: Deployment
+      name: hpe-array-exporter
+      namespace: hpe-storage
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: hpe-array-exporter-nimble-london-non-prod
+  - target:
+      kind: Service
+      name: hpe-array-exporter
+      namespace: hpe-storage
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: hpe-array-exporter-nimble-london-non-prod

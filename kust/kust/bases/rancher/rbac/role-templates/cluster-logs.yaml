@@ -1,0 +1,39 @@
+apiVersion: management.cattle.io/v3
+builtin: false
+clusterCreatorDefault: true
+context: cluster
+description: Allow access to view logs across cluster.
+displayName: cluster-logs
+external: false
+hidden: false
+kind: RoleTemplate
+metadata:
+  annotations:
+    cleanup.cattle.io/rtUpgradeCluster: 'true'
+    lifecycle.cattle.io/create.mgmt-auth-roletemplate-lifecycle: 'true'
+  finalizers:
+    - controller.cattle.io/mgmt-auth-roletemplate-lifecycle
+  generateName: rt-
+  labels:
+    cattle.io/creator: kustom-infrastructure
+  name: rt-cluster-logs
+roleTemplateNames:
+  - rt-l7m77 #temporary from manual UI creation for cluster. Kustomize will provide named resources referenced below.
+  - rt-cluster-read-only
+rules:
+  - apiGroups:
+      - ''
+    resources:
+      - pods/log
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ''
+    resources:
+      - events
+    verbs:
+      - get
+      - list
+      - watch

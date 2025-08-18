@@ -1,0 +1,179 @@
+---
+# needed for a headless service to allow the statefulset to work
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-node
+  namespace: hpe-nimble-csi-test
+spec:
+  clusterIP: None
+  selector:
+    app: test-node
+  ports:
+    - port: 80
+    
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app.kubernetes.io/name: test-node
+    app.kubernetes.io/managed-by: test-node
+  name: test-node
+  namespace: hpe-nimble-csi-test
+spec:
+  serviceName: test-node
+  replicas: 3  # Set this to the number of worker nodes
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      app: test-node
+
+  template:
+    metadata:
+      labels:
+        app: test-node
+        app.kubernetes.io/name: test-node
+    spec:
+      terminationGracePeriodSeconds: 60
+      
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: storage/nimble
+                    operator: In
+                    values:
+                      - "true"
+
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - test-node
+              topologyKey: "kubernetes.io/hostname"
+      
+      # we need to add tollerations incase we have some nodes with taints
+      # but they have the vsphere storage capability (storage/vsphere=true)
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+        # some of the stellantis us clusters have this taint spelling instead
+        - key: node-role.kubernetes.io/controlplane
+          operator: Exists
+          effect: NoSchedule
+        # we noticed some of our masters also have these taints
+        - key: node-role.kubernetes.io/etcd
+          effect: NoExecute
+          operator: Exists
+      initContainers:
+
+        # this allows us to check, can we mount the pvc
+        - name: pvc-checker
+          image: docker.fcaus-ct-storage.autodata.tech/fcaus/support/gizmo:1.0.0
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "[INFO] echo PVC mounted successfully"
+          volumeMounts:
+            - name: test-volume
+              mountPath: /data-test
+          resources:
+            requests:
+              memory: "16Mi"
+              cpu: "5m"
+            limits:
+              memory: "32Mi"
+              cpu: "10m"
+
+        # this allows us to test that we can read/write to the pvc
+        - name: pvc-readwrite
+          image: docker.fcaus-ct-storage.autodata.tech/fcaus/support/gizmo:1.0.0
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "[INFO] attempting to create file ..."
+              touch /data-test/message.txt
+              echo "[INFO] attempting to populate file ..."
+              echo "hello world" > /data-test/message.txt
+              echo "[INFO] attempting to read file ..."
+              cat /data-test/message.txt
+              echo "[INFO] completed"
+          volumeMounts:
+            - name: test-volume
+              mountPath: /data-test
+          resources:
+            requests:
+              memory: "16Mi"
+              cpu: "5m"
+            limits:
+              memory: "32Mi"
+              cpu: "10m"
+      # this is so the readiness and startup probe can work
+        - name: mark-pvc-ready
+          image: docker.fcaus-ct-storage.autodata.tech/fcaus/support/gizmo:1.0.0
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "[INFO] creating readiness file"
+              touch /data-test/ready
+          volumeMounts:
+            - name: test-volume
+              mountPath: /data-test
+          resources:
+            requests:
+              memory: "16Mi"
+              cpu: "5m"
+            limits:
+              memory: "32Mi"
+              cpu: "10m"
+
+      # this is required because statefulsets are longlived
+      containers:
+        - name: completed
+          image: docker.fcaus-ct-storage.autodata.tech/busybox:latest
+          command: ["/bin/sh", "-ec", "while :; do echo '.'; sleep 5 ; done"]
+          volumeMounts:
+            - name: test-volume
+              mountPath: /mnt/test
+          startupProbe:
+                exec:
+                  command:
+                    - sh
+                    - -c
+                    - 'test -f /mnt/test/ready'
+                failureThreshold: 30
+                periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - 'test -f /mnt/test/ready'
+            failureThreshold: 3
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "16Mi"
+              cpu: "5m"
+            limits:
+              memory: "32Mi"
+              cpu: "10m"
+
+  volumeClaimTemplates:
+    - metadata:
+        name: test-volume
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 5Mi
+        storageClassName: hpe-nimble-london-non-prod-delete

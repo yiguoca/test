@@ -1,0 +1,29 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: rabbitmq
+    app.kubernetes.io/component: messaging
+    app.kubernetes.io/version: 3.8.3-management-alpine
+  name: rabbitmq
+spec:
+  ports:
+    - name: amqp
+      port: 5672
+      protocol: TCP
+      targetPort: amqp
+    - name: management
+      port: 15672
+      protocol: TCP
+      targetPort: management
+    - name: metrics
+      port: 15692
+      protocol: TCP
+      targetPort: metrics
+  selector:
+    app.kubernetes.io/name: rabbitmq
+    app.kubernetes.io/component: messaging
+    app.kubernetes.io/version: 3.8.3-management-alpine
+  sessionAffinity: None
+  type: NodePort

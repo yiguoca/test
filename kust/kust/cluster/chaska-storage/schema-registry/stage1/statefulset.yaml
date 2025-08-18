@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+# needs to be StatefulSet so that the pod names are stable https://github.com/confluentinc/schema-registry/issues/1691
+# otherwise it's all kinds of broken and apparently rolling restarts (upgrades) would break producers for the duration.
+kind: StatefulSet
+metadata:
+  # note - cannot call it "schema-registry" as this will cause kube to create SCHEMA_REGISTRY_FOO type variables that
+  # collide with the specified env vars (i.e. it'll create SCHEMA_REGISTRY_PORT = 8081 which is a deprecated config value)
+  name: registry
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        name: registry
+    spec:
+      containers:
+        - env:
+            - name: SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS
+              value: fcaus-f-storage-kafka-external-bootstrap.kafka.svc:9094
+            - name: SCHEMA_REGISTRY_SCHEMA_COMPATIBILITY_LEVEL
+              value: BACKWARD
+            - name: SCHEMA_REGISTRY_LISTENERS
+              value: http://0.0.0.0:8081
+            - name: META_HOST_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: SCHEMA_REGISTRY_HOST_NAME
+              value: $(META_HOST_NAME).registry.kafka.svc
+          name: schema-registry
+          image: confluentinc/cp-schema-registry:5.5.3
+          ports:
+            - name: http
+              containerPort: 8081
+      restartPolicy: Always
+  selector:
+    matchLabels:
+      name: registry
+  serviceName: registry

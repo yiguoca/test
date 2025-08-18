@@ -1,0 +1,11 @@
+apiVersion: v1
+data:
+  Content-Security-Policy: "default-src * blob: 'unsafe-eval' 'unsafe-inline'"
+  X-Content-Type-Options: "nosniff"
+  X-Datacenter: __DATACENTER__
+  X-Namespace: "${namespace}"
+  X-XSS-Protection: "1"
+kind: ConfigMap
+metadata:
+  name: custom-headers
+  namespace: kube-system
