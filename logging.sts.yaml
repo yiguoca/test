@@ -1,0 +1,1651 @@
+apiVersion: v1
+items:
+- apiVersion: apps/v1
+  kind: StatefulSet
+  metadata:
+    creationTimestamp: "2025-08-08T00:18:32Z"
+    generation: 5
+    labels:
+      common.k8s.elastic.co/template-hash: "1361322526"
+      common.k8s.elastic.co/type: elasticsearch
+      elasticsearch.k8s.elastic.co/cluster-name: logging
+      elasticsearch.k8s.elastic.co/statefulset-name: logging-es-logging-data
+    name: logging-es-logging-data
+    namespace: logging
+    ownerReferences:
+    - apiVersion: elasticsearch.k8s.elastic.co/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Elasticsearch
+      name: logging
+      uid: f8ee37d3-cdc9-4189-b520-936637fee08b
+    resourceVersion: "12460166"
+    uid: 459deac9-e3df-4747-ac7b-e2dab4c6362d
+  spec:
+    persistentVolumeClaimRetentionPolicy:
+      whenDeleted: Retain
+      whenScaled: Retain
+    podManagementPolicy: Parallel
+    replicas: 2
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        common.k8s.elastic.co/type: elasticsearch
+        elasticsearch.k8s.elastic.co/cluster-name: logging
+        elasticsearch.k8s.elastic.co/statefulset-name: logging-es-logging-data
+    serviceName: logging-es-logging-data
+    template:
+      metadata:
+        annotations:
+          co.elastic.logs/module: elasticsearch
+          elasticsearch.k8s.elastic.co/config-hash: "4027178215"
+          elasticsearch.k8s.elastic.co/monitoring-config-hash: "3971363679"
+        creationTimestamp: null
+        labels:
+          common.k8s.elastic.co/type: elasticsearch
+          elasticsearch.k8s.elastic.co/cluster-name: logging
+          elasticsearch.k8s.elastic.co/http-scheme: https
+          elasticsearch.k8s.elastic.co/node-data: "true"
+          elasticsearch.k8s.elastic.co/node-data_cold: "false"
+          elasticsearch.k8s.elastic.co/node-data_content: "false"
+          elasticsearch.k8s.elastic.co/node-data_frozen: "false"
+          elasticsearch.k8s.elastic.co/node-data_hot: "false"
+          elasticsearch.k8s.elastic.co/node-data_warm: "false"
+          elasticsearch.k8s.elastic.co/node-ingest: "true"
+          elasticsearch.k8s.elastic.co/node-master: "false"
+          elasticsearch.k8s.elastic.co/node-ml: "false"
+          elasticsearch.k8s.elastic.co/node-remote_cluster_client: "false"
+          elasticsearch.k8s.elastic.co/node-transform: "true"
+          elasticsearch.k8s.elastic.co/node-voting_only: "false"
+          elasticsearch.k8s.elastic.co/statefulset-name: logging-es-logging-data
+          elasticsearch.k8s.elastic.co/version: 7.16.3
+      spec:
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    elasticsearch.k8s.elastic.co/cluster-name: logging
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+        automountServiceAccountToken: false
+        containers:
+        - env:
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: PROBE_PASSWORD_PATH
+            value: /mnt/elastic-internal/probe-user/elastic-internal-probe
+          - name: PROBE_USERNAME
+            value: elastic-internal-probe
+          - name: READINESS_PROBE_PROTOCOL
+            value: https
+          - name: HEADLESS_SERVICE_NAME
+            value: logging-es-logging-data
+          - name: NSS_SDB_USE_CACHE
+            value: "no"
+          - name: ES_LOG_STYLE
+            value: file
+          image: docker.elastic.co/elasticsearch/elasticsearch:7.16.3
+          imagePullPolicy: IfNotPresent
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - bash
+                - -c
+                - /mnt/elastic-internal/scripts/pre-stop-hook-script.sh
+          name: elasticsearch
+          ports:
+          - containerPort: 9200
+            name: https
+            protocol: TCP
+          - containerPort: 9300
+            name: transport
+            protocol: TCP
+          readinessProbe:
+            exec:
+              command:
+              - bash
+              - -c
+              - /mnt/elastic-internal/scripts/readiness-probe-script.sh
+            failureThreshold: 3
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 5
+          resources:
+            limits:
+              cpu: "2"
+              memory: 4Gi
+            requests:
+              cpu: 500m
+              memory: 4Gi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /mnt/elastic-internal/downward-api
+            name: downward-api
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/bin
+            name: elastic-internal-elasticsearch-bin-local
+          - mountPath: /mnt/elastic-internal/elasticsearch-config
+            name: elastic-internal-elasticsearch-config
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/config
+            name: elastic-internal-elasticsearch-config-local
+          - mountPath: /usr/share/elasticsearch/plugins
+            name: elastic-internal-elasticsearch-plugins-local
+          - mountPath: /usr/share/elasticsearch/config/http-certs
+            name: elastic-internal-http-certificates
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/probe-user
+            name: elastic-internal-probe-user
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/config/transport-remote-certs/
+            name: elastic-internal-remote-certificate-authorities
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/scripts
+            name: elastic-internal-scripts
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/config/transport-certs
+            name: elastic-internal-transport-certificates
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/unicast-hosts
+            name: elastic-internal-unicast-hosts
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/xpack-file-realm
+            name: elastic-internal-xpack-file-realm
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/data
+            name: elasticsearch-data
+          - mountPath: /usr/share/elasticsearch/logs
+            name: elasticsearch-logs
+          - mountPath: /usr/share/elasticsearch/config/jvm.options.d/heap.jvm.options
+            name: heap-jvm-options
+            subPath: heap.jvm.options
+        - args:
+          - -c
+          - /etc/metricbeat-config/metricbeat.yml
+          - -e
+          env:
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          image: docker.elastic.co/beats/metricbeat:7.16.3
+          imagePullPolicy: IfNotPresent
+          name: metricbeat
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/metricbeat-config
+            name: logging-metricbeat-config
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/es-monitoring-association/eckmon/eckmon/certs
+            name: es-monitoring-1ca422-ca
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/kb-monitoring/logging/logging/certs
+            name: kb-monitoring-local-ca
+            readOnly: true
+        - args:
+          - -c
+          - /etc/filebeat-config/filebeat.yml
+          - -e
+          env:
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          image: docker.elastic.co/beats/filebeat:7.16.3
+          imagePullPolicy: IfNotPresent
+          name: filebeat
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/filebeat-config
+            name: logging-filebeat-config
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/es-monitoring-association/eckmon/eckmon/certs
+            name: es-monitoring-1ca422-ca
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/logs
+            name: elasticsearch-logs
+        dnsPolicy: ClusterFirst
+        initContainers:
+        - command:
+          - bash
+          - -c
+          - /mnt/elastic-internal/scripts/prepare-fs.sh
+          env:
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: PROBE_PASSWORD_PATH
+            value: /mnt/elastic-internal/probe-user/elastic-internal-probe
+          - name: PROBE_USERNAME
+            value: elastic-internal-probe
+          - name: READINESS_PROBE_PROTOCOL
+            value: https
+          - name: HEADLESS_SERVICE_NAME
+            value: logging-es-logging-data
+          - name: NSS_SDB_USE_CACHE
+            value: "no"
+          image: docker.elastic.co/elasticsearch/elasticsearch:7.16.3
+          imagePullPolicy: IfNotPresent
+          name: elastic-internal-init-filesystem
+          resources:
+            limits:
+              cpu: 100m
+              memory: 50Mi
+            requests:
+              cpu: 100m
+              memory: 50Mi
+          securityContext:
+            privileged: false
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /mnt/elastic-internal/downward-api
+            name: downward-api
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/elasticsearch-bin-local
+            name: elastic-internal-elasticsearch-bin-local
+          - mountPath: /mnt/elastic-internal/elasticsearch-config
+            name: elastic-internal-elasticsearch-config
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/elasticsearch-config-local
+            name: elastic-internal-elasticsearch-config-local
+          - mountPath: /mnt/elastic-internal/elasticsearch-plugins-local
+            name: elastic-internal-elasticsearch-plugins-local
+          - mountPath: /usr/share/elasticsearch/config/http-certs
+            name: elastic-internal-http-certificates
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/probe-user
+            name: elastic-internal-probe-user
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/config/transport-remote-certs/
+            name: elastic-internal-remote-certificate-authorities
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/scripts
+            name: elastic-internal-scripts
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/transport-certificates
+            name: elastic-internal-transport-certificates
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/unicast-hosts
+            name: elastic-internal-unicast-hosts
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/xpack-file-realm
+            name: elastic-internal-xpack-file-realm
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/data
+            name: elasticsearch-data
+          - mountPath: /usr/share/elasticsearch/logs
+            name: elasticsearch-logs
+          - mountPath: /usr/share/elasticsearch/config/jvm.options.d/heap.jvm.options
+            name: heap-jvm-options
+            subPath: heap.jvm.options
+        - command:
+          - bash
+          - -c
+          - /mnt/elastic-internal/scripts/suspend.sh
+          env:
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: PROBE_PASSWORD_PATH
+            value: /mnt/elastic-internal/probe-user/elastic-internal-probe
+          - name: PROBE_USERNAME
+            value: elastic-internal-probe
+          - name: READINESS_PROBE_PROTOCOL
+            value: https
+          - name: HEADLESS_SERVICE_NAME
+            value: logging-es-logging-data
+          - name: NSS_SDB_USE_CACHE
+            value: "no"
+          image: docker.elastic.co/elasticsearch/elasticsearch:7.16.3
+          imagePullPolicy: IfNotPresent
+          name: elastic-internal-suspend
+          resources:
+            limits:
+              cpu: "2"
+              memory: 4Gi
+            requests:
+              cpu: 500m
+              memory: 4Gi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /mnt/elastic-internal/downward-api
+            name: downward-api
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/bin
+            name: elastic-internal-elasticsearch-bin-local
+          - mountPath: /mnt/elastic-internal/elasticsearch-config
+            name: elastic-internal-elasticsearch-config
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/config
+            name: elastic-internal-elasticsearch-config-local
+          - mountPath: /usr/share/elasticsearch/plugins
+            name: elastic-internal-elasticsearch-plugins-local
+          - mountPath: /usr/share/elasticsearch/config/http-certs
+            name: elastic-internal-http-certificates
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/probe-user
+            name: elastic-internal-probe-user
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/config/transport-remote-certs/
+            name: elastic-internal-remote-certificate-authorities
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/scripts
+            name: elastic-internal-scripts
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/config/transport-certs
+            name: elastic-internal-transport-certificates
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/unicast-hosts
+            name: elastic-internal-unicast-hosts
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/xpack-file-realm
+            name: elastic-internal-xpack-file-realm
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/data
+            name: elasticsearch-data
+          - mountPath: /usr/share/elasticsearch/logs
+            name: elasticsearch-logs
+          - mountPath: /usr/share/elasticsearch/config/jvm.options.d/heap.jvm.options
+            name: heap-jvm-options
+            subPath: heap.jvm.options
+        - command:
+          - sh
+          - -c
+          - sysctl -w vm.max_map_count=262144
+          env:
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: PROBE_PASSWORD_PATH
+            value: /mnt/elastic-internal/probe-user/elastic-internal-probe
+          - name: PROBE_USERNAME
+            value: elastic-internal-probe
+          - name: READINESS_PROBE_PROTOCOL
+            value: https
+          - name: HEADLESS_SERVICE_NAME
+            value: logging-es-logging-data
+          - name: NSS_SDB_USE_CACHE
+            value: "no"
+          image: docker.elastic.co/elasticsearch/elasticsearch:7.16.3
+          imagePullPolicy: IfNotPresent
+          name: sysctl
+          resources:
+            limits:
+              cpu: "2"
+              memory: 4Gi
+            requests:
+              cpu: 500m
+              memory: 4Gi
+          securityContext:
+            privileged: true
+            runAsUser: 0
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /mnt/elastic-internal/downward-api
+            name: downward-api
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/bin
+            name: elastic-internal-elasticsearch-bin-local
+          - mountPath: /mnt/elastic-internal/elasticsearch-config
+            name: elastic-internal-elasticsearch-config
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/config
+            name: elastic-internal-elasticsearch-config-local
+          - mountPath: /usr/share/elasticsearch/plugins
+            name: elastic-internal-elasticsearch-plugins-local
+          - mountPath: /usr/share/elasticsearch/config/http-certs
+            name: elastic-internal-http-certificates
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/probe-user
+            name: elastic-internal-probe-user
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/config/transport-remote-certs/
+            name: elastic-internal-remote-certificate-authorities
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/scripts
+            name: elastic-internal-scripts
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/config/transport-certs
+            name: elastic-internal-transport-certificates
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/unicast-hosts
+            name: elastic-internal-unicast-hosts
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/xpack-file-realm
+            name: elastic-internal-xpack-file-realm
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/data
+            name: elasticsearch-data
+          - mountPath: /usr/share/elasticsearch/logs
+            name: elasticsearch-logs
+          - mountPath: /usr/share/elasticsearch/config/jvm.options.d/heap.jvm.options
+            name: heap-jvm-options
+            subPath: heap.jvm.options
+        - command:
+          - sh
+          - -c
+          - |
+            bin/elasticsearch-plugin remove --purge repository-s3 prometheus-exporter
+            bin/elasticsearch-plugin install -b repository-s3 https://github.com/vvanholl/elasticsearch-prometheus-exporter/releases/download/7.16.3.0/prometheus-exporter-7.16.3.0.zip
+          env:
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: PROBE_PASSWORD_PATH
+            value: /mnt/elastic-internal/probe-user/elastic-internal-probe
+          - name: PROBE_USERNAME
+            value: elastic-internal-probe
+          - name: READINESS_PROBE_PROTOCOL
+            value: https
+          - name: HEADLESS_SERVICE_NAME
+            value: logging-es-logging-data
+          - name: NSS_SDB_USE_CACHE
+            value: "no"
+          image: docker.elastic.co/elasticsearch/elasticsearch:7.16.3
+          imagePullPolicy: IfNotPresent
+          name: install-plugins
+          resources:
+            limits:
+              cpu: "2"
+              memory: 4Gi
+            requests:
+              cpu: 500m
+              memory: 4Gi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /mnt/elastic-internal/downward-api
+            name: downward-api
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/bin
+            name: elastic-internal-elasticsearch-bin-local
+          - mountPath: /mnt/elastic-internal/elasticsearch-config
+            name: elastic-internal-elasticsearch-config
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/config
+            name: elastic-internal-elasticsearch-config-local
+          - mountPath: /usr/share/elasticsearch/plugins
+            name: elastic-internal-elasticsearch-plugins-local
+          - mountPath: /usr/share/elasticsearch/config/http-certs
+            name: elastic-internal-http-certificates
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/probe-user
+            name: elastic-internal-probe-user
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/config/transport-remote-certs/
+            name: elastic-internal-remote-certificate-authorities
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/scripts
+            name: elastic-internal-scripts
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/config/transport-certs
+            name: elastic-internal-transport-certificates
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/unicast-hosts
+            name: elastic-internal-unicast-hosts
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/xpack-file-realm
+            name: elastic-internal-xpack-file-realm
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/data
+            name: elasticsearch-data
+          - mountPath: /usr/share/elasticsearch/logs
+            name: elasticsearch-logs
+          - mountPath: /usr/share/elasticsearch/config/jvm.options.d/heap.jvm.options
+            name: heap-jvm-options
+            subPath: heap.jvm.options
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 180
+        volumes:
+        - downwardAPI:
+            defaultMode: 420
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.labels
+              path: labels
+          name: downward-api
+        - emptyDir: {}
+          name: elastic-internal-elasticsearch-bin-local
+        - name: elastic-internal-elasticsearch-config
+          secret:
+            defaultMode: 420
+            optional: false
+            secretName: logging-es-logging-data-es-config
+        - emptyDir: {}
+          name: elastic-internal-elasticsearch-config-local
+        - emptyDir: {}
+          name: elastic-internal-elasticsearch-plugins-local
+        - name: elastic-internal-http-certificates
+          secret:
+            defaultMode: 420
+            optional: false
+            secretName: logging-es-http-certs-internal
+        - name: elastic-internal-probe-user
+          secret:
+            defaultMode: 420
+            items:
+            - key: elastic-internal-probe
+              path: elastic-internal-probe
+            optional: false
+            secretName: logging-es-internal-users
+        - name: elastic-internal-remote-certificate-authorities
+          secret:
+            defaultMode: 420
+            optional: false
+            secretName: logging-es-remote-ca
+        - configMap:
+            defaultMode: 493
+            name: logging-es-scripts
+            optional: false
+          name: elastic-internal-scripts
+        - name: elastic-internal-transport-certificates
+          secret:
+            defaultMode: 420
+            optional: false
+            secretName: logging-es-logging-data-es-transport-certs
+        - configMap:
+            defaultMode: 420
+            name: logging-es-unicast-hosts
+            optional: false
+          name: elastic-internal-unicast-hosts
+        - name: elastic-internal-xpack-file-realm
+          secret:
+            defaultMode: 420
+            optional: false
+            secretName: logging-es-xpack-file-realm
+        - name: elasticsearch-data
+          persistentVolumeClaim:
+            claimName: claim-name-placeholder
+        - emptyDir: {}
+          name: elasticsearch-logs
+        - name: es-monitoring-1ca422-ca
+          secret:
+            defaultMode: 420
+            optional: false
+            secretName: logging-es-monitoring-eckmon-eckmon-ca
+        - configMap:
+            defaultMode: 420
+            items:
+            - key: logging.data.heap.jvm.options
+              path: heap.jvm.options
+            name: logging-data-jvm-options
+          name: heap-jvm-options
+        - name: kb-monitoring-local-ca
+          secret:
+            defaultMode: 420
+            optional: false
+            secretName: logging-es-http-certs-public
+        - name: logging-filebeat-config
+          secret:
+            defaultMode: 420
+            optional: false
+            secretName: logging-es-monitoring-filebeat-config
+        - name: logging-metricbeat-config
+          secret:
+            defaultMode: 420
+            optional: false
+            secretName: logging-es-monitoring-metricbeat-config
+    updateStrategy:
+      type: OnDelete
+    volumeClaimTemplates:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        creationTimestamp: null
+        name: elasticsearch-data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 20Gi
+        storageClassName: hpe-nimble-london-non-prod-retain
+        volumeMode: Filesystem
+      status:
+        phase: Pending
+  status:
+    availableReplicas: 2
+    collisionCount: 0
+    currentReplicas: 2
+    currentRevision: logging-es-logging-data-98c754d4b
+    observedGeneration: 5
+    readyReplicas: 2
+    replicas: 2
+    updateRevision: logging-es-logging-data-98c754d4b
+    updatedReplicas: 2
+- apiVersion: apps/v1
+  kind: StatefulSet
+  metadata:
+    creationTimestamp: "2025-08-08T00:18:32Z"
+    generation: 1
+    labels:
+      common.k8s.elastic.co/template-hash: "2852387174"
+      common.k8s.elastic.co/type: elasticsearch
+      elasticsearch.k8s.elastic.co/cluster-name: logging
+      elasticsearch.k8s.elastic.co/statefulset-name: logging-es-logging-master
+    name: logging-es-logging-master
+    namespace: logging
+    ownerReferences:
+    - apiVersion: elasticsearch.k8s.elastic.co/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Elasticsearch
+      name: logging
+      uid: f8ee37d3-cdc9-4189-b520-936637fee08b
+    resourceVersion: "10543820"
+    uid: 276dbec9-b858-41d4-bf14-6a83fdeb5ab4
+  spec:
+    persistentVolumeClaimRetentionPolicy:
+      whenDeleted: Retain
+      whenScaled: Retain
+    podManagementPolicy: Parallel
+    replicas: 2
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        common.k8s.elastic.co/type: elasticsearch
+        elasticsearch.k8s.elastic.co/cluster-name: logging
+        elasticsearch.k8s.elastic.co/statefulset-name: logging-es-logging-master
+    serviceName: logging-es-logging-master
+    template:
+      metadata:
+        annotations:
+          co.elastic.logs/module: elasticsearch
+          elasticsearch.k8s.elastic.co/config-hash: "2069537446"
+          elasticsearch.k8s.elastic.co/monitoring-config-hash: "3971363679"
+        creationTimestamp: null
+        labels:
+          common.k8s.elastic.co/type: elasticsearch
+          elasticsearch.k8s.elastic.co/cluster-name: logging
+          elasticsearch.k8s.elastic.co/http-scheme: https
+          elasticsearch.k8s.elastic.co/node-data: "false"
+          elasticsearch.k8s.elastic.co/node-data_cold: "false"
+          elasticsearch.k8s.elastic.co/node-data_content: "false"
+          elasticsearch.k8s.elastic.co/node-data_frozen: "false"
+          elasticsearch.k8s.elastic.co/node-data_hot: "false"
+          elasticsearch.k8s.elastic.co/node-data_warm: "false"
+          elasticsearch.k8s.elastic.co/node-ingest: "false"
+          elasticsearch.k8s.elastic.co/node-master: "true"
+          elasticsearch.k8s.elastic.co/node-ml: "false"
+          elasticsearch.k8s.elastic.co/node-remote_cluster_client: "false"
+          elasticsearch.k8s.elastic.co/node-transform: "false"
+          elasticsearch.k8s.elastic.co/node-voting_only: "false"
+          elasticsearch.k8s.elastic.co/statefulset-name: logging-es-logging-master
+          elasticsearch.k8s.elastic.co/version: 7.16.3
+      spec:
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    elasticsearch.k8s.elastic.co/cluster-name: logging
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+        automountServiceAccountToken: false
+        containers:
+        - env:
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: PROBE_PASSWORD_PATH
+            value: /mnt/elastic-internal/probe-user/elastic-internal-probe
+          - name: PROBE_USERNAME
+            value: elastic-internal-probe
+          - name: READINESS_PROBE_PROTOCOL
+            value: https
+          - name: HEADLESS_SERVICE_NAME
+            value: logging-es-logging-master
+          - name: NSS_SDB_USE_CACHE
+            value: "no"
+          - name: ES_LOG_STYLE
+            value: file
+          image: docker.elastic.co/elasticsearch/elasticsearch:7.16.3
+          imagePullPolicy: IfNotPresent
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - bash
+                - -c
+                - /mnt/elastic-internal/scripts/pre-stop-hook-script.sh
+          name: elasticsearch
+          ports:
+          - containerPort: 9200
+            name: https
+            protocol: TCP
+          - containerPort: 9300
+            name: transport
+            protocol: TCP
+          readinessProbe:
+            exec:
+              command:
+              - bash
+              - -c
+              - /mnt/elastic-internal/scripts/readiness-probe-script.sh
+            failureThreshold: 3
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 5
+          resources:
+            limits:
+              cpu: "2"
+              memory: 1Gi
+            requests:
+              memory: 1Gi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /mnt/elastic-internal/downward-api
+            name: downward-api
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/bin
+            name: elastic-internal-elasticsearch-bin-local
+          - mountPath: /mnt/elastic-internal/elasticsearch-config
+            name: elastic-internal-elasticsearch-config
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/config
+            name: elastic-internal-elasticsearch-config-local
+          - mountPath: /usr/share/elasticsearch/plugins
+            name: elastic-internal-elasticsearch-plugins-local
+          - mountPath: /usr/share/elasticsearch/config/http-certs
+            name: elastic-internal-http-certificates
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/probe-user
+            name: elastic-internal-probe-user
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/config/transport-remote-certs/
+            name: elastic-internal-remote-certificate-authorities
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/scripts
+            name: elastic-internal-scripts
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/config/transport-certs
+            name: elastic-internal-transport-certificates
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/unicast-hosts
+            name: elastic-internal-unicast-hosts
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/xpack-file-realm
+            name: elastic-internal-xpack-file-realm
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/data
+            name: elasticsearch-data
+          - mountPath: /usr/share/elasticsearch/logs
+            name: elasticsearch-logs
+          - mountPath: /usr/share/elasticsearch/config/jvm.options.d/heap.jvm.options
+            name: heap-jvm-options
+            subPath: heap.jvm.options
+        - args:
+          - -c
+          - /etc/metricbeat-config/metricbeat.yml
+          - -e
+          env:
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          image: docker.elastic.co/beats/metricbeat:7.16.3
+          imagePullPolicy: IfNotPresent
+          name: metricbeat
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/metricbeat-config
+            name: logging-metricbeat-config
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/es-monitoring-association/eckmon/eckmon/certs
+            name: es-monitoring-1ca422-ca
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/kb-monitoring/logging/logging/certs
+            name: kb-monitoring-local-ca
+            readOnly: true
+        - args:
+          - -c
+          - /etc/filebeat-config/filebeat.yml
+          - -e
+          env:
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          image: docker.elastic.co/beats/filebeat:7.16.3
+          imagePullPolicy: IfNotPresent
+          name: filebeat
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/filebeat-config
+            name: logging-filebeat-config
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/es-monitoring-association/eckmon/eckmon/certs
+            name: es-monitoring-1ca422-ca
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/logs
+            name: elasticsearch-logs
+        dnsPolicy: ClusterFirst
+        initContainers:
+        - command:
+          - bash
+          - -c
+          - /mnt/elastic-internal/scripts/prepare-fs.sh
+          env:
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: PROBE_PASSWORD_PATH
+            value: /mnt/elastic-internal/probe-user/elastic-internal-probe
+          - name: PROBE_USERNAME
+            value: elastic-internal-probe
+          - name: READINESS_PROBE_PROTOCOL
+            value: https
+          - name: HEADLESS_SERVICE_NAME
+            value: logging-es-logging-master
+          - name: NSS_SDB_USE_CACHE
+            value: "no"
+          image: docker.elastic.co/elasticsearch/elasticsearch:7.16.3
+          imagePullPolicy: IfNotPresent
+          name: elastic-internal-init-filesystem
+          resources:
+            limits:
+              cpu: 100m
+              memory: 50Mi
+            requests:
+              cpu: 100m
+              memory: 50Mi
+          securityContext:
+            privileged: false
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /mnt/elastic-internal/downward-api
+            name: downward-api
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/elasticsearch-bin-local
+            name: elastic-internal-elasticsearch-bin-local
+          - mountPath: /mnt/elastic-internal/elasticsearch-config
+            name: elastic-internal-elasticsearch-config
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/elasticsearch-config-local
+            name: elastic-internal-elasticsearch-config-local
+          - mountPath: /mnt/elastic-internal/elasticsearch-plugins-local
+            name: elastic-internal-elasticsearch-plugins-local
+          - mountPath: /usr/share/elasticsearch/config/http-certs
+            name: elastic-internal-http-certificates
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/probe-user
+            name: elastic-internal-probe-user
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/config/transport-remote-certs/
+            name: elastic-internal-remote-certificate-authorities
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/scripts
+            name: elastic-internal-scripts
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/transport-certificates
+            name: elastic-internal-transport-certificates
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/unicast-hosts
+            name: elastic-internal-unicast-hosts
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/xpack-file-realm
+            name: elastic-internal-xpack-file-realm
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/data
+            name: elasticsearch-data
+          - mountPath: /usr/share/elasticsearch/logs
+            name: elasticsearch-logs
+          - mountPath: /usr/share/elasticsearch/config/jvm.options.d/heap.jvm.options
+            name: heap-jvm-options
+            subPath: heap.jvm.options
+        - command:
+          - bash
+          - -c
+          - /mnt/elastic-internal/scripts/suspend.sh
+          env:
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: PROBE_PASSWORD_PATH
+            value: /mnt/elastic-internal/probe-user/elastic-internal-probe
+          - name: PROBE_USERNAME
+            value: elastic-internal-probe
+          - name: READINESS_PROBE_PROTOCOL
+            value: https
+          - name: HEADLESS_SERVICE_NAME
+            value: logging-es-logging-master
+          - name: NSS_SDB_USE_CACHE
+            value: "no"
+          image: docker.elastic.co/elasticsearch/elasticsearch:7.16.3
+          imagePullPolicy: IfNotPresent
+          name: elastic-internal-suspend
+          resources:
+            limits:
+              cpu: "2"
+              memory: 1Gi
+            requests:
+              memory: 1Gi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /mnt/elastic-internal/downward-api
+            name: downward-api
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/bin
+            name: elastic-internal-elasticsearch-bin-local
+          - mountPath: /mnt/elastic-internal/elasticsearch-config
+            name: elastic-internal-elasticsearch-config
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/config
+            name: elastic-internal-elasticsearch-config-local
+          - mountPath: /usr/share/elasticsearch/plugins
+            name: elastic-internal-elasticsearch-plugins-local
+          - mountPath: /usr/share/elasticsearch/config/http-certs
+            name: elastic-internal-http-certificates
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/probe-user
+            name: elastic-internal-probe-user
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/config/transport-remote-certs/
+            name: elastic-internal-remote-certificate-authorities
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/scripts
+            name: elastic-internal-scripts
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/config/transport-certs
+            name: elastic-internal-transport-certificates
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/unicast-hosts
+            name: elastic-internal-unicast-hosts
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/xpack-file-realm
+            name: elastic-internal-xpack-file-realm
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/data
+            name: elasticsearch-data
+          - mountPath: /usr/share/elasticsearch/logs
+            name: elasticsearch-logs
+          - mountPath: /usr/share/elasticsearch/config/jvm.options.d/heap.jvm.options
+            name: heap-jvm-options
+            subPath: heap.jvm.options
+        - command:
+          - sh
+          - -c
+          - sysctl -w vm.max_map_count=262144
+          env:
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: PROBE_PASSWORD_PATH
+            value: /mnt/elastic-internal/probe-user/elastic-internal-probe
+          - name: PROBE_USERNAME
+            value: elastic-internal-probe
+          - name: READINESS_PROBE_PROTOCOL
+            value: https
+          - name: HEADLESS_SERVICE_NAME
+            value: logging-es-logging-master
+          - name: NSS_SDB_USE_CACHE
+            value: "no"
+          image: docker.elastic.co/elasticsearch/elasticsearch:7.16.3
+          imagePullPolicy: IfNotPresent
+          name: sysctl
+          resources:
+            limits:
+              cpu: "2"
+              memory: 1Gi
+            requests:
+              memory: 1Gi
+          securityContext:
+            privileged: true
+            runAsUser: 0
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /mnt/elastic-internal/downward-api
+            name: downward-api
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/bin
+            name: elastic-internal-elasticsearch-bin-local
+          - mountPath: /mnt/elastic-internal/elasticsearch-config
+            name: elastic-internal-elasticsearch-config
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/config
+            name: elastic-internal-elasticsearch-config-local
+          - mountPath: /usr/share/elasticsearch/plugins
+            name: elastic-internal-elasticsearch-plugins-local
+          - mountPath: /usr/share/elasticsearch/config/http-certs
+            name: elastic-internal-http-certificates
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/probe-user
+            name: elastic-internal-probe-user
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/config/transport-remote-certs/
+            name: elastic-internal-remote-certificate-authorities
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/scripts
+            name: elastic-internal-scripts
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/config/transport-certs
+            name: elastic-internal-transport-certificates
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/unicast-hosts
+            name: elastic-internal-unicast-hosts
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/xpack-file-realm
+            name: elastic-internal-xpack-file-realm
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/data
+            name: elasticsearch-data
+          - mountPath: /usr/share/elasticsearch/logs
+            name: elasticsearch-logs
+          - mountPath: /usr/share/elasticsearch/config/jvm.options.d/heap.jvm.options
+            name: heap-jvm-options
+            subPath: heap.jvm.options
+        - command:
+          - sh
+          - -c
+          - |
+            bin/elasticsearch-plugin remove --purge repository-s3 prometheus-exporter
+            bin/elasticsearch-plugin install -b repository-s3 https://github.com/vvanholl/elasticsearch-prometheus-exporter/releases/download/7.16.3.0/prometheus-exporter-7.16.3.0.zip
+          env:
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: PROBE_PASSWORD_PATH
+            value: /mnt/elastic-internal/probe-user/elastic-internal-probe
+          - name: PROBE_USERNAME
+            value: elastic-internal-probe
+          - name: READINESS_PROBE_PROTOCOL
+            value: https
+          - name: HEADLESS_SERVICE_NAME
+            value: logging-es-logging-master
+          - name: NSS_SDB_USE_CACHE
+            value: "no"
+          image: docker.elastic.co/elasticsearch/elasticsearch:7.16.3
+          imagePullPolicy: IfNotPresent
+          name: install-plugins
+          resources:
+            limits:
+              cpu: "2"
+              memory: 1Gi
+            requests:
+              memory: 1Gi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /mnt/elastic-internal/downward-api
+            name: downward-api
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/bin
+            name: elastic-internal-elasticsearch-bin-local
+          - mountPath: /mnt/elastic-internal/elasticsearch-config
+            name: elastic-internal-elasticsearch-config
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/config
+            name: elastic-internal-elasticsearch-config-local
+          - mountPath: /usr/share/elasticsearch/plugins
+            name: elastic-internal-elasticsearch-plugins-local
+          - mountPath: /usr/share/elasticsearch/config/http-certs
+            name: elastic-internal-http-certificates
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/probe-user
+            name: elastic-internal-probe-user
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/config/transport-remote-certs/
+            name: elastic-internal-remote-certificate-authorities
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/scripts
+            name: elastic-internal-scripts
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/config/transport-certs
+            name: elastic-internal-transport-certificates
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/unicast-hosts
+            name: elastic-internal-unicast-hosts
+            readOnly: true
+          - mountPath: /mnt/elastic-internal/xpack-file-realm
+            name: elastic-internal-xpack-file-realm
+            readOnly: true
+          - mountPath: /usr/share/elasticsearch/data
+            name: elasticsearch-data
+          - mountPath: /usr/share/elasticsearch/logs
+            name: elasticsearch-logs
+          - mountPath: /usr/share/elasticsearch/config/jvm.options.d/heap.jvm.options
+            name: heap-jvm-options
+            subPath: heap.jvm.options
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 180
+        volumes:
+        - downwardAPI:
+            defaultMode: 420
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.labels
+              path: labels
+          name: downward-api
+        - emptyDir: {}
+          name: elastic-internal-elasticsearch-bin-local
+        - name: elastic-internal-elasticsearch-config
+          secret:
+            defaultMode: 420
+            optional: false
+            secretName: logging-es-logging-master-es-config
+        - emptyDir: {}
+          name: elastic-internal-elasticsearch-config-local
+        - emptyDir: {}
+          name: elastic-internal-elasticsearch-plugins-local
+        - name: elastic-internal-http-certificates
+          secret:
+            defaultMode: 420
+            optional: false
+            secretName: logging-es-http-certs-internal
+        - name: elastic-internal-probe-user
+          secret:
+            defaultMode: 420
+            items:
+            - key: elastic-internal-probe
+              path: elastic-internal-probe
+            optional: false
+            secretName: logging-es-internal-users
+        - name: elastic-internal-remote-certificate-authorities
+          secret:
+            defaultMode: 420
+            optional: false
+            secretName: logging-es-remote-ca
+        - configMap:
+            defaultMode: 493
+            name: logging-es-scripts
+            optional: false
+          name: elastic-internal-scripts
+        - name: elastic-internal-transport-certificates
+          secret:
+            defaultMode: 420
+            optional: false
+            secretName: logging-es-logging-master-es-transport-certs
+        - configMap:
+            defaultMode: 420
+            name: logging-es-unicast-hosts
+            optional: false
+          name: elastic-internal-unicast-hosts
+        - name: elastic-internal-xpack-file-realm
+          secret:
+            defaultMode: 420
+            optional: false
+            secretName: logging-es-xpack-file-realm
+        - name: elasticsearch-data
+          persistentVolumeClaim:
+            claimName: claim-name-placeholder
+        - emptyDir: {}
+          name: elasticsearch-logs
+        - name: es-monitoring-1ca422-ca
+          secret:
+            defaultMode: 420
+            optional: false
+            secretName: logging-es-monitoring-eckmon-eckmon-ca
+        - configMap:
+            defaultMode: 420
+            items:
+            - key: logging.master.heap.jvm.options
+              path: heap.jvm.options
+            name: logging-master-jvm-options
+          name: heap-jvm-options
+        - name: kb-monitoring-local-ca
+          secret:
+            defaultMode: 420
+            optional: false
+            secretName: logging-es-http-certs-public
+        - name: logging-filebeat-config
+          secret:
+            defaultMode: 420
+            optional: false
+            secretName: logging-es-monitoring-filebeat-config
+        - name: logging-metricbeat-config
+          secret:
+            defaultMode: 420
+            optional: false
+            secretName: logging-es-monitoring-metricbeat-config
+    updateStrategy:
+      type: OnDelete
+    volumeClaimTemplates:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        creationTimestamp: null
+        name: elasticsearch-data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 64Mi
+        storageClassName: hpe-nimble-london-non-prod-retain
+        volumeMode: Filesystem
+      status:
+        phase: Pending
+  status:
+    availableReplicas: 2
+    collisionCount: 0
+    currentReplicas: 2
+    currentRevision: logging-es-logging-master-7c644d56d5
+    observedGeneration: 1
+    readyReplicas: 2
+    replicas: 2
+    updateRevision: logging-es-logging-master-7c644d56d5
+    updatedReplicas: 2
+- apiVersion: apps/v1
+  kind: StatefulSet
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"apps/v1","kind":"StatefulSet","metadata":{"annotations":{},"labels":{"app":"logstash","app.kubernetes.io/instance":"logging-logstash","app.kubernetes.io/name":"logstash","app.kubernetes.io/part-of":"logging","photon/tier":"infrastructure"},"name":"logstash","namespace":"logging"},"spec":{"podManagementPolicy":"Parallel","replicas":3,"selector":{"matchLabels":{"app":"logstash","app.kubernetes.io/instance":"logging-logstash","app.kubernetes.io/name":"logstash","app.kubernetes.io/part-of":"logging","photon/tier":"infrastructure"}},"serviceName":"logstash","template":{"metadata":{"labels":{"app":"logstash","app.kubernetes.io/instance":"logging-logstash","app.kubernetes.io/name":"logstash","app.kubernetes.io/part-of":"logging","photon/tier":"infrastructure"},"name":"logstash"},"spec":{"affinity":{"podAntiAffinity":{"requiredDuringSchedulingIgnoredDuringExecution":[{"labelSelector":{"matchExpressions":[{"key":"app","operator":"In","values":["logstash"]}]},"topologyKey":"kubernetes.io/hostname"}]}},"containers":[{"env":[{"name":"KAFKA_BROKER_HOST","value":"kafka-logging-kafka-external-bootstrap.logging.svc:9097"},{"name":"ES_HOSTS","value":"logging-es-http.logging.svc:9200"},{"name":"ES_USER","value":"elastic"},{"name":"ES_PASSWORD","valueFrom":{"secretKeyRef":{"key":"elastic","name":"logging-es-elastic-user"}}},{"name":"LS_JAVA_OPTS","value":"-Xms1g -Xmx1g"}],"image":"docker.elastic.co/logstash/logstash:7.16.3","imagePullPolicy":"IfNotPresent","livenessProbe":{"failureThreshold":3,"httpGet":{"path":"/","port":"http"},"initialDelaySeconds":300,"periodSeconds":10,"successThreshold":1,"timeoutSeconds":5},"name":"logstash","ports":[{"containerPort":9600,"name":"http"}],"readinessProbe":{"failureThreshold":3,"httpGet":{"path":"/","port":"http"},"initialDelaySeconds":60,"periodSeconds":10,"successThreshold":3,"timeoutSeconds":5},"resources":{"limits":{"cpu":"1000m","memory":"1536Mi"},"requests":{"cpu":"100m","memory":"1536Mi"}},"volumeMounts":[{"mountPath":"/etc/logstash/certificates","name":"elastic-cert"},{"mountPath":"/usr/share/logstash/config/logstash.yml","name":"logstashconfig","subPath":"logstash.yml"},{"mountPath":"/usr/share/logstash/config/pipelines.yml","name":"logstashconfig","subPath":"pipelines.yml"},{"mountPath":"/usr/share/logstash/pipelines","name":"logstashpipeline"}]}],"terminationGracePeriodSeconds":120,"volumes":[{"name":"elastic-cert","secret":{"secretName":"logging-es-http-certs-public"}},{"configMap":{"items":[{"key":"logstash.yml","path":"logstash.yml"},{"key":"pipelines.yml","path":"pipelines.yml"}],"name":"logstash-config"},"name":"logstashconfig"},{"configMap":{"items":[{"key":"pipeline-access-logs.conf","path":"pipeline-access-logs.conf"},{"key":"pipeline-errors.conf","path":"pipeline-errors.conf"},{"key":"pipeline-application-logs.conf","path":"pipeline-application-logs.conf"}],"name":"logstash-pipeline"},"name":"logstashpipeline"}]}},"updateStrategy":{"type":"RollingUpdate"}}}
+    creationTimestamp: "2025-08-08T19:59:23Z"
+    generation: 1
+    labels:
+      app: logstash
+      app.kubernetes.io/instance: logging-logstash
+      app.kubernetes.io/name: logstash
+      app.kubernetes.io/part-of: logging
+      photon/tier: infrastructure
+    name: logstash
+    namespace: logging
+    resourceVersion: "10984499"
+    uid: 22f2d0dd-7c5c-42b7-b63b-6d8be9f39530
+  spec:
+    persistentVolumeClaimRetentionPolicy:
+      whenDeleted: Retain
+      whenScaled: Retain
+    podManagementPolicy: Parallel
+    replicas: 3
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: logstash
+        app.kubernetes.io/instance: logging-logstash
+        app.kubernetes.io/name: logstash
+        app.kubernetes.io/part-of: logging
+        photon/tier: infrastructure
+    serviceName: logstash
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: logstash
+          app.kubernetes.io/instance: logging-logstash
+          app.kubernetes.io/name: logstash
+          app.kubernetes.io/part-of: logging
+          photon/tier: infrastructure
+        name: logstash
+      spec:
+        affinity:
+          podAntiAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - logstash
+              topologyKey: kubernetes.io/hostname
+        containers:
+        - env:
+          - name: KAFKA_BROKER_HOST
+            value: kafka-logging-kafka-external-bootstrap.logging.svc:9097
+          - name: ES_HOSTS
+            value: logging-es-http.logging.svc:9200
+          - name: ES_USER
+            value: elastic
+          - name: ES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: elastic
+                name: logging-es-elastic-user
+          - name: LS_JAVA_OPTS
+            value: -Xms1g -Xmx1g
+          image: docker.elastic.co/logstash/logstash:7.16.3
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 300
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          name: logstash
+          ports:
+          - containerPort: 9600
+            name: http
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            successThreshold: 3
+            timeoutSeconds: 5
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1536Mi
+            requests:
+              cpu: 100m
+              memory: 1536Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/logstash/certificates
+            name: elastic-cert
+          - mountPath: /usr/share/logstash/config/logstash.yml
+            name: logstashconfig
+            subPath: logstash.yml
+          - mountPath: /usr/share/logstash/config/pipelines.yml
+            name: logstashconfig
+            subPath: pipelines.yml
+          - mountPath: /usr/share/logstash/pipelines
+            name: logstashpipeline
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 120
+        volumes:
+        - name: elastic-cert
+          secret:
+            defaultMode: 420
+            secretName: logging-es-http-certs-public
+        - configMap:
+            defaultMode: 420
+            items:
+            - key: logstash.yml
+              path: logstash.yml
+            - key: pipelines.yml
+              path: pipelines.yml
+            name: logstash-config
+          name: logstashconfig
+        - configMap:
+            defaultMode: 420
+            items:
+            - key: pipeline-access-logs.conf
+              path: pipeline-access-logs.conf
+            - key: pipeline-errors.conf
+              path: pipeline-errors.conf
+            - key: pipeline-application-logs.conf
+              path: pipeline-application-logs.conf
+            name: logstash-pipeline
+          name: logstashpipeline
+    updateStrategy:
+      type: RollingUpdate
+  status:
+    availableReplicas: 3
+    collisionCount: 0
+    currentReplicas: 3
+    currentRevision: logstash-764cbb4f7
+    observedGeneration: 1
+    readyReplicas: 3
+    replicas: 3
+    updateRevision: logstash-764cbb4f7
+    updatedReplicas: 3
+kind: List
+metadata:
+  resourceVersion: ""
